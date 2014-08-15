@@ -55,30 +55,19 @@ public class MKanbanCard{
 	}
 
 	public boolean changeStatus(MTable table, String statusColumn){
-		PO object = table.getPO(recordId, null);
-		boolean a=true;
 		
-		//System.out.println(object.get_Value("documentno")+currentStatus);//replace with the values people wants
+		PO object = table.getPO(recordId, null);
+		boolean succeed=true;
+		
 		//Verificar el workflow permitido, verificar el estado y sacar mensaje de confirmacion
-		/**
-		 * if (!payment.processIt(DocAction.ACTION_Complete))
-				throw new AdempiereException("Failed when processing document - " + payment.getProcessMsg());
-				y se invoice processIt(Prepare)
-		 * 
-		 */
 		if(statusColumn.equals(MKanbanBoard.STATUSCOLUMN_DocStatus)){
-			if(object instanceof DocAction){
+			if(object instanceof DocAction && object.get_ColumnIndex("DocAction") >= 0){
 				String p_docAction = belongingStatus.getStatusValue();
-				System.out.println("Columna Doc Status");
-				//StringBuilder processMsg = new StringBuilder().append(object.getDocumentNo());
-				
-				((DocAction) object).setDocStatus(p_docAction);
-				if (object.get_ColumnIndex("DocAction") >= 0)  
-				    object.set_ValueOfColumn("DocAction", p_docAction);
+				//StringBuilder processMsg = new StringBuilder().append(object.getDocumentNo());  
+				object.set_ValueOfColumn("DocAction", p_docAction);
 				try {
 					if (!((DocAction) object).processIt(p_docAction))
 					{
-						System.out.println("Error de procesamiento");
 						throw new IllegalStateException("Failed when processing document - " + object.get_ID());
 					    /*processMsg.append(" (NOT Processed)");
 					    StringBuilder msglog = new StringBuilder("Cash Processing failed: ").append(cash).append(" - ").append(cash.getProcessMsg());
@@ -95,20 +84,15 @@ public class MKanbanCard{
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+					return false;
 				}
-			}
-			
-			/**
-			 * cash.setDocAction(p_docAction);
-		
-			 */
-			
+			}			
 		}
 		else{
-			a = object.set_ValueOfColumnReturningBoolean(statusColumn, belongingStatus.getStatusValue());
+			succeed = object.set_ValueOfColumnReturningBoolean(statusColumn, belongingStatus.getStatusValue());
 		}
 		object.saveEx();
-		return a;
+		return succeed;
 	}
 
 

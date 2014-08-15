@@ -120,10 +120,12 @@ public class KanbanBoard {
 		
 		startStatus.removeRecord(card);
 		endStatus.addRecord(card);
-		card.setBelongingStatus(endStatus);
-		boolean a = card.changeStatus((MTable)kanbanBoard.getAD_Table(), kanbanBoard.getStatusColumn().getColumnName());
-		if(!a);//desplegar mensaje de error
-			
+		
+		boolean statusChanged = card.changeStatus((MTable)kanbanBoard.getAD_Table(), kanbanBoard.getStatusColumn().getColumnName());
+		if(statusChanged)
+			card.setBelongingStatus(endStatus);
+		else
+			System.out.println("No se pudo cambiar el estado");//Cambiar por el mensaje de error
 	}
 	
 	public int getAd_Table_id(){
