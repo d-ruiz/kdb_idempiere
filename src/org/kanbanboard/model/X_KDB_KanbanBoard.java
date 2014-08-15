@@ -1,0 +1,330 @@
+/******************************************************************************
+ * Product: iDempiere ERP & CRM Smart Business Solution                       *
+ * Copyright (C) 1999-2012 ComPiere, Inc. All Rights Reserved.                *
+ * This program is free software, you can redistribute it and/or modify it    *
+ * under the terms version 2 of the GNU General Public License as published   *
+ * by the Free Software Foundation. This program is distributed in the hope   *
+ * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
+ * See the GNU General Public License for more details.                       *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this program, if not, write to the Free Software Foundation, Inc.,    *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * For the text or an alternative of this public license, you may reach us    *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
+ * or via info@compiere.org or http://www.compiere.org/license.html           *
+ *****************************************************************************/
+/** Generated Model - DO NOT CHANGE */
+package org.kanbanboard.model;
+
+import java.sql.ResultSet;
+import java.util.Properties;
+import org.compiere.model.*;
+import org.compiere.util.KeyNamePair;
+
+/** Generated Model for KDB_KanbanBoard
+ *  @author iDempiere (generated) 
+ *  @version Release 2.0 - $Id$ */
+public class X_KDB_KanbanBoard extends PO implements I_KDB_KanbanBoard, I_Persistent 
+{
+
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 20140613L;
+
+    /** Standard Constructor */
+    public X_KDB_KanbanBoard (Properties ctx, int KDB_KanbanBoard_ID, String trxName)
+    {
+      super (ctx, KDB_KanbanBoard_ID, trxName);
+      /** if (KDB_KanbanBoard_ID == 0)
+        {
+			setAD_Table_ID (0);
+			setKDB_KanbanBoard_ID (0);
+			setName (null);
+        } */
+    }
+
+    /** Load Constructor */
+    public X_KDB_KanbanBoard (Properties ctx, ResultSet rs, String trxName)
+    {
+      super (ctx, rs, trxName);
+    }
+
+    /** AccessLevel
+      * @return 6 - System - Client 
+      */
+    protected int get_AccessLevel()
+    {
+      return accessLevel.intValue();
+    }
+
+    /** Load Meta Data */
+    protected POInfo initPO (Properties ctx)
+    {
+      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      return poi;
+    }
+
+    public String toString()
+    {
+      StringBuffer sb = new StringBuffer ("X_KDB_KanbanBoard[")
+        .append(get_ID()).append("]");
+      return sb.toString();
+    }
+
+	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
+    {
+		return (org.compiere.model.I_AD_Table)MTable.get(getCtx(), org.compiere.model.I_AD_Table.Table_Name)
+			.getPO(getAD_Table_ID(), get_TrxName());	}
+
+	/** Set Table.
+		@param AD_Table_ID 
+		Database Table information
+	  */
+	public void setAD_Table_ID (int AD_Table_ID)
+	{
+		if (AD_Table_ID < 1) 
+			set_Value (COLUMNNAME_AD_Table_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
+	}
+
+	/** Get Table.
+		@return Database Table information
+	  */
+	public int getAD_Table_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Create Statuses.
+		@param CreateStatuses Create Statuses	  */
+	public void setCreateStatuses (String CreateStatuses)
+	{
+		set_Value (COLUMNNAME_CreateStatuses, CreateStatuses);
+	}
+
+	/** Get Create Statuses.
+		@return Create Statuses	  */
+	public String getCreateStatuses () 
+	{
+		return (String)get_Value(COLUMNNAME_CreateStatuses);
+	}
+
+	/** Set Description.
+		@param Description 
+		Optional short description of the record
+	  */
+	public void setDescription (String Description)
+	{
+		set_Value (COLUMNNAME_Description, Description);
+	}
+
+	/** Get Description.
+		@return Optional short description of the record
+	  */
+	public String getDescription () 
+	{
+		return (String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Comment/Help.
+		@param Help 
+		Comment or Hint
+	  */
+	public void setHelp (String Help)
+	{
+		set_Value (COLUMNNAME_Help, Help);
+	}
+
+	/** Get Comment/Help.
+		@return Comment or Hint
+	  */
+	public String getHelp () 
+	{
+		return (String)get_Value(COLUMNNAME_Help);
+	}
+
+	public org.compiere.model.I_AD_PrintColor getKDB_BackgroundColor() throws RuntimeException
+    {
+		return (org.compiere.model.I_AD_PrintColor)MTable.get(getCtx(), org.compiere.model.I_AD_PrintColor.Table_Name)
+			.getPO(getKDB_BackgroundColor_ID(), get_TrxName());	}
+
+	/** Set Background Color.
+		@param KDB_BackgroundColor_ID Background Color	  */
+	public void setKDB_BackgroundColor_ID (int KDB_BackgroundColor_ID)
+	{
+		if (KDB_BackgroundColor_ID < 1) 
+			set_Value (COLUMNNAME_KDB_BackgroundColor_ID, null);
+		else 
+			set_Value (COLUMNNAME_KDB_BackgroundColor_ID, Integer.valueOf(KDB_BackgroundColor_ID));
+	}
+
+	/** Get Background Color.
+		@return Background Color	  */
+	public int getKDB_BackgroundColor_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_KDB_BackgroundColor_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public org.compiere.model.I_AD_Column getKDB_ColumnList() throws RuntimeException
+    {
+		return (org.compiere.model.I_AD_Column)MTable.get(getCtx(), org.compiere.model.I_AD_Column.Table_Name)
+			.getPO(getKDB_ColumnList_ID(), get_TrxName());	}
+
+	/** Set Column List.
+		@param KDB_ColumnList_ID Column List	  */
+	public void setKDB_ColumnList_ID (int KDB_ColumnList_ID)
+	{
+		if (KDB_ColumnList_ID < 1) 
+			set_Value (COLUMNNAME_KDB_ColumnList_ID, null);
+		else 
+			set_Value (COLUMNNAME_KDB_ColumnList_ID, Integer.valueOf(KDB_ColumnList_ID));
+	}
+
+	/** Get Column List.
+		@return Column List	  */
+	public int getKDB_ColumnList_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_KDB_ColumnList_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public org.compiere.model.I_AD_Column getKDB_ColumnTable() throws RuntimeException
+    {
+		return (org.compiere.model.I_AD_Column)MTable.get(getCtx(), org.compiere.model.I_AD_Column.Table_Name)
+			.getPO(getKDB_ColumnTable_ID(), get_TrxName());	}
+
+	/** Set Column Table.
+		@param KDB_ColumnTable_ID Column Table	  */
+	public void setKDB_ColumnTable_ID (int KDB_ColumnTable_ID)
+	{
+		if (KDB_ColumnTable_ID < 1) 
+			set_Value (COLUMNNAME_KDB_ColumnTable_ID, null);
+		else 
+			set_Value (COLUMNNAME_KDB_ColumnTable_ID, Integer.valueOf(KDB_ColumnTable_ID));
+	}
+
+	/** Get Column Table.
+		@return Column Table	  */
+	public int getKDB_ColumnTable_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_KDB_ColumnTable_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Kanban Board.
+		@param KDB_KanbanBoard_ID Kanban Board	  */
+	public void setKDB_KanbanBoard_ID (int KDB_KanbanBoard_ID)
+	{
+		if (KDB_KanbanBoard_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_KDB_KanbanBoard_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_KDB_KanbanBoard_ID, Integer.valueOf(KDB_KanbanBoard_ID));
+	}
+
+	/** Get Kanban Board.
+		@return Kanban Board	  */
+	public int getKDB_KanbanBoard_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_KDB_KanbanBoard_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set KDB_KanbanBoard_UU.
+		@param KDB_KanbanBoard_UU KDB_KanbanBoard_UU	  */
+	public void setKDB_KanbanBoard_UU (String KDB_KanbanBoard_UU)
+	{
+		set_Value (COLUMNNAME_KDB_KanbanBoard_UU, KDB_KanbanBoard_UU);
+	}
+
+	/** Get KDB_KanbanBoard_UU.
+		@return KDB_KanbanBoard_UU	  */
+	public String getKDB_KanbanBoard_UU () 
+	{
+		return (String)get_Value(COLUMNNAME_KDB_KanbanBoard_UU);
+	}
+
+	/** Set Kanban Card Content.
+		@param KDB_KanbanCard Kanban Card Content	  */
+	public void setKDB_KanbanCard (String KDB_KanbanCard)
+	{
+		set_Value (COLUMNNAME_KDB_KanbanCard, KDB_KanbanCard);
+	}
+
+	/** Get Kanban Card Content.
+		@return Kanban Card Content	  */
+	public String getKDB_KanbanCard () 
+	{
+		return (String)get_Value(COLUMNNAME_KDB_KanbanCard);
+	}
+
+	/** Set Priority SQL.
+		@param KDB_PrioritySQL Priority SQL	  */
+	public void setKDB_PrioritySQL (String KDB_PrioritySQL)
+	{
+		set_Value (COLUMNNAME_KDB_PrioritySQL, KDB_PrioritySQL);
+	}
+
+	/** Get Priority SQL.
+		@return Priority SQL	  */
+	public String getKDB_PrioritySQL () 
+	{
+		return (String)get_Value(COLUMNNAME_KDB_PrioritySQL);
+	}
+
+	/** Set Name.
+		@param Name 
+		Alphanumeric identifier of the entity
+	  */
+	public void setName (String Name)
+	{
+		set_Value (COLUMNNAME_Name, Name);
+	}
+
+	/** Get Name.
+		@return Alphanumeric identifier of the entity
+	  */
+	public String getName () 
+	{
+		return (String)get_Value(COLUMNNAME_Name);
+	}
+
+    /** Get Record ID/ColumnName
+        @return ID/ColumnName pair
+      */
+    public KeyNamePair getKeyNamePair() 
+    {
+        return new KeyNamePair(get_ID(), getName());
+    }
+
+	/** Set Sql WHERE.
+		@param WhereClause 
+		Fully qualified SQL WHERE clause
+	  */
+	public void setWhereClause (String WhereClause)
+	{
+		set_Value (COLUMNNAME_WhereClause, WhereClause);
+	}
+
+	/** Get Sql WHERE.
+		@return Fully qualified SQL WHERE clause
+	  */
+	public String getWhereClause () 
+	{
+		return (String)get_Value(COLUMNNAME_WhereClause);
+	}
+}
