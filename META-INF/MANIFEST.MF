@@ -23,7 +23,7 @@ Import-Package: org.adempiere.base,
  org.zkoss.zul,
  org.zkoss.zul.impl
 Bundle-Activator: org.adempiere.plugin.utils.Incremental2PackActivator
-Service-Component: OSGI-INF/KBModelFactory.xml, OSGI-INF/KB2FormFactory.xml, OSGI-INF/KBProcessFactory.xml
+Service-Component: OSGI-INF/KBModelFactory.xml, OSGI-INF/KBFormFactory.xml, OSGI-INF/KBProcessFactory.xml
 Bundle-ActivationPolicy: lazy
 Export-Package: org.idempiere.apps.form,
  org.idempiere.process,
