@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.print.MPrintColor;
+import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 
@@ -55,10 +56,57 @@ public class MKanbanCard{
 
 	public boolean changeStatus(MTable table, String statusColumn){
 		PO object = table.getPO(recordId, null);
+		boolean a=true;
 		
 		//System.out.println(object.get_Value("documentno")+currentStatus);//replace with the values people wants
 		//Verificar el workflow permitido, verificar el estado y sacar mensaje de confirmacion
-		boolean a = object.set_ValueOfColumnReturningBoolean(statusColumn, belongingStatus.getStatusValue());
+		/**
+		 * if (!payment.processIt(DocAction.ACTION_Complete))
+				throw new AdempiereException("Failed when processing document - " + payment.getProcessMsg());
+				y se invoice processIt(Prepare)
+		 * 
+		 */
+		if(statusColumn.equals(MKanbanBoard.STATUSCOLUMN_DocStatus)){
+			if(object instanceof DocAction){
+				String p_docAction = belongingStatus.getStatusValue();
+				System.out.println("Columna Doc Status");
+				//StringBuilder processMsg = new StringBuilder().append(object.getDocumentNo());
+				
+				((DocAction) object).setDocStatus(p_docAction);
+				if (object.get_ColumnIndex("DocAction") >= 0)  
+				    object.set_ValueOfColumn("DocAction", p_docAction);
+				try {
+					if (!((DocAction) object).processIt(p_docAction))
+					{
+						System.out.println("Error de procesamiento");
+						throw new IllegalStateException("Failed when processing document - " + object.get_ID());
+					    /*processMsg.append(" (NOT Processed)");
+					    StringBuilder msglog = new StringBuilder("Cash Processing failed: ").append(cash).append(" - ").append(cash.getProcessMsg());
+					    log.warning(msglog.toString());
+					    msglog = new StringBuilder("Cash Processing failed: ").append(cash).append(" - ")
+								.append(cash.getProcessMsg())
+								.append(" / please complete it manually");
+					    addLog(cash.getC_Cash_ID(), cash.getStatementDate(), null,msglog.toString());
+					    throw new  IllegalStateException("Cash Processing failed: " + cash + " - " + cash.getProcessMsg());
+					*/}
+					else{
+						System.out.println("No error");
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+			/**
+			 * cash.setDocAction(p_docAction);
+		
+			 */
+			
+		}
+		else{
+			a = object.set_ValueOfColumnReturningBoolean(statusColumn, belongingStatus.getStatusValue());
+		}
 		object.saveEx();
 		return a;
 	}

@@ -17,6 +17,11 @@ import org.compiere.util.Env;
 import org.compiere.util.ValueNamePair;
 
 public class MKanbanBoard extends X_KDB_KanbanBoard{
+	
+
+	/** Special column DocStatus = DocStatus */
+	public static final String STATUSCOLUMN_DocStatus = "DocStatus";
+	
 
 	/**
 	 * 
