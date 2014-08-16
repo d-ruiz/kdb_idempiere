@@ -123,8 +123,6 @@ public class KanbanBoard {
 			endStatus.addRecord(card);
 			card.setBelongingStatus(endStatus);
 		}
-		else
-			System.out.println("No se pudo cambiar el estado");//Cambiar por el mensaje de error
 		return statusChanged;
 	}
 	
