@@ -54,15 +54,15 @@ public class MKanbanCard{
 		recordId = cardRecord;
 	}
 
-	public boolean changeStatus(MTable table, String statusColumn){
+	public boolean changeStatus(MTable table, String statusColumn, String newStatusValue){
 		
 		PO object = table.getPO(recordId, null);
-		boolean succeed=true;
+		boolean success=true;
 		
 		//Verificar el workflow permitido, verificar el estado y sacar mensaje de confirmacion
 		if(statusColumn.equals(MKanbanBoard.STATUSCOLUMN_DocStatus)){
 			if(object instanceof DocAction && object.get_ColumnIndex("DocAction") >= 0){
-				String p_docAction = belongingStatus.getStatusValue();
+				String p_docAction = newStatusValue;
 				//StringBuilder processMsg = new StringBuilder().append(object.getDocumentNo());  
 				object.set_ValueOfColumn("DocAction", p_docAction);
 				try {
@@ -78,9 +78,6 @@ public class MKanbanCard{
 					    addLog(cash.getC_Cash_ID(), cash.getStatementDate(), null,msglog.toString());
 					    throw new  IllegalStateException("Cash Processing failed: " + cash + " - " + cash.getProcessMsg());
 					*/}
-					else{
-						System.out.println("No error");
-					}
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -89,10 +86,11 @@ public class MKanbanCard{
 			}			
 		}
 		else{
-			succeed = object.set_ValueOfColumnReturningBoolean(statusColumn, belongingStatus.getStatusValue());
+			success = object.set_ValueOfColumnReturningBoolean(statusColumn, belongingStatus.getStatusValue());
+			object.saveEx();
 		}
-		object.saveEx();
-		return succeed;
+		
+		return success;
 	}
 
 

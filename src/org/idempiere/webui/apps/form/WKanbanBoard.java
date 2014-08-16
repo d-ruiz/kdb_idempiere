@@ -38,6 +38,7 @@ import org.zkoss.zul.Cell;
 import org.zkoss.zul.Column;
 import org.zkoss.zul.Columns;
 import org.zkoss.zul.Div;
+import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.North;
 import org.zkoss.zul.South;
 import org.zkoss.zul.Space;
@@ -227,7 +228,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		mapEmptyCellField.clear();
 		Rows rows = kanbanPanel.newRows();
 		Row row = new Row();
-		resetCounter();
+		resetStatusProperties();
 		int numberOfCards = getNumberOfCards();
 		while(numberOfCards>0){
 			for(MKanbanStatus status: getStatuses()){
@@ -320,7 +321,9 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				else
 					endStatus = endField.getBelongingStatus();
 				
-				swapCard(startStatus, endStatus, startField);	
+				if(!swapCard(startStatus, endStatus, startField))
+					Messagebox.show("The card wasn't changed of status due to errors, check everything and try again", "Error", Messagebox.OK, Messagebox.ERROR);
+					//Reemplazar con un mensaje traducible				
 				repaintRows();
 				
 			} else if (me.getTarget() instanceof Button) {
