@@ -350,7 +350,8 @@ public class MKanbanBoard extends X_KDB_KanbanBoard{
 		// TODO Auto-generated method stub
 		for(MKanbanStatus status:statuses){
 			status.setCardNumber(0);
-			status.orderCards();
+			if(hasPriorityOrder())
+				status.orderCards();
 		}
 	}
 }

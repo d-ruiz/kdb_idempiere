@@ -86,10 +86,17 @@ public class MKanbanCard{
 			}			
 		}
 		else{
-			success = object.set_ValueOfColumnReturningBoolean(statusColumn, belongingStatus.getStatusValue());
+			if(object.get_ColumnIndex("DocAction") >= 0){
+				if(((DocAction) object).getDocStatus().equals(DocAction.STATUS_Completed)||
+						((DocAction) object).getDocStatus().equals(DocAction.STATUS_Voided)||
+						((DocAction) object).getDocStatus().equals(DocAction.STATUS_Reversed)||
+						((DocAction) object).getDocStatus().equals(DocAction.STATUS_Closed)){
+					return false;
+				}
+			}
+			success = object.set_ValueOfColumnReturningBoolean(statusColumn, newStatusValue);
 			object.saveEx();
 		}
-		
 		return success;
 	}
 
