@@ -89,9 +89,9 @@ public class KanbanBoard {
 	}
 	
 	
-	public void resetCounter() {
+	public void resetStatusProperties() {
 		// TODO Auto-generated method stub
-		kanbanBoard.resetCounter();
+		kanbanBoard.resetStatusProperties();
 	}
 	
 	public void orderStatuses(){
@@ -101,7 +101,6 @@ public class KanbanBoard {
 				return status1.getSeqNo()-(status2.getSeqNo());
 			}
 		});
-		
 	}
 	
 	public void swapStatuses(MKanbanStatus startStatus, MKanbanStatus endStatus){
@@ -116,16 +115,17 @@ public class KanbanBoard {
 
 	}
 	
-	public void swapCard(MKanbanStatus startStatus, MKanbanStatus endStatus, MKanbanCard card){
+	public boolean swapCard(MKanbanStatus startStatus, MKanbanStatus endStatus, MKanbanCard card){
 		
-		startStatus.removeRecord(card);
-		endStatus.addRecord(card);
-		
-		boolean statusChanged = card.changeStatus((MTable)kanbanBoard.getAD_Table(), kanbanBoard.getStatusColumn().getColumnName());
-		if(statusChanged)
+		boolean statusChanged = card.changeStatus((MTable)kanbanBoard.getAD_Table(), kanbanBoard.getStatusColumn().getColumnName(), endStatus.getStatusValue());
+		if(statusChanged){
+			startStatus.removeRecord(card);
+			endStatus.addRecord(card);
 			card.setBelongingStatus(endStatus);
+		}
 		else
 			System.out.println("No se pudo cambiar el estado");//Cambiar por el mensaje de error
+		return statusChanged;
 	}
 	
 	public int getAd_Table_id(){

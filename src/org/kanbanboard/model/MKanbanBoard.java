@@ -346,10 +346,11 @@ public class MKanbanBoard extends X_KDB_KanbanBoard{
 		//parsear Texto HTML para obtener los campos que se desean mostrar en las tarjetas
 	}
 
-	public void resetCounter() {
+	public void resetStatusProperties() {
 		// TODO Auto-generated method stub
-		for(MKanbanStatus status:statuses)
+		for(MKanbanStatus status:statuses){
 			status.setCardNumber(0);
-
+			status.orderCards();
+		}
 	}
 }

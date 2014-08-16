@@ -1,6 +1,8 @@
 package org.kanbanboard.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 
@@ -67,6 +69,15 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 		if(!hasCards()||cardNumber>records.size()-1)
 			return false;
 		return true;
+	}
+	
+	public void orderCards(){
+		Collections.sort(records, Collections.reverseOrder(new Comparator<MKanbanCard>() {
+			@Override
+			public int compare(MKanbanCard card1, MKanbanCard card2) {
+				return card1.getPriorityValue().intValue()-(card2.getPriorityValue().intValue());
+			}
+		}));
 	}
 
 	public MKanbanCard getCard(){
