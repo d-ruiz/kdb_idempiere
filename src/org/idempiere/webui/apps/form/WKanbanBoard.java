@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import org.adempiere.webui.LayoutUtils;
 import org.adempiere.webui.apps.AEnv;
@@ -38,6 +39,7 @@ import org.zkoss.zul.Cell;
 import org.zkoss.zul.Column;
 import org.zkoss.zul.Columns;
 import org.zkoss.zul.Div;
+import org.zkoss.zul.Hlayout;
 import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.North;
 import org.zkoss.zul.South;
@@ -187,7 +189,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 
 			kanbanPanel.makeNoStrip();
-			kanbanPanel.setHflex("1");
+			//kanbanPanel.setHflex("1");
 			kanbanPanel.setHeight(null);
 			kanbanPanel.setVflex(false);
 			kanbanPanel.setSizedByContent(true);
@@ -218,6 +220,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				columns.appendChild(column);
 				column.setLabel(status.getPrintableName());
 			}
+			columns.setSizable(true);
 			createRows();	
 			kanbanPanel.appendChild(columns);
 		}
@@ -239,12 +242,8 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				}
 				else{
 					MKanbanCard card = status.getCard();
-					Label label = new Label(card.getContent());
-					Div div = new Div();
-					div.setStyle("text-align: center;");
-					div.appendChild(label);
-					div.setStyle("background-color:" + card.getColor() + ";");
-					row.appendCellChild(div);
+					Vlayout l = createCell(card);;
+					row.appendCellChild(l);
 					setCellProps(row.getLastCell(), card);
 					numberOfCards--;
 				}
@@ -253,6 +252,18 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			row=new Row();
 		}
 	}//createRows
+	
+	private Vlayout createCell(MKanbanCard card){
+		Vlayout div = new Vlayout();
+		StringTokenizer str = new StringTokenizer(card.getKanbanCardText(), System.getProperty("line.separator"));
+		while(str.hasMoreTokens()){
+			Label label = new Label(str.nextToken());
+			div.appendChild(label);
+		}
+		div.setStyle("text-align: center;");
+		div.setStyle("background-color:" + card.getColor() + ";");
+		return div;
+	}//CreateCell
 
 
 	private void setCellProps(Cell cell, MKanbanCard card) {
@@ -324,7 +335,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				if(!swapCard(startStatus, endStatus, startField))
 					Messagebox.show("The card wasn't changed of status due to errors, check everything and try again", "Error", Messagebox.OK, Messagebox.ERROR);
 					//Reemplazar con un mensaje traducible				
-				repaintRows();
+				repaintGrid();
 				
 			} else if (me.getTarget() instanceof Button) {
 				//Button button = (Button) me.getTarget();

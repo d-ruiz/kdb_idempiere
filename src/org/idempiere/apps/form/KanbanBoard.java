@@ -117,7 +117,7 @@ public class KanbanBoard {
 	
 	public boolean swapCard(MKanbanStatus startStatus, MKanbanStatus endStatus, MKanbanCard card){
 		
-		boolean statusChanged = card.changeStatus((MTable)kanbanBoard.getAD_Table(), kanbanBoard.getStatusColumn().getColumnName(), endStatus.getStatusValue());
+		boolean statusChanged = card.changeStatus(kanbanBoard.getStatusColumn().getColumnName(), endStatus.getStatusValue());
 		if(statusChanged){
 			startStatus.removeRecord(card);
 			endStatus.addRecord(card);

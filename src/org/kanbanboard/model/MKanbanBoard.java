@@ -274,9 +274,8 @@ public class MKanbanBoard extends X_KDB_KanbanBoard{
 					id = rs.getInt(1);
 					correspondingColumn = rs.getString(2);
 					MKanbanStatus status = getStatus(correspondingColumn);
-					MKanbanCard card = new MKanbanCard(id);
-					card.setBelongingStatus(status);
-
+					MKanbanCard card = new MKanbanCard(id,status);
+					//card.setBelongingStatus(status);
 
 					if(hasPriorityOrder()){
 						BigDecimal priorityValue = rs.getBigDecimal(3);
