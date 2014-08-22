@@ -38,8 +38,6 @@ import org.zkoss.zul.Borderlayout;
 import org.zkoss.zul.Cell;
 import org.zkoss.zul.Column;
 import org.zkoss.zul.Columns;
-import org.zkoss.zul.Div;
-import org.zkoss.zul.Hlayout;
 import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.North;
 import org.zkoss.zul.South;
@@ -187,7 +185,6 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			currentGroup = null;
 			rowList = null;
 
-
 			kanbanPanel.makeNoStrip();
 			//kanbanPanel.setHflex("1");
 			kanbanPanel.setHeight(null);
@@ -333,8 +330,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 					endStatus = endField.getBelongingStatus();
 				
 				if(!swapCard(startStatus, endStatus, startField))
-					Messagebox.show("The card wasn't changed of status due to errors, check everything and try again", "Error", Messagebox.OK, Messagebox.ERROR);
-					//Reemplazar con un mensaje traducible				
+					Messagebox.show(Msg.getMsg(Env.getCtx(), MKanbanCard.KDB_ErrorMessage));
 				repaintGrid();
 				
 			} else if (me.getTarget() instanceof Button) {
