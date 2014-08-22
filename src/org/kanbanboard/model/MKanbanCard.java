@@ -17,7 +17,9 @@ import org.compiere.util.Msg;
 
 public class MKanbanCard{
 	
-
+	
+	public static String KDB_ErrorMessage = "KDB_InvalidTransition";
+	
 	private int 		  recordId;
 	private MKanbanBoard  kanbanBoard;
 	private MKanbanStatus belongingStatus;
@@ -91,25 +93,19 @@ public class MKanbanCard{
 			return false;
 		boolean success=true;
 		
-		//Verificar el workflow permitido, verificar el estado y sacar mensaje de confirmacion
 		if(statusColumn.equals(MKanbanBoard.STATUSCOLUMN_DocStatus)){
 			if(m_po instanceof DocAction && m_po.get_ColumnIndex("DocAction") >= 0){
 				String p_docAction = newStatusValue;
-				//StringBuilder processMsg = new StringBuilder().append(object.getDocumentNo());  
 				m_po.set_ValueOfColumn("DocAction", p_docAction);
 				try {
 					if (!((DocAction) m_po).processIt(p_docAction))
 					{
-						throw new IllegalStateException("Failed when processing document - " + m_po.get_ID());
-					    /*processMsg.append(" (NOT Processed)");
-					    StringBuilder msglog = new StringBuilder("Cash Processing failed: ").append(cash).append(" - ").append(cash.getProcessMsg());
-					    log.warning(msglog.toString());
-					    msglog = new StringBuilder("Cash Processing failed: ").append(cash).append(" - ")
-								.append(cash.getProcessMsg())
-								.append(" / please complete it manually");
-					    addLog(cash.getC_Cash_ID(), cash.getStatementDate(), null,msglog.toString());
-					    throw new  IllegalStateException("Cash Processing failed: " + cash + " - " + cash.getProcessMsg());
-					*/}
+						throw new IllegalStateException();
+					}
+				} catch (IllegalStateException e) {
+					// TODO Auto-generated catch block
+					KDB_ErrorMessage = "KDB_InvalidTransition";
+					return false;
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -123,6 +119,7 @@ public class MKanbanCard{
 						((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Voided)||
 						((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Reversed)||
 						((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Closed)){
+					KDB_ErrorMessage = "KDB_CompletedCard";
 					return false;
 				}
 			}
@@ -144,7 +141,6 @@ public class MKanbanCard{
 				if(priorityValue.compareTo(minValue)==1&&priorityValue.compareTo(maxValue)==-1){
 					MPrintColor priorityColor = new MPrintColor(Env.getCtx(), priorityRule.getKDB_PriorityColor_ID(), null);
 					color = priorityColor.getName();
-					//Validation code
 				}
 			} 
 		}
