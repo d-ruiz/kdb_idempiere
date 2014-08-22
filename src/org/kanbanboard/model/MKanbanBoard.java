@@ -223,7 +223,6 @@ public class MKanbanBoard extends X_KDB_KanbanBoard{
 	 *and assign them to its respective status
 	 */
 	public void getKanbanCards(){
-		getKanbanCardsInfo();
 
 		if(numberOfCards<=0){
 			StringBuilder sql = new StringBuilder();
@@ -296,20 +295,6 @@ public class MKanbanBoard extends X_KDB_KanbanBoard{
 				rs = null;
 				pstmt = null;
 			}
-
-			//	MTable table = MTable.get(ctx, tableName);
-
-			//	MMailText mailText ;
-			//	mailText.setPO(object);
-			/*String curr= null;
-			for(MKanbanStatus status:getStatuses()){
-				if(isRefList)
-					curr = status.getKDB_StatusListValue();
-				else
-					curr= status.getKDB_StatusTableID();	
-				getCards(curr, kanbanCardsContent, table);
-			}*/
-
 		}
 	}//getKanbanCards
 
@@ -338,11 +323,6 @@ public class MKanbanBoard extends X_KDB_KanbanBoard{
 			return true;
 		else
 			return false;
-	}
-
-	void getKanbanCardsInfo(){
-		getKDB_KanbanCard();
-		//parsear Texto HTML para obtener los campos que se desean mostrar en las tarjetas
 	}
 
 	public void resetStatusProperties() {
