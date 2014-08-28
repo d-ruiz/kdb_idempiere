@@ -139,7 +139,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		centerVLayout = new Vlayout();
 		centerVLayout.setHeight("100%");
 		centerVLayout.appendChild(kanbanPanel);
-		//centerVLayout.setStyle("overflow:auto");
+		centerVLayout.setStyle("overflow:auto");
 		
 		/*Center center = new Center();
 		LayoutUtils.addSclass("tab-editor-form-center-panel", center);
@@ -187,7 +187,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 			kanbanPanel.makeNoStrip();
 			//kanbanPanel.setHflex("1");
-			kanbanPanel.setHeight(null);
+			//kanbanPanel.setHeight(null);
 			kanbanPanel.setVflex(false);
 			kanbanPanel.setSizedByContent(true);
 			//kanbanPanel.setHeight("100px");
@@ -342,17 +342,6 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	
 	private void zoom(int recordId, int ad_table_id) {
 		AEnv.zoom(ad_table_id, recordId);
-		/*if (m_node != null) {
-			if (MWFNode.ACTION_UserWindow.equals(m_node.getAction())) {
-				AEnv.zoom(m_node.getAD_Window_ID(), null);
-				
-			} else if (MWFNode.ACTION_UserForm.equals(m_node.getAction())) {
-				int AD_Form_ID = m_node.getAD_Form_ID();
-				ADForm form = ADForm.openForm(AD_Form_ID);
-				form.setAttribute(Window.MODE_KEY, form.getWindowMode());
-				AEnv.showWindow(form);
-			}
-		}*/
 	}
 
 	private Component createSpacer() {
@@ -373,11 +362,11 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		return kForm;
 	}
 
-	private void repaintRows(){
+	/*private void repaintRows(){
 		if (kanbanPanel.getRows() != null)
 			kanbanPanel.removeChild(kanbanPanel.getRows());
 		createRows();
-	}
+	}*/
 
 	private void repaintGrid(){
 		centerVLayout.removeChild(kanbanPanel);
