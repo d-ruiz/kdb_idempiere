@@ -244,6 +244,26 @@ public class MKanbanCard{
 	{
 		int index = po.get_ColumnIndex(variable);
 		if (index == -1){
+			int i = variable.indexOf('.');
+			if(i!=1)
+			{
+				StringBuilder outStr = new StringBuilder();
+				outStr.append(variable.substring(0, i));
+				variable = variable.substring(i+1, variable.length());
+				
+				MTable table = MTable.get(Env.getCtx(), outStr.toString());
+				outStr.append("_ID");
+				index = po.get_ColumnIndex(outStr.toString());
+				Integer subRecordId;
+				if (index != -1){
+					subRecordId = (Integer)po.get_Value(outStr.toString());
+					if(subRecordId==null)
+						return "";
+					PO subPo = table.getPO(subRecordId, null);						
+					return parseVariable(variable,subPo);
+				}
+			}
+			
 			StringBuilder msgreturn = new StringBuilder("@").append(variable).append("@");
 			return msgreturn.toString();	//	keep for next
 		}	

@@ -75,9 +75,6 @@ public class MKanbanBoard extends X_KDB_KanbanBoard{
 		MColumn column = getStatusColumn();
 		ValueNamePair list[] = MRefList.getList(getCtx(), column.getAD_Reference_Value_ID(), false);
 		if(column.getAD_Reference_Value_ID()!=0&&list.length>0){
-			//ValueNamePair list[] = MRefList.getList(getCtx(), column.getAD_Reference_Value_ID(), false);
-
-			//Order the  names by seqNo
 			int posStatus;
 			for(posStatus=0;posStatus<statuses.size();posStatus++){
 				int posList=0;
@@ -274,7 +271,6 @@ public class MKanbanBoard extends X_KDB_KanbanBoard{
 					correspondingColumn = rs.getString(2);
 					MKanbanStatus status = getStatus(correspondingColumn);
 					MKanbanCard card = new MKanbanCard(id,status);
-					//card.setBelongingStatus(status);
 
 					if(hasPriorityOrder()){
 						BigDecimal priorityValue = rs.getBigDecimal(3);

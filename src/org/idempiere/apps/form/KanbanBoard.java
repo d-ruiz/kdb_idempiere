@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 
 import org.compiere.model.MTable;
@@ -74,7 +73,6 @@ public class KanbanBoard {
 		if(kanbanBoard==null||kanbanBoardId!=kanbanBoard.get_ID()){
 			kanbanBoard = new MKanbanBoard(Env.getCtx(), kanbanBoardId, null);
 			statuses=null;
-			//kanbanCardsContent=null;
 		}
 	}
 	
@@ -151,58 +149,4 @@ public class KanbanBoard {
 		PO object = table.getPO(recordID, trxName);
 		return object;
 	}
-	
-	public void getCards(String currentStatus, Map<String, MKanbanCard> kanbanCardsContent, MTable table){
-		if(kanbanCardsContent.get(currentStatus)!=null){
-		/*MKanbanCard cards = kanbanCardsContent.get(currentStatus);
-		List<String> values = cards.getRecords();
-		for(String curCard: values){
-				PO object = table.getPO(Integer.parseInt(curCard), null);
-				//System.out.println(object.get_Value("documentno")+currentStatus);//replace with the values people wants
-				//kanbanCardsContent.remove(currentStatus);
-			}*/
-		}
-	}
-	
-	/*public MKanbanCard getKCards(String currentStatus){
-		MKanbanCard cards = null;
-		if(kanbanCardsContent==null){
-			getKanbanCards();
-		}
-		if(kanbanCardsContent.get(currentStatus)!=null){
-		cards = kanbanCardsContent.get(currentStatus);
-		/*for(String curCard: cards){
-		 * 	MTable table = (MTable) kanbanBoard.getAD_Table();
-				PO object = table.getPO(Integer.parseInt(curCard), null);
-				System.out.println(object.get_Value("documentno"));//replace with the values people wants
-				kanbanCardsContent.remove(currentStatus);
-			}
-		}
-		return cards;
-	}*/
-	
-	/*public List<String> getCards(String currentStatus){
-		List <String> cards = null;
-		if(kanbanCardsContent==null){
-			getKanbanCards();
-		}
-		if(kanbanCardsContent.get(currentStatus)!=null){
-		//cards = kanbanCardsContent.get(currentStatus).getRecords();
-		/*for(String curCard: cards){
-		 * 	MTable table = (MTable) kanbanBoard.getAD_Table();
-				PO object = table.getPO(Integer.parseInt(curCard), null);
-				System.out.println(object.get_Value("documentno"));//replace with the values people wants
-				kanbanCardsContent.remove(currentStatus);
-			}
-		}
-		return cards;
-	}*/
-	
-	/*public boolean isRefList() {
-		return isRefList;
-	}*/
-
-	/*public void setRefList(boolean isRefList) {
-		this.isRefList = isRefList;
-	}*/
 }
