@@ -1,5 +1,31 @@
+/**********************************************************************
+* This file is part of iDempiere ERP Open Source                      *
+* http://www.idempiere.org                                            *
+*                                                                     *
+* Copyright (C) Contributors                                          *
+*                                                                     *
+* This program is free software; you can redistribute it and/or       *
+* modify it under the terms of the GNU General Public License         *
+* as published by the Free Software Foundation; either version 2      *
+* of the License, or (at your option) any later version.              *
+*                                                                     *
+* This program is distributed in the hope that it will be useful,     *
+* but WITHOUT ANY WARRANTY; without even the implied warranty of      *
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the        *
+* GNU General Public License for more details.                        *
+*                                                                     *
+* You should have received a copy of the GNU General Public License   *
+* along with this program; if not, write to the Free Software         *
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,          *
+* MA 02110-1301, USA.                                                 *
+*                                                                     *
+* Contributors:                                                       *
+* - Diego Ruiz - Universidad Distrital Francisco Jose de Caldas       *
+**********************************************************************/
+
 package org.idempiere.webui.apps.form;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,11 +56,12 @@ import org.adempiere.webui.event.ValueChangeListener;
 import org.adempiere.webui.panel.ADForm;
 import org.adempiere.webui.panel.CustomForm;
 import org.adempiere.webui.panel.IFormController;
+import org.adempiere.webui.session.SessionManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
-import org.idempiere.apps.form.KanbanBoard;
+import org.idempiere.apps.form.KanbanStatus;
 import org.kanbanboard.model.MKanbanStatus;
 import org.zkoss.zk.ui.event.DropEvent;
 import org.zkoss.zk.ui.event.Event;
@@ -45,9 +72,10 @@ import org.zkoss.zul.Cell;
 import org.zkoss.zul.Center;
 import org.zkoss.zul.Columns;
 import org.zkoss.zul.East;
+import org.zkoss.zul.Hlayout;
+import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.North;
 import org.zkoss.zul.Separator;
-import org.zkoss.zul.Vlayout;
 
 /**
 *
@@ -55,17 +83,13 @@ import org.zkoss.zul.Vlayout;
 *
 */
 
-public class WKanbanStatus extends KanbanBoard implements IFormController, EventListener<Event>, ValueChangeListener {
+public class WKanbanStatus extends KanbanStatus implements IFormController, EventListener<Event>, ValueChangeListener {
 
 	private CustomForm kForm = new CustomForm();;	
 
 	private Borderlayout	mainLayout	= new Borderlayout();
 
-	/**	Window No			*/
-	public int            	m_WindowNo = 0;
 
-
-	//private ConfirmPanel confirmPanel = new ConfirmPanel(true);
 	private Panel panel = new Panel();
 	private Grid gridLayout = GridFactory.newGridLayout();
 	
@@ -76,24 +100,10 @@ public class WKanbanStatus extends KanbanBoard implements IFormController, Event
 	WEditor editorSqlQueue = null;
 	WEditor editorShowOver = null;
 	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
-
-
-
-
-	/*private Button bExport = new Button();
-	private Button bImport = new Button();
-	private Button bExportZIP = new Button();
-	private Button bImportZIP = new Button();*/
 	
 	private Label lProcess = new Label();
 	private Listbox cbProcess = ListboxFactory.newDropdownListbox();
 	private int kanbanBoardId=-1;
-
-	
-	/*private StatusBarPanel statusBar = new StatusBarPanel();
-	private ValueNamePair m_AD_Table;
-	private boolean m_imp;
-	private ValueNamePair m_AD_Language;*/
 
 	// The grid components
 	Group currentGroup;
@@ -102,10 +112,8 @@ public class WKanbanStatus extends KanbanBoard implements IFormController, Event
 	Map<Integer, MKanbanStatus> mapCellColumn = new HashMap<Integer, MKanbanStatus>();
 	Map<Cell, Integer> mapEmptyCellField = new HashMap<Cell, Integer>();
 
-	Grid form;
 	Listbox kanbanPanel;
-	Vlayout centerVLayout;
-	Vlayout westVLayout ;
+	Hlayout centerHLayout;
 
 	public WKanbanStatus() {
 		super();
@@ -124,8 +132,6 @@ public class WKanbanStatus extends KanbanBoard implements IFormController, Event
 		{
 			log.log(Level.SEVERE, "init", ex);
 		}
-		m_WindowNo = kForm.getWindowNo();
-
 	}
 	
 	/**
@@ -140,7 +146,6 @@ public class WKanbanStatus extends KanbanBoard implements IFormController, Event
 		kForm.setWidth("95%");
 		kForm.setHeight("95%");
 		kForm.appendChild (mainLayout);
-		LayoutUtils.addSclass("kanban-boardr-form-content", mainLayout);
 		kForm.setBorder("normal");
 		
 		
@@ -151,14 +156,8 @@ public class WKanbanStatus extends KanbanBoard implements IFormController, Event
 		deleteBtn.addEventListener(Events.ON_CLICK, this);
 		deleteBtn.addEventListener(Events.ON_DROP, this);
 		
-		Grid propGrid = createPropertiesGrid();	
-		East east = new East();
-		LayoutUtils.addSclass("tab-editor-form-east-panel", east);
-		mainLayout.appendChild(east);
-		east.appendChild(propGrid);
-		east.setWidth("320px");
-		
-		//North Panel
+				
+		//North Panel - comboBox and Buttons
 		panel.appendChild(gridLayout);
 		lProcess.setText(Msg.translate(Env.getCtx(), "Process"));
 		Rows rows = gridLayout.newRows();
@@ -167,22 +166,29 @@ public class WKanbanStatus extends KanbanBoard implements IFormController, Event
 		row.appendChild(cbProcess);
 		
 		North north = new North();
-		LayoutUtils.addSclass("tab-editor-form-north-panel", north);
 		mainLayout.appendChild(north);
 		north.appendChild(panel);
 		
+		//East - Properties Grid
+		Grid propGrid = createPropertiesGrid();	
+		East east = new East();
+		east.setSplittable(true);
+		east.setCollapsible(true);
+		east.setSize("29%");
+		mainLayout.appendChild(east);
+		east.appendChild(propGrid);
 		
-		//CenterPanel
+		//CenterPanel - Status Grid Panel
 		createKanbanBoardPanel();
-		centerVLayout = new Vlayout();
-		centerVLayout.setHeight("100%");
-		centerVLayout.appendChild(kanbanPanel);
-		centerVLayout.setStyle("overflow:auto");
-		
+		centerHLayout = new Hlayout();
+		centerHLayout.setHeight("100%");
+		centerHLayout.setWidth("100%");
+		centerHLayout.appendChild(kanbanPanel);
+		centerHLayout.setStyle("overflow:auto");
+
 		Center center = new Center();
-		LayoutUtils.addSclass("tab-editor-form-center-panel", center);
 		mainLayout.appendChild(center);
-		center.appendChild(centerVLayout);
+		center.appendChild(centerHLayout);
 	}	//	jbInit
 
 	
@@ -192,8 +198,7 @@ public class WKanbanStatus extends KanbanBoard implements IFormController, Event
 	private void dynList()
 	{
 		//		Fill Process
-		ArrayList<KeyNamePair> processes = getProcessList();
-		for(KeyNamePair process: processes)
+		for(KeyNamePair process: getProcessList())
 			cbProcess.addItem(process);
 
 		cbProcess.addEventListener(Events.ON_SELECT, this);
@@ -259,7 +264,7 @@ public class WKanbanStatus extends KanbanBoard implements IFormController, Event
 
 		row = new Row();
 		Label labelSqlQueue =  new Label(Msg.getElement(Env.getCtx(), MKanbanStatus.COLUMNNAME_SQLStatement));
-		editorSqlQueue = new WStringEditor(MKanbanStatus.COLUMNNAME_Name, false, false, true, 0, 0, null, null);
+		editorSqlQueue = new WStringEditor(MKanbanStatus.COLUMNNAME_SQLStatement, false, false, true, 0, 0, null, null);
 		((WStringEditor) editorSqlQueue).getComponent().setHflex("1");
 		row.appendChild(labelSqlQueue.rightAlign());
 		row.appendChild(editorSqlQueue.getComponent());
@@ -272,6 +277,7 @@ public class WKanbanStatus extends KanbanBoard implements IFormController, Event
 		editorMaxCards = new WNumberEditor(MKanbanStatus.COLUMNNAME_MaxNumberCards, false, false, true, DisplayType.Integer, labelMaxCards.getValue());
 		row.appendChild(labelMaxCards.rightAlign());
 		row.appendChild(editorMaxCards.getComponent());
+		editorMaxCards.addValueChangeListener(this);
 		row.setGroup(group);
 		rows.appendChild(row);
 
@@ -300,7 +306,7 @@ public class WKanbanStatus extends KanbanBoard implements IFormController, Event
 	}
 	
 	/**
-	 * Create the panel where the kanban board
+	 * Create the panel where the list of statuses
 	 * is going to be painted
 	 * @throws SQLException 
 	 */
@@ -314,26 +320,19 @@ public class WKanbanStatus extends KanbanBoard implements IFormController, Event
 			currentGroup = null;
 			rowList = null;
 
-
-			//form.makeNoStrip();
-			kanbanPanel.setHflex("1");
-			kanbanPanel.setHeight(null);
-			kanbanPanel.setVflex(false);
-
 			int numCols=0;
 			numCols = getNumberOfStatuses();
 
 			if (numCols <= 0) {
-				System.out.println("No statuses pre configured");
+				log.warning("No statuses pre configured");
 			}
 
 			// set size in percentage per column leaving a MARGIN on right
 			ListHead columns = new ListHead();
 
-			/*kanbanPanel.setSizedByContent(true);
-			kanbanPanel.setHeight("100px");
-			kanbanPanel.setStyle("overflow:auto");;*/
-			int equalWidth = 98 / numCols;
+			int equalWidth=0;
+			if(numCols!=0)
+				equalWidth = 98 / numCols;
 
 			/*
 			 * Create columns based on the states of the kanban board
@@ -341,11 +340,6 @@ public class WKanbanStatus extends KanbanBoard implements IFormController, Event
 			ListHeader  column;
 
 			for(MKanbanStatus status: getStatuses()){
-				System.out.println(status.getName()+ " "+status.getPrintableName()+" "+status.getSeqNo());
-			}
-
-			for(MKanbanStatus status: getStatuses()){
-				//Group group = new Group(Msg.getMsg(Env.getCtx(), "Property"));
 				column = new ListHeader();
 				column.setWidth(equalWidth + "%");
 				columns.appendChild(column);
@@ -357,8 +351,6 @@ public class WKanbanStatus extends KanbanBoard implements IFormController, Event
 				setColumnProps(column, columnId, status);
 			}
 			
-			System.out.println(mapCellColumn);
-
 			kanbanPanel.appendChild(columns);
 		}
 	}
@@ -368,7 +360,6 @@ public class WKanbanStatus extends KanbanBoard implements IFormController, Event
 		column.setDroppable("true");
 		column.addEventListener(Events.ON_DROP, this);
 		column.addEventListener(Events.ON_CLICK, this);
-		//column.addEventListener(Events.ON_DOUBLE_CLICK, this);
 		mapCellColumn.put(columnID, status);
 	}
 
@@ -398,54 +389,54 @@ public class WKanbanStatus extends KanbanBoard implements IFormController, Event
 			ListHeader column = (ListHeader) e.getTarget();
 			int columnId=column.getColumnIndex();
 			MKanbanStatus status = mapCellColumn.get(columnId);
-			System.out.println("Click "+ columnId);
 			if(status!=null){
 				setProperties(status);
+				setActiveStatus(status);
 			}
 		}
 
 		else if (e instanceof DropEvent ) {
-			System.out.println("Drop Enter");
 			DropEvent me = (DropEvent) e;
 			ListHeader startHeader = null;
+			MKanbanStatus startStatus = null;
 			if (me.getDragged() instanceof ListHeader) {
-				System.out.println("Drop");
 				startHeader = (ListHeader) me.getDragged();
+				startStatus = mapCellColumn.get(startHeader.getColumnIndex());
 			} 
 			ListHeader endHeader = null;
 			if (me.getTarget() instanceof ListHeader) {
+				
 				endHeader = (ListHeader) me.getTarget();
-
-				MKanbanStatus startStatus = mapCellColumn.get(startHeader.getColumnIndex());
 				MKanbanStatus endStatus = mapCellColumn.get(endHeader.getColumnIndex());
 
 				swapStatuses(startStatus, endStatus);
 				setProperties(startStatus); //update SeqNo
+				
 				repaintGrid();
-
-				System.out.println("Se atrapa "+startStatus.getName()+" se suelta"+endStatus.getName());
 
 			} else if (me.getTarget() instanceof Button) {
 				Button button = (Button) me.getTarget();
-				if(button.getId().equals(ConfirmPanel.A_DELETE))
-					System.out.println("Borrar ");
+				if(button.getId().equals(ConfirmPanel.A_DELETE)){
+					if(!deleteStatus(startStatus))
+						Messagebox.show(Msg.getMsg(Env.getCtx(), "AccessCannotDelete"));
+
+					repaintGrid();
+				}
 			}
 		}
 
 		else if (e.getTarget().getId().equals("Cancel"))
 		{
-			kForm.dispose();
-			//SessionManager.getAppDesktop().closeWindow(m_WindowNo);
-			//SessionManager.getAppDesktop().closeActiveWindow();
-			/*kForm.onClose();
-					kForm*/
+			SessionManager.getAppDesktop().closeActiveWindow();
 		}
 
 		//	OK - Save
 		else if (e.getTarget().getId().equals("Ok"))
 		{
 			if (saveStatuses())
-				kForm.detach();
+				SessionManager.getAppDesktop().closeActiveWindow();
+			else
+				Messagebox.show(Msg.getMsg(Env.getCtx(), "AccessCannotDelete"));
 		}
 
 	}//Listeners
@@ -462,34 +453,45 @@ public class WKanbanStatus extends KanbanBoard implements IFormController, Event
 	} // Set Properties
 
 
-	/**
-	 * 	Dispose
-	 */
-	public void dispose()
-	{
-		//SessionManager.getAppDesktop().closeActiveWindow();
-	}	//	dispose
-
-
 	public ADForm getForm()
 	{
 		return kForm;
 	}
 
-	
-
 	private void repaintGrid(){
-		centerVLayout.removeChild(kanbanPanel);
+		centerHLayout.removeChild(kanbanPanel);
 		if (kanbanPanel.getListHead() != null)
 			kanbanPanel.removeChild(kanbanPanel.getListHead());
 		createKanbanBoardPanel();
-		centerVLayout.appendChild(kanbanPanel);
+		centerHLayout.appendChild(kanbanPanel);
 	}
 
 	@Override
-	public void valueChange(ValueChangeEvent evt) {
-		// TODO Auto-generated method stub
-		
+	public void valueChange(ValueChangeEvent e) {
+		// changed a value on the properties editors
+		MKanbanStatus status = getActiveStatus();
+		if (status != null) {
+			String propertyName = e.getPropertyName();
+			if (e.getNewValue() != null){
+				if (MKanbanStatus.COLUMNNAME_Name.equals(propertyName)) {
+					status.setName((String) e.getNewValue());
+				} else if (MKanbanStatus.COLUMNNAME_SeqNo.equals(propertyName)) {
+					status.setSeqNo((Integer) e.getNewValue());
+				} else if (MKanbanStatus.COLUMNNAME_StatusAlias.equals(propertyName)) {
+					status.setStatusAlias((String) e.getNewValue());
+				} else if (MKanbanStatus.COLUMNNAME_IsShowOver.equals(propertyName)) {
+					status.setIsShowOver((Boolean) e.getNewValue());
+				}
+				else if (MKanbanStatus.COLUMNNAME_SQLStatement.equals(propertyName)) {
+					status.setSQLStatement((String) e.getNewValue());
+				}
+				else if (MKanbanStatus.COLUMNNAME_MaxNumberCards.equals(propertyName)) {
+					status.setMaxNumberCards(new BigDecimal(String.valueOf((Integer) e.getNewValue())));
+				}
+			}
+			setProperties(status);
+			repaintGrid();
+		}
 	}
 
 }

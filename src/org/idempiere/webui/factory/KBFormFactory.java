@@ -1,50 +1,45 @@
-package org.idempiere.webui.factory;
+/**********************************************************************
+* This file is part of iDempiere ERP Open Source                      *
+* http://www.idempiere.org                                            *
+*                                                                     *
+* Copyright (C) Contributors                                          *
+*                                                                     *
+* This program is free software; you can redistribute it and/or       *
+* modify it under the terms of the GNU General Public License         *
+* as published by the Free Software Foundation; either version 2      *
+* of the License, or (at your option) any later version.              *
+*                                                                     *
+* This program is distributed in the hope that it will be useful,     *
+* but WITHOUT ANY WARRANTY; without even the implied warranty of      *
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the        *
+* GNU General Public License for more details.                        *
+*                                                                     *
+* You should have received a copy of the GNU General Public License   *
+* along with this program; if not, write to the Free Software         *
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,          *
+* MA 02110-1301, USA.                                                 *
+*                                                                     *
+* Contributors:                                                       *
+* - Diego Ruiz - Universidad Distrital Francisco Jose de Caldas       *
+**********************************************************************/
 
-import java.util.logging.Level;
+package org.idempiere.webui.factory;
 
 import org.adempiere.webui.factory.IFormFactory;
 import org.adempiere.webui.panel.ADForm;
-import org.adempiere.webui.panel.IFormController;
-import org.compiere.util.CLogger;
+import org.idempiere.webui.apps.form.WKanbanBoard;
+import org.idempiere.webui.apps.form.WKanbanStatus;
 
 public class KBFormFactory implements IFormFactory{
 	
-	protected transient CLogger log = CLogger.getCLogger(getClass());
-
 	@Override
 	public ADForm newFormInstance(String formName) {
-		if (formName.startsWith("org.idempiere.webui.apps.form")) {
-			Object form = null;
-			ClassLoader cl = getClass().getClassLoader();
-			Class<?> clazz = null; 
-			try {
-				clazz = cl.loadClass(formName);
-			} catch (Exception e){
-				if (log.isLoggable(Level.INFO))
-					log.log(Level.INFO, e.getLocalizedMessage(), e);
-				return null;
-			} 
-			try
-			{
-				form = clazz.newInstance();
-			}
-			catch (Exception e)
-			{
-				if (log.isLoggable(Level.WARNING))
-					log.log(Level.WARNING, e.getLocalizedMessage(), e);
-			}
 
-			if (form != null) {
-				if (form instanceof ADForm) {
-					return (ADForm)form;
-				} else if (form instanceof IFormController) {
-					IFormController controller = (IFormController) form;
-					ADForm adForm = controller.getForm();
-					adForm.setICustomForm(controller);
-					return adForm;
-				}
-			}
-		}
+		if (WKanbanBoard.class.getName().equals(formName))
+			return new WKanbanBoard().getForm();
+		else if (WKanbanStatus.class.getName().equals(formName))
+			return new WKanbanStatus().getForm();
+
 		return null;
 	}
 }
