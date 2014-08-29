@@ -1,9 +1,33 @@
+/**********************************************************************
+* This file is part of iDempiere ERP Open Source                      *
+* http://www.idempiere.org                                            *
+*                                                                     *
+* Copyright (C) Contributors                                          *
+*                                                                     *
+* This program is free software; you can redistribute it and/or       *
+* modify it under the terms of the GNU General Public License         *
+* as published by the Free Software Foundation; either version 2      *
+* of the License, or (at your option) any later version.              *
+*                                                                     *
+* This program is distributed in the hope that it will be useful,     *
+* but WITHOUT ANY WARRANTY; without even the implied warranty of      *
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the        *
+* GNU General Public License for more details.                        *
+*                                                                     *
+* You should have received a copy of the GNU General Public License   *
+* along with this program; if not, write to the Free Software         *
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,          *
+* MA 02110-1301, USA.                                                 *
+*                                                                     *
+* Contributors:                                                       *
+* - Diego Ruiz - Universidad Distrital Francisco Jose de Caldas       *
+**********************************************************************/
+
 package org.kanbanboard.model;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 
-import org.compiere.model.MBPartner;
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
@@ -25,7 +49,6 @@ public class MKanbanCard{
 	private MKanbanStatus belongingStatus;
 	private BigDecimal 	  priorityValue;
 	
-	private MBPartner	m_bpartner = null;
 	private PO			m_po = null;
 	private String 		kanbanCardText = null;
 
@@ -34,14 +57,6 @@ public class MKanbanCard{
 		return priorityValue;
 	}
 	
-	public MBPartner getM_bpartner() {
-		return m_bpartner;
-	}
-
-	public void setM_bpartner(MBPartner m_bpartner) {
-		this.m_bpartner = m_bpartner;
-	}
-
 	public PO getM_po() {
 		return m_po;
 	}
@@ -83,8 +98,7 @@ public class MKanbanCard{
 		recordId = cardRecord;
 		belongingStatus=status;
 		kanbanBoard=belongingStatus.getKanbanBoard();
-		MTable table = (MTable)kanbanBoard.getAD_Table();
-		m_po = table.getPO(recordId, null);
+		m_po = kanbanBoard.getTable().getPO(recordId, null);
 	}
 
 	public boolean changeStatus(String statusColumn, String newStatusValue){
@@ -103,12 +117,11 @@ public class MKanbanCard{
 						throw new IllegalStateException();
 					}
 				} catch (IllegalStateException e) {
-					// TODO Auto-generated catch block
 					KDB_ErrorMessage = "KDB_InvalidTransition";
 					return false;
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
+					KDB_ErrorMessage = e.getLocalizedMessage();
 					return false;
 				}
 			}			
@@ -160,29 +173,9 @@ public class MKanbanCard{
 	{
 		//	Default if no Translation
 		if(kanbanBoard.getKDB_KanbanCard()!=null)
-			kanbanCardText=kanbanBoard.getKDB_KanbanCard();
+			kanbanCardText=kanbanBoard.get_Translation(MKanbanBoard.COLUMNNAME_KDB_KanbanCard);
 		else
 			kanbanCardText=Integer.toString(recordId);
-		/*if ((m_bpartner != null && m_bpartner.getAD_Language() != null) || !Util.isEmpty(m_language))
-		{
-			String adLanguage = m_bpartner != null ? m_bpartner.getAD_Language() : m_language;
-			StringBuilder key = new StringBuilder().append(adLanguage).append(get_ID());
-			MMailTextTrl trl = s_cacheTrl.get(key.toString());
-			if (trl == null)
-			{
-				trl = getTranslation(adLanguage);
-				if (trl != null)
-					s_cacheTrl.put(key.toString(), trl);
-			}
-			if (trl != null)
-			{
-				m_MailHeader = trl.MailHeader;
-				m_MailText = trl.MailText;
-				m_MailText2 = trl.MailText2;
-				m_MailText3 = trl.MailText3;
-			}
-		}*/
-
 	}	//	translate
 	
 	private String parse (String text)
@@ -250,12 +243,16 @@ public class MKanbanCard{
 				StringBuilder outStr = new StringBuilder();
 				outStr.append(variable.substring(0, i));
 				variable = variable.substring(i+1, variable.length());
-				
-				MTable table = MTable.get(Env.getCtx(), outStr.toString());
-				outStr.append("_ID");
+				outStr.append("_ID"); //Foreign Key column
+
 				index = po.get_ColumnIndex(outStr.toString());
+				
 				Integer subRecordId;
+
 				if (index != -1){
+					MColumn column = MColumn.get(Env.getCtx(), po.get_TableName(), po.get_ColumnName(index));
+					MTable table = MTable.get(Env.getCtx(),column.getReferenceTableName());
+
 					subRecordId = (Integer)po.get_Value(outStr.toString());
 					if(subRecordId==null)
 						return "";

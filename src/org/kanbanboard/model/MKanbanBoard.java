@@ -1,3 +1,28 @@
+/**********************************************************************
+* This file is part of iDempiere ERP Open Source                      *
+* http://www.idempiere.org                                            *
+*                                                                     *
+* Copyright (C) Contributors                                          *
+*                                                                     *
+* This program is free software; you can redistribute it and/or       *
+* modify it under the terms of the GNU General Public License         *
+* as published by the Free Software Foundation; either version 2      *
+* of the License, or (at your option) any later version.              *
+*                                                                     *
+* This program is distributed in the hope that it will be useful,     *
+* but WITHOUT ANY WARRANTY; without even the implied warranty of      *
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the        *
+* GNU General Public License for more details.                        *
+*                                                                     *
+* You should have received a copy of the GNU General Public License   *
+* along with this program; if not, write to the Free Software         *
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,          *
+* MA 02110-1301, USA.                                                 *
+*                                                                     *
+* Contributors:                                                       *
+* - Diego Ruiz - Universidad Distrital Francisco Jose de Caldas       *
+**********************************************************************/
+
 package org.kanbanboard.model;
 
 import java.math.BigDecimal;
@@ -14,28 +39,38 @@ import org.compiere.model.MRefList;
 import org.compiere.model.MTable;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.Msg;
 import org.compiere.util.ValueNamePair;
 
-public class MKanbanBoard extends X_KDB_KanbanBoard{
-	
+public class MKanbanBoard extends X_KDB_KanbanBoard {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5599415208221180263L;
 
 	/** Special column DocStatus = DocStatus */
 	public static final String STATUSCOLUMN_DocStatus = "DocStatus";
 	
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -8437575641565423324L;
+	private MTable table = MTable.get(Env.getCtx(), getAD_Table_ID());
 	private List<MKanbanStatus> statuses = new ArrayList<MKanbanStatus>();
 	private List<MKanbanPriority> priorityRules = new ArrayList<MKanbanPriority>();
 	private int numberOfCards =0;
 	private boolean isRefList = true;
 
-
 	public MKanbanBoard(Properties ctx, int KDB_KanbanBoard_ID, String trxName) {
 		super(ctx, KDB_KanbanBoard_ID, trxName);
-		// TODO Auto-generated constructor stub
+	}
+
+	public MKanbanBoard(Properties ctx, ResultSet rs, String trxName) {
+		super(ctx, rs, trxName);
+	}
+
+	public MTable getTable() {
+		return table;
+	}
+
+	public void setTable(MTable table) {
+		this.table = table;
 	}
 
 	public int getNumberOfCards() {
@@ -116,14 +151,16 @@ public class MKanbanBoard extends X_KDB_KanbanBoard{
 	public List<MKanbanStatus> getStatuses(){
 
 		if(statuses.size()==0&&getNumberOfStatuses()!=0){
+
 			String sqlSelect = "SELECT kdb_kanbanStatus_id FROM KDB_kanbanStatus WHERE KDB_KanbanBoard_id = ? " +
-					"AND IsActive='Y' Order by SeqNo";
+					" AND AD_Client_ID IN (0, ?) AND IsActive='Y' ORDER BY SeqNo";
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
 
 			try{
 				pstmt = DB.prepareStatement(sqlSelect, get_TrxName());
 				pstmt.setInt(1, getKDB_KanbanBoard_ID());
+				pstmt.setInt(2, Env.getAD_Client_ID(Env.getCtx()));
 				rs = pstmt.executeQuery();
 				int kanbanStatusesId = 0;
 				while(rs.next()){
@@ -147,14 +184,16 @@ public class MKanbanBoard extends X_KDB_KanbanBoard{
 	public List<MKanbanPriority> getPriorityRules(){
 
 		if(priorityRules.size()==0){
+
 			String sqlSelect = "SELECT kdb_kanbanpriority_id FROM KDB_kanbanpriority WHERE KDB_KanbanBoard_id = ? " +
-					"AND IsActive='Y'";
+					" AND AD_Client_ID IN (0, ?) AND IsActive='Y' ";
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
 
 			try{
 				pstmt = DB.prepareStatement(sqlSelect, get_TrxName());
 				pstmt.setInt(1, getKDB_KanbanBoard_ID());
+				pstmt.setInt(2, Env.getAD_Client_ID(Env.getCtx()));
 				rs = pstmt.executeQuery();
 				int kanbanPriorityId = 0;
 				while(rs.next()){
@@ -179,8 +218,9 @@ public class MKanbanBoard extends X_KDB_KanbanBoard{
 
 		int numberOfStatuses = 0;
 		if (statuses.size()==0){
+			
 			String sqlSelect = "SELECT COUNT(*) FROM KDB_kanbanStatus WHERE KDB_KanbanBoard_id = ? " +
-					"AND IsActive='Y'";
+					" AND AD_Client_ID IN (0, ?) AND IsActive='Y'";
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
 			numberOfStatuses=-1;
@@ -188,6 +228,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard{
 			try{
 				pstmt = DB.prepareStatement(sqlSelect, get_TrxName());
 				pstmt.setInt(1, getKDB_KanbanBoard_ID());
+				pstmt.setInt(2, Env.getAD_Client_ID(Env.getCtx()));
 				rs = pstmt.executeQuery();
 				if(rs.next())
 					numberOfStatuses=rs.getInt(1);
@@ -210,7 +251,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard{
 	public boolean saveStatuses(){
 		for (MKanbanStatus status : statuses) {
 			if (status.isActive())
-				status.saveEx();
+				 status.save(get_TrxName());
 		}
 		return true;
 	}
@@ -226,7 +267,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard{
 			sql.append("SELECT ");
 
 
-			MTable table = (MTable) getAD_Table();
+			MTable table = getTable();
 			MColumn column = getStatusColumn();
 			String llaves[] = table.getKeyColumns();
 
@@ -240,7 +281,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard{
 
 			StringBuilder whereClause = new StringBuilder();
 			whereClause.append(" WHERE ");
-
+			
 			if(getWhereClause()!=null)
 				whereClause.append(getWhereClause()+" AND ");
 
@@ -248,37 +289,43 @@ public class MKanbanBoard extends X_KDB_KanbanBoard{
 
 			whereClause.append(getInValues());
 
-			whereClause.append(" AND IsActive='Y' ");
+			whereClause.append(" AND AD_Client_ID IN (0, ?) AND IsActive='Y' ");
 
 			sql.append(whereClause.toString());
 
 			if(hasPriorityOrder())
 				sql.append(" ORDER BY "+getKDB_PrioritySQL()+" DESC");
 
-			System.out.println(sql.toString());
+			log.info(sql.toString());
 
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
 			try
 			{
-				pstmt = DB.prepareStatement(sql.toString(), null);
+				pstmt = DB.prepareStatement(sql.toString(), get_TrxName());
+				pstmt.setInt(1, Env.getAD_Client_ID(Env.getCtx()));
 				rs = pstmt.executeQuery();
 				int id = -1;
 				String correspondingColumn= null;
 				while (rs.next())
 				{
+					// TODO: limit number of cards
+
 					id = rs.getInt(1);
 					correspondingColumn = rs.getString(2);
 					MKanbanStatus status = getStatus(correspondingColumn);
-					MKanbanCard card = new MKanbanCard(id,status);
+					if(status.isShowOver()||status.getMaxNumCards()>status.getRecords().size()){
+						
+						MKanbanCard card = new MKanbanCard(id,status);
 
-					if(hasPriorityOrder()){
-						BigDecimal priorityValue = rs.getBigDecimal(3);
-						card.setPriorityValue(priorityValue);
+						if(hasPriorityOrder()){
+							BigDecimal priorityValue = rs.getBigDecimal(3);
+							card.setPriorityValue(priorityValue);
+						}
+
+						status.addRecord(card);
+						numberOfCards++;
 					}
-
-					status.addRecord(card);
-					numberOfCards++;
 				}
 			}
 			catch (SQLException e)
@@ -315,18 +362,40 @@ public class MKanbanBoard extends X_KDB_KanbanBoard{
 
 	boolean hasPriorityOrder(){
 		//Check if there's a  valid priority rule 
-		if(getKDB_PrioritySQL()!=null) //validar que retorne entero
+		if(getKDB_PrioritySQL()!=null) 
 			return true;
 		else
 			return false;
 	}
 
 	public void resetStatusProperties() {
-		// TODO Auto-generated method stub
 		for(MKanbanStatus status:statuses){
 			status.setCardNumber(0);
 			if(hasPriorityOrder())
 				status.orderCards();
 		}
+	}
+	
+	public boolean deleteStatus(MKanbanStatus status) {
+		if(status.delete(true, get_TrxName())){
+			statuses.remove(status);
+			return true;
+		}
+		return false;
+	}
+	
+	@Override
+	protected boolean beforeSave(boolean newRecord) {
+		// Check if it is a valid priority rule
+		String priorityRule = getKDB_PrioritySQL();
+		
+		String sql = "Select "+priorityRule+" FROM "+getAD_Table().getTableName();
+
+		if(DB.getSQLValue(get_TrxName(), sql)==-1){
+			log.saveError("Error", Msg.getMsg(Env.getCtx(), "KDB_InvalidPriority"));
+			return false;
+		}
+
+		return super.beforeSave(newRecord);
 	}
 }

@@ -1,7 +1,31 @@
+/**********************************************************************
+* This file is part of iDempiere ERP Open Source                      *
+* http://www.idempiere.org                                            *
+*                                                                     *
+* Copyright (C) Contributors                                          *
+*                                                                     *
+* This program is free software; you can redistribute it and/or       *
+* modify it under the terms of the GNU General Public License         *
+* as published by the Free Software Foundation; either version 2      *
+* of the License, or (at your option) any later version.              *
+*                                                                     *
+* This program is distributed in the hope that it will be useful,     *
+* but WITHOUT ANY WARRANTY; without even the implied warranty of      *
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the        *
+* GNU General Public License for more details.                        *
+*                                                                     *
+* You should have received a copy of the GNU General Public License   *
+* along with this program; if not, write to the Free Software         *
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,          *
+* MA 02110-1301, USA.                                                 *
+*                                                                     *
+* Contributors:                                                       *
+* - Diego Ruiz - Universidad Distrital Francisco Jose de Caldas       *
+**********************************************************************/
+
 package org.idempiere.webui.apps.form;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -11,15 +35,12 @@ import org.adempiere.webui.apps.AEnv;
 import org.adempiere.webui.component.Button;
 import org.adempiere.webui.component.Grid;
 import org.adempiere.webui.component.GridFactory;
-import org.adempiere.webui.component.Group;
 import org.adempiere.webui.component.Label;
 import org.adempiere.webui.component.Listbox;
 import org.adempiere.webui.component.ListboxFactory;
 import org.adempiere.webui.component.Panel;
 import org.adempiere.webui.component.Row;
 import org.adempiere.webui.component.Rows;
-import org.adempiere.webui.event.ValueChangeEvent;
-import org.adempiere.webui.event.ValueChangeListener;
 import org.adempiere.webui.panel.ADForm;
 import org.adempiere.webui.panel.CustomForm;
 import org.adempiere.webui.panel.IFormController;
@@ -50,41 +71,24 @@ import org.zkoss.zul.Vlayout;
 *
 */
 
-public class WKanbanBoard extends KanbanBoard implements IFormController, EventListener<Event>, ValueChangeListener{
+public class WKanbanBoard extends KanbanBoard implements IFormController, EventListener<Event>{
 	
 	private CustomForm kForm = new CustomForm();;	
 
 	private Borderlayout	mainLayout	= new Borderlayout();
 
-	/**	Window No			*/
-	public int            	m_WindowNo = 0;
-
-
-	//private ConfirmPanel confirmPanel = new ConfirmPanel(true);
 	private Panel panel = new Panel();
 	private Grid gridLayout = GridFactory.newGridLayout();
-	
 	private Label lProcess = new Label();
 	private Listbox cbProcess = ListboxFactory.newDropdownListbox();
 	private int kanbanBoardId=-1;
 
-	
-/*	private StatusBarPanel statusBar = new StatusBarPanel();
-	private ValueNamePair m_AD_Table;
-	private boolean m_imp;
-	private ValueNamePair m_AD_Language;*/
-
-	// The grid components
-	Group currentGroup;
-	ArrayList<Row> rowList;
 
 	Map<Cell, MKanbanCard> mapCellColumn = new HashMap<Cell, MKanbanCard>();
 	Map<Cell, MKanbanStatus> mapEmptyCellField = new HashMap<Cell, MKanbanStatus>();
 
 	Grid kanbanPanel;
 	Vlayout centerVLayout;
-	//Vlayout westVLayout ;
-
 
 	public WKanbanBoard() {
 		super();
@@ -116,7 +120,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		kForm.setWidth("95%");
 		kForm.setHeight("95%");
 		kForm.appendChild (mainLayout);
-		LayoutUtils.addSclass("kanban-boardr-form-content", mainLayout);
+		LayoutUtils.addSclass("kanban-board-form-content", mainLayout);  // ?? debe definirse en un css, se puede integrar css en el plugin?
 		kForm.setBorder("normal");
 		
 		//North Panel
@@ -141,12 +145,6 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		centerVLayout.appendChild(kanbanPanel);
 		centerVLayout.setStyle("overflow:auto");
 		
-		/*Center center = new Center();
-		LayoutUtils.addSclass("tab-editor-form-center-panel", center);
-		//center.setSize("95%");
-		mainLayout.appendChild(center);
-		center.appendChild(centerVLayout);*/
-		
 		South south = new South();
 		LayoutUtils.addSclass("tab-editor-form-center-panel", south);
 		south.setSize("95%");
@@ -161,9 +159,8 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	 */
 	private void dynList()
 	{
-		//		Fill Process
-		ArrayList<KeyNamePair> processes = getProcessList();
-		for(KeyNamePair process: processes)
+		//	Fill Process
+		for(KeyNamePair process: getProcessList())
 			cbProcess.addItem(process);
 
 		cbProcess.addEventListener(Events.ON_SELECT, this);
@@ -181,45 +178,43 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		kanbanPanel = new Grid();
 
 		if(kanbanBoardId!=-1){
+			
 			setKanbanBoard(kanbanBoardId);
-			currentGroup = null;
-			rowList = null;
-
 			kanbanPanel.makeNoStrip();
-			//kanbanPanel.setHflex("1");
-			//kanbanPanel.setHeight(null);
 			kanbanPanel.setVflex(false);
 			kanbanPanel.setSizedByContent(true);
 			//kanbanPanel.setHeight("100px");
 			//kanbanPanel.setStyle("overflow:auto");
-
+			//kanbanPanel.setHflex("1");
+			//kanbanPanel.setHeight(null);
+			
 			int numCols=0;
 			numCols = getNumberOfStatuses();
+			
+			if(numCols>0){
+				// set size in percentage per column leaving a MARGIN on right
+				Columns columns = new Columns();
+				int equalWidth = 98 / numCols;
 
+				//Create columns based on the states of the kanban board
+				Column  column;
+				for(MKanbanStatus status: getStatuses()){
+					column = new Column();
+					column.setWidth(equalWidth + "%");
+					columns.appendChild(column);
+					column.setHflex("min");
+					column.setAlign("right");
+					columns.appendChild(column);
+					column.setLabel(status.getPrintableName());
+				}
+				columns.setSizable(true);
+				createRows();	
+				kanbanPanel.appendChild(columns);
+			}
+			
 			if (numCols <= 0) {
-				System.out.println("No statuses pre configured");
+				Messagebox.show(Msg.getMsg(Env.getCtx(), "KDB_NoStatuses"));
 			}
-
-			// set size in percentage per column leaving a MARGIN on right
-			Columns columns = new Columns();
-			int equalWidth = 98 / numCols;
-
-			/*
-			 * Create columns based on the states of the kanban board
-			 */
-			Column  column;
-			for(MKanbanStatus status: getStatuses()){
-				column = new Column();
-				column.setWidth(equalWidth + "%");
-				columns.appendChild(column);
-				column.setHflex("min");
-				column.setAlign("right");
-				columns.appendChild(column);
-				column.setLabel(status.getPrintableName());
-			}
-			columns.setSizable(true);
-			createRows();	
-			kanbanPanel.appendChild(columns);
 		}
 	}//createKanbanBoardPanel
 	
@@ -239,9 +234,9 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				}
 				else{
 					MKanbanCard card = status.getCard();
-					Vlayout l = createCell(card);;
+					Vlayout l = createCell(card);
 					row.appendCellChild(l);
-					setCellProps(row.getLastCell(), card);
+					setCellProps(row.getLastCell(), card);	
 					numberOfCards--;
 				}
 			}
@@ -311,9 +306,11 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		else if (e instanceof DropEvent ) {
 			DropEvent me = (DropEvent) e;
 			Cell startItem = null;
+			
 			if (me.getDragged() instanceof Cell) {
 				startItem = (Cell) me.getDragged();
 			} 
+			
 			Cell endItem = null;
 			if (me.getTarget() instanceof Cell) {
 				endItem = (Cell) me.getTarget();
@@ -322,15 +319,18 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				MKanbanStatus startStatus = startField.getBelongingStatus(); 
 				MKanbanCard endField = mapCellColumn.get(endItem);
 				MKanbanStatus endStatus;
+				
 				if (endField == null) {
 					// check empty cells
 					 endStatus= mapEmptyCellField.get(me.getTarget());
 				}
+				
 				else
 					endStatus = endField.getBelongingStatus();
 				
 				if(!swapCard(startStatus, endStatus, startField))
 					Messagebox.show(Msg.getMsg(Env.getCtx(), MKanbanCard.KDB_ErrorMessage));
+				
 				repaintGrid();
 				
 			} else if (me.getTarget() instanceof Button) {
@@ -347,15 +347,6 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	private Component createSpacer() {
 		return new Space();
 	}
-
-	/**
-	 * 	Dispose
-	 */
-	public void dispose()
-	{
-		//SessionManager.getAppDesktop().closeActiveWindow();
-	}	//	dispose
-
 
 	public ADForm getForm()
 	{
@@ -376,9 +367,4 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		centerVLayout.appendChild(kanbanPanel);
 	}
 
-	@Override
-	public void valueChange(ValueChangeEvent evt) {
-		// TODO Auto-generated method stub
-		
-	}
 }

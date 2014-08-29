@@ -1,13 +1,33 @@
+/**********************************************************************
+* This file is part of iDempiere ERP Open Source                      *
+* http://www.idempiere.org                                            *
+*                                                                     *
+* Copyright (C) Contributors                                          *
+*                                                                     *
+* This program is free software; you can redistribute it and/or       *
+* modify it under the terms of the GNU General Public License         *
+* as published by the Free Software Foundation; either version 2      *
+* of the License, or (at your option) any later version.              *
+*                                                                     *
+* This program is distributed in the hope that it will be useful,     *
+* but WITHOUT ANY WARRANTY; without even the implied warranty of      *
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the        *
+* GNU General Public License for more details.                        *
+*                                                                     *
+* You should have received a copy of the GNU General Public License   *
+* along with this program; if not, write to the Free Software         *
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,          *
+* MA 02110-1301, USA.                                                 *
+*                                                                     *
+* Contributors:                                                       *
+* - Diego Ruiz - Universidad Distrital Francisco Jose de Caldas       *
+**********************************************************************/
+
 package org.idempiere.apps.form;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
@@ -22,52 +42,41 @@ import org.kanbanboard.model.MKanbanStatus;
 public class KanbanBoard {
 	
 	public static CLogger log = CLogger.getCLogger(KanbanBoard.class);
-	/**	Window No			*/
-	public int         	m_WindowNo = 0;
 	private MKanbanBoard kanbanBoard=null;
 	private List<MKanbanStatus> statuses=null;
+	private MKanbanStatus activeStatus;
 	
 	public int getNumberOfCards() {
 		return kanbanBoard.getNumberOfCards();
 	}
 	
-
-
-	public ArrayList<KeyNamePair> getProcessList(){
-		ArrayList<KeyNamePair> list = new ArrayList<KeyNamePair>();
-		
-		list.add(new KeyNamePair (-1, ""));
-		
-		String sql = "SELECT name, KDB_KanbanBoard_ID "
+	public KeyNamePair[] getProcessList(){
+		String sql = "SELECT KDB_KanbanBoard_ID, Name "
 			+ "FROM KDB_KanbanBoard "
-			+ "WHERE IsActive='Y' "
+			+ "WHERE AD_Client_ID IN (0, ?) AND IsActive='Y' "
 			+ "ORDER BY KDB_KanbanBoard_ID";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, null);
-			rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				KeyNamePair kp = new KeyNamePair (rs.getInt(2), rs.getString(1));
-				list.add(kp);
-			}
-		}
-		catch (SQLException e)
-		{
-			log.log(Level.SEVERE, sql, e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-		
+
+		KeyNamePair[] list = DB.getKeyNamePairs(null, sql, true, Env.getAD_Client_ID(Env.getCtx()));
+
 		return list;
 	}
 	
+	public MKanbanStatus getActiveStatus() {
+		return activeStatus;
+	}
+
+	public void setActiveStatus(MKanbanStatus activeStatus) {
+		this.activeStatus = activeStatus;
+	}
+
+	public MKanbanBoard getKanbanBoard() {
+		return kanbanBoard;
+	}
+
+	public void setKanbanBoard(MKanbanBoard kanbanBoard) {
+		this.kanbanBoard = kanbanBoard;
+	}
+
 	public void setKanbanBoard(int kanbanBoardId){
 		//Check if it's it's a new kanban board or the one already selected
 		if(kanbanBoard==null||kanbanBoardId!=kanbanBoard.get_ID()){
@@ -75,7 +84,6 @@ public class KanbanBoard {
 			statuses=null;
 		}
 	}
-	
 	
 	public  List<MKanbanStatus> getStatuses(){
 		if(statuses==null){
@@ -88,7 +96,6 @@ public class KanbanBoard {
 	
 	
 	public void resetStatusProperties() {
-		// TODO Auto-generated method stub
 		kanbanBoard.resetStatusProperties();
 	}
 	
@@ -96,21 +103,10 @@ public class KanbanBoard {
 		Collections.sort(statuses, new Comparator<MKanbanStatus>() {
 			@Override
 			public int compare(MKanbanStatus status1, MKanbanStatus status2) {
+				// order by SeqNo
 				return status1.getSeqNo()-(status2.getSeqNo());
 			}
 		});
-	}
-	
-	public void swapStatuses(MKanbanStatus startStatus, MKanbanStatus endStatus){
-		int startSeqNo = startStatus.getSeqNo();
-		int endSeqNo = endStatus.getSeqNo();
-		for(MKanbanStatus status: statuses){
-			if(status.get_ID()==startStatus.get_ID())
-				status.setSeqNo(endSeqNo);
-			else if(status.get_ID()==endStatus.get_ID())
-				status.setSeqNo(startSeqNo);
-		}
-
 	}
 	
 	public boolean swapCard(MKanbanStatus startStatus, MKanbanStatus endStatus, MKanbanCard card){
@@ -137,12 +133,6 @@ public class KanbanBoard {
 	
 	public void setPrintableNames(){
 		kanbanBoard.setPrintableNames();
-	}
-	
-	public boolean saveStatuses() {
-		if(kanbanBoard!=null)
-			return kanbanBoard.saveStatuses();
-		return false;
 	}
 
 	public Object getPOObject(MTable table, int recordID, String trxName){
