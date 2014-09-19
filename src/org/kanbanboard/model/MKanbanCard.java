@@ -151,9 +151,10 @@ public class MKanbanCard{
 				BigDecimal minValue = new BigDecimal(priorityRule.getMinValue());
 				BigDecimal maxValue = new BigDecimal(priorityRule.getMaxValue());
 
-				if(priorityValue.compareTo(minValue)==1&&priorityValue.compareTo(maxValue)==-1){
+				if(priorityValue.compareTo(minValue)>=0&&priorityValue.compareTo(maxValue)<=0){
 					MPrintColor priorityColor = new MPrintColor(Env.getCtx(), priorityRule.getKDB_PriorityColor_ID(), null);
 					color = priorityColor.getName();
+					break;
 				}
 			} 
 		}
@@ -238,7 +239,7 @@ public class MKanbanCard{
 		int index = po.get_ColumnIndex(variable);
 		if (index == -1){
 			int i = variable.indexOf('.');
-			if(i!=1)
+			if(i!=-1)
 			{
 				StringBuilder outStr = new StringBuilder();
 				outStr.append(variable.substring(0, i));
