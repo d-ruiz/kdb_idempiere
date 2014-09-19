@@ -51,12 +51,22 @@ public class KanbanBoard {
 	}
 	
 	public KeyNamePair[] getProcessList(){
-		String sql = "SELECT KDB_KanbanBoard_ID, Name "
-			+ "FROM KDB_KanbanBoard "
-			+ "WHERE AD_Client_ID IN (0, ?) AND IsActive='Y' "
-			+ "ORDER BY KDB_KanbanBoard_ID";
+		String sql = null;
+		boolean baseLanguage = Env.isBaseLanguage(Env.getCtx(), MKanbanBoard.Table_Name);
+		if (baseLanguage)
+			sql = "SELECT k.KDB_KanbanBoard_ID, k.Name "
+					+ "FROM KDB_KanbanBoard k "
+					+ "WHERE k.AD_Client_ID IN (0, ?) AND k.IsActive='Y' "
+					+ "AND k.KDB_KanbanBoard_ID IN (SELECT KDB_KanbanBoard_ID FROM KDB_KanbanBoardControlAccess WHERE AD_Role_ID=?) "
+					+ "ORDER BY k.Name";
+		else
+			sql = "SELECT k.KDB_KanbanBoard_ID, kt.Name "
+					+ "FROM KDB_KanbanBoard k JOIN KDB_KanbanBoard_Trl kt ON (k.KDB_KanbanBoard_ID=kt.KDB_KanbanBoard_ID) "
+					+ "WHERE k.AD_Client_ID IN (0, ?) AND k.IsActive='Y' "
+					+ "AND k.KDB_KanbanBoard_ID IN (SELECT KDB_KanbanBoard_ID FROM KDB_KanbanBoardControlAccess WHERE AD_Role_ID=?) "
+					+ "ORDER BY kt.Name";
 
-		KeyNamePair[] list = DB.getKeyNamePairs(null, sql, true, Env.getAD_Client_ID(Env.getCtx()));
+		KeyNamePair[] list = DB.getKeyNamePairs(null, sql, true, Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Role_ID(Env.getCtx()));
 
 		return list;
 	}

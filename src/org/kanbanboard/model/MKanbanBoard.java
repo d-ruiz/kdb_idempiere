@@ -186,7 +186,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		if(priorityRules.size()==0){
 
 			String sqlSelect = "SELECT kdb_kanbanpriority_id FROM KDB_kanbanpriority WHERE KDB_KanbanBoard_id = ? " +
-					" AND AD_Client_ID IN (0, ?) AND IsActive='Y' ";
+					" AND AD_Client_ID IN (0, ?) AND IsActive='Y' ORDER BY MinValue";
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
 
@@ -302,7 +302,8 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 			ResultSet rs = null;
 			try
 			{
-				pstmt = DB.prepareStatement(sql.toString(), get_TrxName());
+				String sqlparsed = Env.parseContext(getCtx(), 0, sql.toString(), false);
+				pstmt = DB.prepareStatement(sqlparsed, get_TrxName());
 				pstmt.setInt(1, Env.getAD_Client_ID(Env.getCtx()));
 				rs = pstmt.executeQuery();
 				int id = -1;
