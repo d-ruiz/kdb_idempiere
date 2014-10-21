@@ -50,6 +50,10 @@ public class KanbanBoard {
 		return kanbanBoard.getNumberOfCards();
 	}
 	
+	public String getBackgroundColor(){
+		return kanbanBoard.getBackgroundColor();
+	}
+	
 	public KeyNamePair[] getProcessList(){
 		String sql = null;
 		boolean baseLanguage = Env.isBaseLanguage(Env.getCtx(), MKanbanBoard.Table_Name);

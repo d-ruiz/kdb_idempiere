@@ -227,7 +227,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		int numberOfCards = getNumberOfCards();
 		while(numberOfCards>0){
 			for(MKanbanStatus status: getStatuses()){
-
+				row.setStyle("background-color:" + getBackgroundColor() + ";");
 				if(!status.hasMoreCards()){
 					row.appendCellChild(createSpacer());
 					setEmptyCellProps(row.getLastCell(),status);
@@ -236,7 +236,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 					MKanbanCard card = status.getCard();
 					Vlayout l = createCell(card);
 					row.appendCellChild(l);
-					setCellProps(row.getLastCell(), card);	
+					setCellProps(row.getLastCell(), card);
 					numberOfCards--;
 				}
 			}
