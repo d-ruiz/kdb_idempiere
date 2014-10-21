@@ -37,6 +37,7 @@ import java.util.logging.Level;
 import org.compiere.model.MColumn;
 import org.compiere.model.MRefList;
 import org.compiere.model.MTable;
+import org.compiere.print.MPrintColor;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -400,5 +401,10 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		}
 		
 		return super.beforeSave(newRecord);
+	}
+
+	public String getBackgroundColor() {
+		MPrintColor priorityColor = new MPrintColor(Env.getCtx(), getKDB_BackgroundColor_ID(), null);
+		return priorityColor.getName();
 	}
 }
