@@ -194,7 +194,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			if(numCols>0){
 				// set size in percentage per column leaving a MARGIN on right
 				Columns columns = new Columns();
-				int equalWidth = 98 / numCols;
+				int equalWidth = 100 / numCols;
 
 				//Create columns based on the states of the kanban board
 				Column  column;
@@ -202,10 +202,12 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 					column = new Column();
 					column.setWidth(equalWidth + "%");
 					columns.appendChild(column);
-					column.setHflex("min");
+					//column.setHflex("min");
 					column.setAlign("right");
 					columns.appendChild(column);
 					column.setLabel(status.getPrintableName());
+					if(status.isExceed())
+						column.setStyle("background-color: red;");
 				}
 				columns.setSizable(true);
 				createRows();	
@@ -252,8 +254,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			Label label = new Label(str.nextToken());
 			div.appendChild(label);
 		}
-		div.setStyle("text-align: center;");
-		div.setStyle("background-color:" + card.getColor() + ";");
+		div.setStyle("text-align: left; background-color:" + card.getColor() + ";");
 		return div;
 	}//CreateCell
 
@@ -264,6 +265,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		cell.addEventListener(Events.ON_DROP, this);
 		cell.addEventListener(Events.ON_CLICK, this);
 		cell.addEventListener(Events.ON_DOUBLE_CLICK, this);
+		cell.setStyle("text-align: left;");
 		cell.setStyle("border-style: outset; ");
 		mapCellColumn.put(cell, card);
 	}
@@ -294,7 +296,6 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				repaintGrid();
 			}
 		}
-		
 		// Check event ONDoubleCLICK on a cell Navigate into documents
 		else if (Events.ON_DOUBLE_CLICK.equals(e.getName()) && (e.getTarget() instanceof Cell)) {
 			MKanbanCard card = mapCellColumn.get(e.getTarget());

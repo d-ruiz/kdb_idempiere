@@ -65,6 +65,11 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	public MKanbanBoard(Properties ctx, ResultSet rs, String trxName) {
 		super(ctx, rs, trxName);
 	}
+	
+	public void setBoardContent(){
+		getStatuses();
+		getKanbanCards();
+	}
 
 	public MTable getTable() {
 		return table;
@@ -126,9 +131,10 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		}else
 		{
 			MTable table =  MTable.get(getCtx(),column.getReferenceTableName());
+			//table.getPO("RRequest Estado", get_TrxName());
 			if (table!=null){
 				for(MKanbanStatus status: statuses){
-					String name = table.get_Translation(status.getName());
+					String name = table.get_Translation(column.getName()); //No esta funcionando, necesito traducir el nombre
 					if(name==null)
 						name=status.getName();
 
