@@ -116,7 +116,9 @@ public class MKanbanCard{
 					{
 						throw new IllegalStateException();
 					}
-				} catch (IllegalStateException e) {
+	/*				else
+						m_po.saveEx();
+		*/		} catch (IllegalStateException e) {
 					KDB_ErrorMessage = "KDB_InvalidTransition";
 					return false;
 				} catch (Exception e) {

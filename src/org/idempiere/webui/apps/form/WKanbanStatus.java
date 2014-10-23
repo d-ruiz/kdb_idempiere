@@ -434,8 +434,8 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 		else if (e.getTarget().getId().equals("Ok"))
 		{
 			if (saveStatuses())
-				SessionManager.getAppDesktop().closeActiveWindow();
-			else
+				//SessionManager.getAppDesktop().closeActiveWindow();
+			//else
 				Messagebox.show(Msg.getMsg(Env.getCtx(), "AccessCannotDelete"));
 		}
 

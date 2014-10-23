@@ -96,6 +96,7 @@ public class KanbanBoard {
 		if(kanbanBoard==null||kanbanBoardId!=kanbanBoard.get_ID()){
 			kanbanBoard = new MKanbanBoard(Env.getCtx(), kanbanBoardId, null);
 			statuses=null;
+			kanbanBoard.setBoardContent();
 		}
 	}
 	

@@ -39,11 +39,12 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 	 */
 	private static final long serialVersionUID = 3464371316345451989L;
 
-	private MKanbanBoard kanbanBoard;
-	private String printableName;
+	private MKanbanBoard      kanbanBoard;
+	private String            printableName;
 	private List<MKanbanCard> records = new ArrayList<MKanbanCard>();
-	private int maxNumCards = 100;
-	private int cardNumber = 0;
+	private boolean           isExceed = false;
+	private int               maxNumCards = 100;
+	private int               cardNumber = 0;
 
 	public MKanbanBoard getKanbanBoard() {
 		return kanbanBoard;
@@ -144,5 +145,14 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 	public void setMaxNumCards(int maxNumCards) {
 		this.maxNumCards = maxNumCards;
 	}
+	
+	public boolean isExceed() {
+		if(getRecords().size()>getMaxNumCards())
+			isExceed = true;
+		return isExceed;
+	}
 
+	public void setExceed(boolean isExceed) {
+		this.isExceed = isExceed;
+	}
 }
