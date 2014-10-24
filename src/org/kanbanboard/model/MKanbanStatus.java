@@ -136,6 +136,9 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 	}
 
 	public int getMaxNumCards() {
+		if(getMaxNumberCards().intValue()==0&&
+				!getMaxNumberCards().toString().equals("0.0")) //This validates that the field is not empty
+			return 0;
 		if(getMaxNumberCards().intValue()!=0)
 			return getMaxNumberCards().intValue();
 		
