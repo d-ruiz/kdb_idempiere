@@ -1,27 +1,27 @@
 /**********************************************************************
-* This file is part of iDempiere ERP Open Source                      *
-* http://www.idempiere.org                                            *
-*                                                                     *
-* Copyright (C) Contributors                                          *
-*                                                                     *
-* This program is free software; you can redistribute it and/or       *
-* modify it under the terms of the GNU General Public License         *
-* as published by the Free Software Foundation; either version 2      *
-* of the License, or (at your option) any later version.              *
-*                                                                     *
-* This program is distributed in the hope that it will be useful,     *
-* but WITHOUT ANY WARRANTY; without even the implied warranty of      *
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the        *
-* GNU General Public License for more details.                        *
-*                                                                     *
-* You should have received a copy of the GNU General Public License   *
-* along with this program; if not, write to the Free Software         *
-* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,          *
-* MA 02110-1301, USA.                                                 *
-*                                                                     *
-* Contributors:                                                       *
-* - Diego Ruiz - Universidad Distrital Francisco Jose de Caldas       *
-**********************************************************************/
+ * This file is part of iDempiere ERP Open Source                      *
+ * http://www.idempiere.org                                            *
+ *                                                                     *
+ * Copyright (C) Contributors                                          *
+ *                                                                     *
+ * This program is free software; you can redistribute it and/or       *
+ * modify it under the terms of the GNU General Public License         *
+ * as published by the Free Software Foundation; either version 2      *
+ * of the License, or (at your option) any later version.              *
+ *                                                                     *
+ * This program is distributed in the hope that it will be useful,     *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of      *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the        *
+ * GNU General Public License for more details.                        *
+ *                                                                     *
+ * You should have received a copy of the GNU General Public License   *
+ * along with this program; if not, write to the Free Software         *
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,          *
+ * MA 02110-1301, USA.                                                 *
+ *                                                                     *
+ * Contributors:                                                       *
+ * - Diego Ruiz - Universidad Distrital Francisco Jose de Caldas       *
+ **********************************************************************/
 
 package org.idempiere.apps.form;
 
@@ -40,20 +40,20 @@ import org.kanbanboard.model.MKanbanCard;
 import org.kanbanboard.model.MKanbanStatus;
 
 public class KanbanBoard {
-	
+
 	public static CLogger log = CLogger.getCLogger(KanbanBoard.class);
 	private MKanbanBoard kanbanBoard=null;
 	private List<MKanbanStatus> statuses=null;
 	private MKanbanStatus activeStatus;
-	
+
 	public int getNumberOfCards() {
 		return kanbanBoard.getNumberOfCards();
 	}
-	
+
 	public String getBackgroundColor(){
 		return kanbanBoard.getBackgroundColor();
 	}
-	
+
 	public KeyNamePair[] getProcessList(){
 		String sql = null;
 		boolean baseLanguage = Env.isBaseLanguage(Env.getCtx(), MKanbanBoard.Table_Name);
@@ -74,7 +74,7 @@ public class KanbanBoard {
 
 		return list;
 	}
-	
+
 	public MKanbanStatus getActiveStatus() {
 		return activeStatus;
 	}
@@ -93,13 +93,19 @@ public class KanbanBoard {
 
 	public void setKanbanBoard(int kanbanBoardId){
 		//Check if it's it's a new kanban board or the one already selected
-		if(kanbanBoard==null||kanbanBoardId!=kanbanBoard.get_ID()){
+		if(kanbanBoardId==-1)
+			kanbanBoard=null;
+		else if(kanbanBoard==null||kanbanBoardId!=kanbanBoard.get_ID()){
 			kanbanBoard = new MKanbanBoard(Env.getCtx(), kanbanBoardId, null);
 			statuses=null;
 			kanbanBoard.setBoardContent();
 		}
 	}
-	
+
+	public void refreshBoard(){
+		setKanbanBoard(-1);
+	}
+
 	public  List<MKanbanStatus> getStatuses(){
 		if(statuses==null){
 			setPrintableNames();
@@ -108,12 +114,12 @@ public class KanbanBoard {
 		orderStatuses();
 		return statuses;
 	}
-	
-	
+
+
 	public void resetStatusProperties() {
 		kanbanBoard.resetStatusProperties();
 	}
-	
+
 	public void orderStatuses(){
 		Collections.sort(statuses, new Comparator<MKanbanStatus>() {
 			@Override
@@ -123,9 +129,9 @@ public class KanbanBoard {
 			}
 		});
 	}
-	
+
 	public boolean swapCard(MKanbanStatus startStatus, MKanbanStatus endStatus, MKanbanCard card){
-		
+
 		boolean statusChanged = card.changeStatus(kanbanBoard.getStatusColumn().getColumnName(), endStatus.getStatusValue());
 		if(statusChanged){
 			startStatus.removeRecord(card);
@@ -134,18 +140,18 @@ public class KanbanBoard {
 		}
 		return statusChanged;
 	}
-	
+
 	public int getAd_Table_id(){
 		return kanbanBoard.getAD_Table_ID();
 	}
-	
+
 	public int getNumberOfStatuses(){
 		if(statuses==null)
 			return kanbanBoard.getNumberOfStatuses();
 		else
 			return statuses.size();
 	}
-	
+
 	public void setPrintableNames(){
 		kanbanBoard.setPrintableNames();
 	}
