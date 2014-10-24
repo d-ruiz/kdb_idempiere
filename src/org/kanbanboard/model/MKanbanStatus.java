@@ -1,27 +1,27 @@
 /**********************************************************************
-* This file is part of iDempiere ERP Open Source                      *
-* http://www.idempiere.org                                            *
-*                                                                     *
-* Copyright (C) Contributors                                          *
-*                                                                     *
-* This program is free software; you can redistribute it and/or       *
-* modify it under the terms of the GNU General Public License         *
-* as published by the Free Software Foundation; either version 2      *
-* of the License, or (at your option) any later version.              *
-*                                                                     *
-* This program is distributed in the hope that it will be useful,     *
-* but WITHOUT ANY WARRANTY; without even the implied warranty of      *
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the        *
-* GNU General Public License for more details.                        *
-*                                                                     *
-* You should have received a copy of the GNU General Public License   *
-* along with this program; if not, write to the Free Software         *
-* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,          *
-* MA 02110-1301, USA.                                                 *
-*                                                                     *
-* Contributors:                                                       *
-* - Diego Ruiz - Universidad Distrital Francisco Jose de Caldas       *
-**********************************************************************/
+ * This file is part of iDempiere ERP Open Source                      *
+ * http://www.idempiere.org                                            *
+ *                                                                     *
+ * Copyright (C) Contributors                                          *
+ *                                                                     *
+ * This program is free software; you can redistribute it and/or       *
+ * modify it under the terms of the GNU General Public License         *
+ * as published by the Free Software Foundation; either version 2      *
+ * of the License, or (at your option) any later version.              *
+ *                                                                     *
+ * This program is distributed in the hope that it will be useful,     *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of      *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the        *
+ * GNU General Public License for more details.                        *
+ *                                                                     *
+ * You should have received a copy of the GNU General Public License   *
+ * along with this program; if not, write to the Free Software         *
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,          *
+ * MA 02110-1301, USA.                                                 *
+ *                                                                     *
+ * Contributors:                                                       *
+ * - Diego Ruiz - Universidad Distrital Francisco Jose de Caldas       *
+ **********************************************************************/
 
 package org.kanbanboard.model;
 
@@ -45,6 +45,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 	private boolean           isExceed = false;
 	private int               maxNumCards = 100;
 	private int               cardNumber = 0;
+	private int				  totalCards = 0;
 
 	public MKanbanBoard getKanbanBoard() {
 		return kanbanBoard;
@@ -103,7 +104,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 			return false;
 		return true;
 	}
-	
+
 	public void orderCards(){
 		Collections.sort(records, Collections.reverseOrder(new Comparator<MKanbanCard>() {
 			@Override
@@ -141,14 +142,14 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 			return 0;
 		if(getMaxNumberCards().intValue()!=0)
 			return getMaxNumberCards().intValue();
-		
+
 		return maxNumCards;
 	}
 
 	public void setMaxNumCards(int maxNumCards) {
 		this.maxNumCards = maxNumCards;
 	}
-	
+
 	public boolean isExceed() {
 		if(getRecords().size()>getMaxNumCards())
 			isExceed = true;
@@ -157,5 +158,14 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 
 	public void setExceed(boolean isExceed) {
 		this.isExceed = isExceed;
+	}
+
+
+	public int getTotalCards() {
+		return totalCards;
+	}
+
+	public void setTotalCards(int totalCards) {
+		this.totalCards = totalCards;
 	}
 }

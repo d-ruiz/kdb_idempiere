@@ -1,27 +1,27 @@
 /**********************************************************************
-* This file is part of iDempiere ERP Open Source                      *
-* http://www.idempiere.org                                            *
-*                                                                     *
-* Copyright (C) Contributors                                          *
-*                                                                     *
-* This program is free software; you can redistribute it and/or       *
-* modify it under the terms of the GNU General Public License         *
-* as published by the Free Software Foundation; either version 2      *
-* of the License, or (at your option) any later version.              *
-*                                                                     *
-* This program is distributed in the hope that it will be useful,     *
-* but WITHOUT ANY WARRANTY; without even the implied warranty of      *
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the        *
-* GNU General Public License for more details.                        *
-*                                                                     *
-* You should have received a copy of the GNU General Public License   *
-* along with this program; if not, write to the Free Software         *
-* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,          *
-* MA 02110-1301, USA.                                                 *
-*                                                                     *
-* Contributors:                                                       *
-* - Diego Ruiz - Universidad Distrital Francisco Jose de Caldas       *
-**********************************************************************/
+ * This file is part of iDempiere ERP Open Source                      *
+ * http://www.idempiere.org                                            *
+ *                                                                     *
+ * Copyright (C) Contributors                                          *
+ *                                                                     *
+ * This program is free software; you can redistribute it and/or       *
+ * modify it under the terms of the GNU General Public License         *
+ * as published by the Free Software Foundation; either version 2      *
+ * of the License, or (at your option) any later version.              *
+ *                                                                     *
+ * This program is distributed in the hope that it will be useful,     *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of      *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the        *
+ * GNU General Public License for more details.                        *
+ *                                                                     *
+ * You should have received a copy of the GNU General Public License   *
+ * along with this program; if not, write to the Free Software         *
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,          *
+ * MA 02110-1301, USA.                                                 *
+ *                                                                     *
+ * Contributors:                                                       *
+ * - Diego Ruiz - Universidad Distrital Francisco Jose de Caldas       *
+ **********************************************************************/
 
 package org.kanbanboard.model;
 
@@ -51,7 +51,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 
 	/** Special column DocStatus = DocStatus */
 	public static final String STATUSCOLUMN_DocStatus = "DocStatus";
-	
+
 	private MTable table = MTable.get(Env.getCtx(), getAD_Table_ID());
 	private List<MKanbanStatus> statuses = new ArrayList<MKanbanStatus>();
 	private List<MKanbanPriority> priorityRules = new ArrayList<MKanbanPriority>();
@@ -65,7 +65,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	public MKanbanBoard(Properties ctx, ResultSet rs, String trxName) {
 		super(ctx, rs, trxName);
 	}
-	
+
 	public void setBoardContent(){
 		getStatuses();
 		getKanbanCards();
@@ -225,7 +225,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 
 		int numberOfStatuses = 0;
 		if (statuses.size()==0){
-			
+
 			String sqlSelect = "SELECT COUNT(*) FROM KDB_kanbanStatus WHERE KDB_KanbanBoard_id = ? " +
 					" AND AD_Client_ID IN (0, ?) AND IsActive='Y'";
 			PreparedStatement pstmt = null;
@@ -258,7 +258,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	public boolean saveStatuses(){
 		for (MKanbanStatus status : statuses) {
 			if (status.isActive())
-				 status.save(get_TrxName());
+				status.save(get_TrxName());
 		}
 		return true;
 	}
@@ -288,7 +288,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 
 			StringBuilder whereClause = new StringBuilder();
 			whereClause.append(" WHERE ");
-			
+
 			if(getWhereClause()!=null)
 				whereClause.append(getWhereClause()+" AND ");
 
@@ -317,12 +317,13 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 				String correspondingColumn= null;
 				while (rs.next())
 				{
-
 					id = rs.getInt(1);
 					correspondingColumn = rs.getString(2);
 					MKanbanStatus status = getStatus(correspondingColumn);
-					if(status.getMaxNumCards()==0&&!status.isShowOver())
+					if(status.getMaxNumCards()==0&&!status.isShowOver()){
+						status.setTotalCards(status.getTotalCards()+1);
 						continue;
+					}
 					else if(status.isShowOver()||status.getMaxNumCards()>status.getRecords().size()){
 						MKanbanCard card = new MKanbanCard(id,status);
 						if(hasPriorityOrder()){
@@ -331,9 +332,11 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 						}
 						status.addRecord(card);
 						numberOfCards++;
+						status.setTotalCards(status.getTotalCards()+1);
 					}
 					else if(!status.isShowOver())
-						status.setExceed(true);
+						status.setTotalCards(status.getTotalCards()+1);
+					status.setExceed(true);
 				}
 			}
 			catch (SQLException e)
@@ -383,7 +386,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 				status.orderCards();
 		}
 	}
-	
+
 	public boolean deleteStatus(MKanbanStatus status) {
 		if(status.delete(true, get_TrxName())){
 			statuses.remove(status);
@@ -391,12 +394,12 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		}
 		return false;
 	}
-	
+
 	@Override
 	protected boolean beforeSave(boolean newRecord) {
 		// Check if it is a valid priority rule
 		String priorityRule = getKDB_PrioritySQL();
-		
+
 		if(priorityRule!=null){
 			String sql = "Select "+priorityRule+" FROM "+getAD_Table().getTableName();
 
@@ -405,7 +408,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 				return false;
 			}
 		}
-		
+
 		return super.beforeSave(newRecord);
 	}
 

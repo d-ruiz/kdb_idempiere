@@ -1,27 +1,27 @@
 /**********************************************************************
-* This file is part of iDempiere ERP Open Source                      *
-* http://www.idempiere.org                                            *
-*                                                                     *
-* Copyright (C) Contributors                                          *
-*                                                                     *
-* This program is free software; you can redistribute it and/or       *
-* modify it under the terms of the GNU General Public License         *
-* as published by the Free Software Foundation; either version 2      *
-* of the License, or (at your option) any later version.              *
-*                                                                     *
-* This program is distributed in the hope that it will be useful,     *
-* but WITHOUT ANY WARRANTY; without even the implied warranty of      *
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the        *
-* GNU General Public License for more details.                        *
-*                                                                     *
-* You should have received a copy of the GNU General Public License   *
-* along with this program; if not, write to the Free Software         *
-* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,          *
-* MA 02110-1301, USA.                                                 *
-*                                                                     *
-* Contributors:                                                       *
-* - Diego Ruiz - Universidad Distrital Francisco Jose de Caldas       *
-**********************************************************************/
+ * This file is part of iDempiere ERP Open Source                      *
+ * http://www.idempiere.org                                            *
+ *                                                                     *
+ * Copyright (C) Contributors                                          *
+ *                                                                     *
+ * This program is free software; you can redistribute it and/or       *
+ * modify it under the terms of the GNU General Public License         *
+ * as published by the Free Software Foundation; either version 2      *
+ * of the License, or (at your option) any later version.              *
+ *                                                                     *
+ * This program is distributed in the hope that it will be useful,     *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of      *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the        *
+ * GNU General Public License for more details.                        *
+ *                                                                     *
+ * You should have received a copy of the GNU General Public License   *
+ * along with this program; if not, write to the Free Software         *
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,          *
+ * MA 02110-1301, USA.                                                 *
+ *                                                                     *
+ * Contributors:                                                       *
+ * - Diego Ruiz - Universidad Distrital Francisco Jose de Caldas       *
+ **********************************************************************/
 
 package org.kanbanboard.model;
 
@@ -40,15 +40,15 @@ import org.compiere.util.Msg;
 
 
 public class MKanbanCard{
-	
-	
+
+
 	public static String KDB_ErrorMessage = "KDB_InvalidTransition";
-	
+
 	private int 		  recordId;
 	private MKanbanBoard  kanbanBoard;
 	private MKanbanStatus belongingStatus;
 	private BigDecimal 	  priorityValue;
-	
+
 	private PO			m_po = null;
 	private String 		kanbanCardText = null;
 
@@ -56,7 +56,7 @@ public class MKanbanCard{
 	public BigDecimal getPriorityValue() {
 		return priorityValue;
 	}
-	
+
 	public PO getM_po() {
 		return m_po;
 	}
@@ -84,7 +84,7 @@ public class MKanbanCard{
 	public int getRecordID() {
 		return recordId;
 	}
-	
+
 	public void setRecordId(int name) {
 		this.recordId = name;
 	}
@@ -93,7 +93,7 @@ public class MKanbanCard{
 	public MKanbanCard(int cardRecord){
 		recordId = cardRecord;
 	}
-	
+
 	public MKanbanCard(int cardRecord, MKanbanStatus status){
 		recordId = cardRecord;
 		belongingStatus=status;
@@ -102,11 +102,11 @@ public class MKanbanCard{
 	}
 
 	public boolean changeStatus(String statusColumn, String newStatusValue){
-		
+
 		if(m_po==null)
 			return false;
 		boolean success=true;
-		
+
 		if(statusColumn.equals(MKanbanBoard.STATUSCOLUMN_DocStatus)){
 			if(m_po instanceof DocAction && m_po.get_ColumnIndex("DocAction") >= 0){
 				String p_docAction = newStatusValue;
@@ -116,16 +116,16 @@ public class MKanbanCard{
 					{
 						throw new IllegalStateException();
 					}
-	/*				else
+					/*				else
 						m_po.saveEx();
-		*/		} catch (IllegalStateException e) {
-					KDB_ErrorMessage = "KDB_InvalidTransition";
-					return false;
-				} catch (Exception e) {
-					e.printStackTrace();
-					KDB_ErrorMessage = e.getLocalizedMessage();
-					return false;
-				}
+					 */		} catch (IllegalStateException e) {
+						 KDB_ErrorMessage = "KDB_InvalidTransition";
+						 return false;
+					 } catch (Exception e) {
+						 e.printStackTrace();
+						 KDB_ErrorMessage = e.getLocalizedMessage();
+						 return false;
+					 }
 			}			
 		}
 		else{
@@ -147,7 +147,7 @@ public class MKanbanCard{
 
 	public String getColor() {
 		String color = null;
-		
+
 		if(kanbanBoard.hasPriorityOrder()&&kanbanBoard.getPriorityRules().size()>0){
 			for(MKanbanPriority priorityRule:kanbanBoard.getPriorityRules()){
 				BigDecimal minValue = new BigDecimal(priorityRule.getMinValue());
@@ -162,13 +162,13 @@ public class MKanbanCard{
 		}
 		return color;
 	}
-	
+
 	public String getKanbanCardText(){
 		if(kanbanCardText==null)
 			translate();
 		return parse(kanbanCardText);
 	}
-	
+
 	/**
 	 * 	Translate to BPartner Language
 	 */
@@ -180,7 +180,7 @@ public class MKanbanCard{
 		else
 			kanbanCardText=Integer.toString(recordId);
 	}	//	translate
-	
+
 	private String parse (String text)
 	{
 		if (text.indexOf('@') == -1)
@@ -189,7 +189,7 @@ public class MKanbanCard{
 		text = parse (text, m_po);
 		return text;
 	}	//	parse
-	
+
 	/**
 	 * 	Parse text
 	 *	@param text text
@@ -200,7 +200,7 @@ public class MKanbanCard{
 	{
 		if (po == null || text.indexOf('@') == -1)
 			return text;
-		
+
 		String inStr = text;
 		String token;
 		StringBuilder outStr = new StringBuilder();
@@ -229,7 +229,7 @@ public class MKanbanCard{
 		outStr.append(inStr);				//	add remainder
 		return outStr.toString();
 	}	//	parse
-	
+
 	/**
 	 * 	Parse Variable
 	 *	@param variable variable
@@ -249,7 +249,7 @@ public class MKanbanCard{
 				outStr.append("_ID"); //Foreign Key column
 
 				index = po.get_ColumnIndex(outStr.toString());
-				
+
 				Integer subRecordId;
 
 				if (index != -1){
@@ -263,7 +263,7 @@ public class MKanbanCard{
 					return parseVariable(variable,subPo);
 				}
 			}
-			
+
 			StringBuilder msgreturn = new StringBuilder("@").append(variable).append("@");
 			return msgreturn.toString();	//	keep for next
 		}	
@@ -287,5 +287,5 @@ public class MKanbanCard{
 			return "";
 		return value.toString();
 	}	//	parseVariable
-	
+
 }

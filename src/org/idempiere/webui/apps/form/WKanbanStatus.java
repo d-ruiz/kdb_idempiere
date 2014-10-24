@@ -1,27 +1,27 @@
 /**********************************************************************
-* This file is part of iDempiere ERP Open Source                      *
-* http://www.idempiere.org                                            *
-*                                                                     *
-* Copyright (C) Contributors                                          *
-*                                                                     *
-* This program is free software; you can redistribute it and/or       *
-* modify it under the terms of the GNU General Public License         *
-* as published by the Free Software Foundation; either version 2      *
-* of the License, or (at your option) any later version.              *
-*                                                                     *
-* This program is distributed in the hope that it will be useful,     *
-* but WITHOUT ANY WARRANTY; without even the implied warranty of      *
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the        *
-* GNU General Public License for more details.                        *
-*                                                                     *
-* You should have received a copy of the GNU General Public License   *
-* along with this program; if not, write to the Free Software         *
-* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,          *
-* MA 02110-1301, USA.                                                 *
-*                                                                     *
-* Contributors:                                                       *
-* - Diego Ruiz - Universidad Distrital Francisco Jose de Caldas       *
-**********************************************************************/
+ * This file is part of iDempiere ERP Open Source                      *
+ * http://www.idempiere.org                                            *
+ *                                                                     *
+ * Copyright (C) Contributors                                          *
+ *                                                                     *
+ * This program is free software; you can redistribute it and/or       *
+ * modify it under the terms of the GNU General Public License         *
+ * as published by the Free Software Foundation; either version 2      *
+ * of the License, or (at your option) any later version.              *
+ *                                                                     *
+ * This program is distributed in the hope that it will be useful,     *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of      *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the        *
+ * GNU General Public License for more details.                        *
+ *                                                                     *
+ * You should have received a copy of the GNU General Public License   *
+ * along with this program; if not, write to the Free Software         *
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,          *
+ * MA 02110-1301, USA.                                                 *
+ *                                                                     *
+ * Contributors:                                                       *
+ * - Diego Ruiz - Universidad Distrital Francisco Jose de Caldas       *
+ **********************************************************************/
 
 package org.idempiere.webui.apps.form;
 
@@ -78,10 +78,10 @@ import org.zkoss.zul.North;
 import org.zkoss.zul.Separator;
 
 /**
-*
-* @author Diego Ruiz
-*
-*/
+ *
+ * @author Diego Ruiz
+ *
+ */
 
 public class WKanbanStatus extends KanbanStatus implements IFormController, EventListener<Event>, ValueChangeListener {
 
@@ -92,7 +92,7 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 
 	private Panel panel = new Panel();
 	private Grid gridLayout = GridFactory.newGridLayout();
-	
+
 	WEditor editorName = null;
 	WEditor editorMaxCards = null;
 	WEditor editorAlias = null;
@@ -100,7 +100,7 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 	WEditor editorSqlQueue = null;
 	WEditor editorShowOver = null;
 	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
-	
+
 	private Label lProcess = new Label();
 	private Listbox cbProcess = ListboxFactory.newDropdownListbox();
 	private int kanbanBoardId=-1;
@@ -133,7 +133,7 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 			log.log(Level.SEVERE, "init", ex);
 		}
 	}
-	
+
 	/**
 	 * 	Static init
 	 *	@throws Exception
@@ -147,16 +147,16 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 		kForm.setHeight("95%");
 		kForm.appendChild (mainLayout);
 		kForm.setBorder("normal");
-		
-		
+
+
 		confirmPanel.addActionListener(Events.ON_CLICK, this);
 		Button deleteBtn = confirmPanel.createButton(ConfirmPanel.A_DELETE);
 		confirmPanel.addButton(deleteBtn);
 		deleteBtn.setDroppable("true");
 		deleteBtn.addEventListener(Events.ON_CLICK, this);
 		deleteBtn.addEventListener(Events.ON_DROP, this);
-		
-				
+
+
 		//North Panel - comboBox and Buttons
 		panel.appendChild(gridLayout);
 		lProcess.setText(Msg.translate(Env.getCtx(), "Process"));
@@ -164,11 +164,11 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 		Row row = rows.newRow();
 		row.appendChild(lProcess.rightAlign());
 		row.appendChild(cbProcess);
-		
+
 		North north = new North();
 		mainLayout.appendChild(north);
 		north.appendChild(panel);
-		
+
 		//East - Properties Grid
 		Grid propGrid = createPropertiesGrid();	
 		East east = new East();
@@ -177,7 +177,7 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 		east.setSize("29%");
 		mainLayout.appendChild(east);
 		east.appendChild(propGrid);
-		
+
 		//CenterPanel - Status Grid Panel
 		createKanbanBoardPanel();
 		centerHLayout = new Hlayout();
@@ -191,7 +191,7 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 		center.appendChild(centerHLayout);
 	}	//	jbInit
 
-	
+
 	/**
 	 *  Initialize List of existing processes
 	 */
@@ -202,29 +202,29 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 			cbProcess.addItem(process);
 
 		cbProcess.addEventListener(Events.ON_SELECT, this);
-		
+
 	}   //  dynList
-	
+
 	private Grid createPropertiesGrid()
 	{
 		Grid gridView = GridFactory.newGridLayout();
 		//
 		Columns columns = new Columns();
 		gridView.appendChild(columns);
-    	//
-    	Column  column = new Column();
-    	columns.appendChild(column);
-    	column.setHflex("min");
-    	column.setAlign("right");
+		//
+		Column  column = new Column();
+		columns.appendChild(column);
+		column.setHflex("min");
+		column.setAlign("right");
 
-    	column = new Column();
-    	columns.appendChild(column);
-    	column.setHflex("1");
+		column = new Column();
+		columns.appendChild(column);
+		column.setHflex("1");
 		Rows rows = new Rows();
 		gridView.appendChild(rows);
-		
+
 		Row row = null;
-		
+
 		row = new Row();
 		Group group = new Group(Msg.getMsg(Env.getCtx(), "Property"));
 		Cell cell = (Cell) group.getFirstChild();
@@ -232,7 +232,7 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 		cell.setColspan(2);
 		group.setOpen(true);
 		rows.appendChild(group);
-		
+
 		row = new Row();
 		Label labelName =  new Label(Msg.getElement(Env.getCtx(), MKanbanStatus.COLUMNNAME_Name));
 		editorName = new WStringEditor(MKanbanStatus.COLUMNNAME_Name, false, false, true, 0, 0, null, null);
@@ -289,22 +289,22 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 		editorShowOver.addValueChangeListener(this);
 		row.setGroup(group);
 		rows.appendChild(row);
-		
+
 		row = new Row();
 		Separator esep = new Separator("horizontal");
 		esep.setSpacing("10px");
 		row.appendCellChild(esep, 2);
 		row.setGroup(group);
 		rows.appendChild(row);
-		
+
 		row = new Row();
 		row.appendCellChild(confirmPanel, 2);
 		row.setGroup(group);
 		rows.appendChild(row);
 
-	    return gridView;
+		return gridView;
 	}
-	
+
 	/**
 	 * Create the panel where the list of statuses
 	 * is going to be painted
@@ -350,11 +350,11 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 				int columnId = column.getColumnIndex();
 				setColumnProps(column, columnId, status);
 			}
-			
+
 			kanbanPanel.appendChild(columns);
 		}
 	}
-	
+
 	private void setColumnProps(ListHeader column, int columnID, MKanbanStatus status) {
 		column.setDraggable("true");
 		column.setDroppable("true");
@@ -405,13 +405,13 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 			} 
 			ListHeader endHeader = null;
 			if (me.getTarget() instanceof ListHeader) {
-				
+
 				endHeader = (ListHeader) me.getTarget();
 				MKanbanStatus endStatus = mapCellColumn.get(endHeader.getColumnIndex());
 
 				swapStatuses(startStatus, endStatus);
 				setProperties(startStatus); //update SeqNo
-				
+
 				repaintGrid();
 
 			} else if (me.getTarget() instanceof Button) {
@@ -433,15 +433,13 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 		//	OK - Save
 		else if (e.getTarget().getId().equals("Ok"))
 		{
-			if (saveStatuses())
-				//SessionManager.getAppDesktop().closeActiveWindow();
-			//else
+			if (!saveStatuses())
 				Messagebox.show(Msg.getMsg(Env.getCtx(), "AccessCannotDelete"));
 		}
 
 	}//Listeners
-	
-	
+
+
 	private void setProperties(MKanbanStatus status) {
 		editorName.setValue(status.getName());
 		editorSeqNo.setValue(status.getSeqNo());
@@ -449,7 +447,7 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 		editorShowOver.setValue(status.isShowOver());
 		editorSqlQueue.setValue(status.getSQLStatement());
 		editorMaxCards.setValue(status.getMaxNumberCards());
-	
+
 	} // Set Properties
 
 
