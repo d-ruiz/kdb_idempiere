@@ -317,23 +317,23 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 				String correspondingColumn= null;
 				while (rs.next())
 				{
-					// TODO: limit number of cards
 
 					id = rs.getInt(1);
 					correspondingColumn = rs.getString(2);
 					MKanbanStatus status = getStatus(correspondingColumn);
-					if(status.isShowOver()||status.getMaxNumCards()>status.getRecords().size()){
-						
+					if(status.getMaxNumCards()==0&&!status.isShowOver())
+						continue;
+					else if(status.isShowOver()||status.getMaxNumCards()>status.getRecords().size()){
 						MKanbanCard card = new MKanbanCard(id,status);
-
 						if(hasPriorityOrder()){
 							BigDecimal priorityValue = rs.getBigDecimal(3);
 							card.setPriorityValue(priorityValue);
 						}
-
 						status.addRecord(card);
 						numberOfCards++;
 					}
+					else if(!status.isShowOver())
+						status.setExceed(true);
 				}
 			}
 			catch (SQLException e)
