@@ -219,7 +219,16 @@ public class MKanbanCard{
 			}
 
 			token = inStr.substring(0, j);
-			outStr.append(parseVariable(token, po));		// replace context
+
+			//format string
+			String format = "";
+			int f = token.indexOf('<');
+			if (f > 0 && token.endsWith(">")) {
+				format = token.substring(f+1, token.length()-1);
+				token = token.substring(0, f);
+			}
+			
+			outStr.append(parseVariable(token, format,po));		// replace context
 
 			inStr = inStr.substring(j+1, inStr.length());	// from second @
 			i = inStr.indexOf('@');
@@ -236,7 +245,7 @@ public class MKanbanCard{
 	 *	@param po po
 	 *	@return translated variable or if not found the original tag
 	 */
-	private String parseVariable (String variable, PO po)
+	private String parseVariable (String variable, String format,PO po)
 	{
 		int index = po.get_ColumnIndex(variable);
 		if (index == -1){
@@ -260,7 +269,7 @@ public class MKanbanCard{
 					if(subRecordId==null)
 						return "";
 					PO subPo = table.getPO(subRecordId, null);						
-					return parseVariable(variable,subPo);
+					return parseVariable(variable,format,subPo);
 				}
 			}
 
@@ -273,7 +282,12 @@ public class MKanbanCard{
 		if (col != null && col.isSecure()) {
 			value = "********";
 		} else if (col.getAD_Reference_ID() == DisplayType.Date || col.getAD_Reference_ID() == DisplayType.DateTime || col.getAD_Reference_ID() == DisplayType.Time) {
-			SimpleDateFormat sdf = DisplayType.getDateFormat(col.getAD_Reference_ID());
+			SimpleDateFormat sdf;
+			if(format != null && format.length() > 0){
+				sdf = new SimpleDateFormat(format);
+			}else{
+				sdf = DisplayType.getDateFormat(col.getAD_Reference_ID());
+			}
 			value = sdf.format (po.get_Value(index));	
 		} else if (col.getAD_Reference_ID() == DisplayType.YesNo) {
 			if (po.get_ValueAsBoolean(variable))
