@@ -254,7 +254,10 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 					MKanbanCard card = status.getCard();
 					Vlayout l = createCell(card);
 					row.appendCellChild(l);
-					setCellProps(row.getLastCell(), card);
+					if(isReadWrite())
+						setCellProps(row.getLastCell(), card);
+					else
+						setOnlyReadCellProps(row.getLastCell(), card);
 					numberOfCards--;
 				}
 			}
@@ -285,6 +288,15 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		cell.setStyle("border-style: outset; ");
 		mapCellColumn.put(cell, card);
 	}
+	
+	private void setOnlyReadCellProps(Cell cell, MKanbanCard card) {
+		cell.addEventListener(Events.ON_CLICK, this);
+		cell.addEventListener(Events.ON_DOUBLE_CLICK, this);
+		cell.setStyle("text-align: left;");
+		cell.setStyle("border-style: outset; ");
+		mapCellColumn.put(cell, card);
+	}
+
 
 	private void setEmptyCellProps(Cell lastCell, MKanbanStatus status) {
 		lastCell.setDroppable("true");

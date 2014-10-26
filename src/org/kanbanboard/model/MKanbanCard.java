@@ -116,16 +116,16 @@ public class MKanbanCard{
 					{
 						throw new IllegalStateException();
 					}
-					/*				else
+					else
 						m_po.saveEx();
-					 */		} catch (IllegalStateException e) {
-						 KDB_ErrorMessage = "KDB_InvalidTransition";
-						 return false;
-					 } catch (Exception e) {
-						 e.printStackTrace();
-						 KDB_ErrorMessage = e.getLocalizedMessage();
-						 return false;
-					 }
+				} catch (IllegalStateException e) {
+					KDB_ErrorMessage = "KDB_InvalidTransition";
+					return false;
+				} catch (Exception e) {
+					e.printStackTrace();
+					KDB_ErrorMessage = e.getLocalizedMessage();
+					return false;
+				}
 			}			
 		}
 		else{
@@ -227,7 +227,7 @@ public class MKanbanCard{
 				format = token.substring(f+1, token.length()-1);
 				token = token.substring(0, f);
 			}
-			
+
 			outStr.append(parseVariable(token, format,po));		// replace context
 
 			inStr = inStr.substring(j+1, inStr.length());	// from second @

@@ -25,9 +25,13 @@
 
 package org.idempiere.apps.form;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Level;
 
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
@@ -42,9 +46,11 @@ import org.kanbanboard.model.MKanbanStatus;
 public class KanbanBoard {
 
 	public static CLogger log = CLogger.getCLogger(KanbanBoard.class);
-	private MKanbanBoard kanbanBoard=null;
-	private List<MKanbanStatus> statuses=null;
-	private MKanbanStatus activeStatus;
+	
+	private MKanbanBoard        kanbanBoard = null;
+	private List<MKanbanStatus> statuses    = null;
+	private MKanbanStatus       activeStatus;
+	private String              isReadWrite = null;
 
 	public int getNumberOfCards() {
 		return kanbanBoard.getNumberOfCards();
@@ -74,6 +80,38 @@ public class KanbanBoard {
 
 		return list;
 	}
+	
+	public boolean isReadWrite(){
+		if(isReadWrite==null){
+			String sql = "SELECT isreadwrite FROM KDB_KanbanBoardControlAccess " +
+					"WHERE KDB_KanbanBoard_ID = ? AND AD_Role_ID= ? AND IsActive = 'Y'";
+
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;
+
+			try{
+				pstmt = DB.prepareStatement(sql, null);
+				pstmt.setInt(1, kanbanBoard.getKDB_KanbanBoard_ID());
+				pstmt.setInt(2, Env.getAD_Role_ID(Env.getCtx()));
+				rs = pstmt.executeQuery();
+				while(rs.next()){
+					isReadWrite = rs.getString(1);
+				}
+
+			}catch (SQLException e) {
+				log.log(Level.SEVERE, sql , e);
+				//throw e;
+			} finally {
+				DB.close(rs, pstmt);
+				rs = null;
+				pstmt = null;
+			}
+		}
+		if(isReadWrite.equals("Y"))
+			return true;
+		else 
+			return false;
+	}
 
 	public MKanbanStatus getActiveStatus() {
 		return activeStatus;
@@ -98,6 +136,7 @@ public class KanbanBoard {
 		else if(kanbanBoard==null||kanbanBoardId!=kanbanBoard.get_ID()){
 			kanbanBoard = new MKanbanBoard(Env.getCtx(), kanbanBoardId, null);
 			statuses=null;
+			isReadWrite = null;
 			kanbanBoard.setBoardContent();
 		}
 	}
