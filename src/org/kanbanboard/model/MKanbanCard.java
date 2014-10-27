@@ -49,9 +49,9 @@ public class MKanbanCard{
 	private MKanbanStatus belongingStatus;
 	private BigDecimal 	  priorityValue;
 
-	private PO			m_po = null;
-	private String 		kanbanCardText = null;
-
+	private PO			  m_po           = null;
+	private String 		  kanbanCardText = null;
+	private boolean		  isQueued       = false;
 
 	public BigDecimal getPriorityValue() {
 		return priorityValue;
@@ -89,6 +89,14 @@ public class MKanbanCard{
 		this.recordId = name;
 	}
 
+
+	public boolean isQueued() {
+		return isQueued;
+	}
+
+	public void setQueued(boolean isQueued) {
+		this.isQueued = isQueued;
+	}
 
 	public MKanbanCard(int cardRecord){
 		recordId = cardRecord;

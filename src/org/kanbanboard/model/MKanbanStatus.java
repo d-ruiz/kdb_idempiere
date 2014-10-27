@@ -41,11 +41,13 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 
 	private MKanbanBoard      kanbanBoard;
 	private String            printableName;
-	private List<MKanbanCard> records = new ArrayList<MKanbanCard>();
-	private boolean           isExceed = false;
-	private int               maxNumCards = 100;
-	private int               cardNumber = 0;
-	private int				  totalCards = 0;
+	private List<MKanbanCard> records          = new ArrayList<MKanbanCard>();
+	private List<MKanbanCard> queuedRecords    = new ArrayList<MKanbanCard>();
+	private boolean           isExceed         = false;
+	private int               maxNumCards      = 100;
+	private int               cardNumber       = 0;
+	private int 			  queuedCardNumber = 0;
+	private int				  totalCards       = 0;
 
 	public MKanbanBoard getKanbanBoard() {
 		return kanbanBoard;
@@ -53,6 +55,10 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 
 	public List<MKanbanCard> getRecords() {
 		return records;
+	}
+	
+	public List<MKanbanCard> getQueuedRecords() {
+		return queuedRecords;
 	}
 
 	public void setRecords(List<MKanbanCard> records) {
@@ -65,6 +71,14 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 
 	public void setCardNumber(int cardNumber) {
 		this.cardNumber = cardNumber;
+	}
+	
+	public int getQueuedCardNumber() {
+		return queuedCardNumber;
+	}
+
+	public void setQueuedCardNumber(int queuedCardNumber) {
+		this.queuedCardNumber = queuedCardNumber;
 	}
 
 	public void setPrintableName (String printingName){
@@ -95,6 +109,18 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 		for(MKanbanCard c:records){
 			if(c.equals(card))
 				records.remove(card);
+			break;
+		}
+	}
+	
+	public void addQueuedRecord(MKanbanCard card){
+		queuedRecords.add(card);
+	}
+
+	public void removeQueuedRecord(MKanbanCard card){
+		for(MKanbanCard c:queuedRecords){
+			if(c.equals(card))
+				queuedRecords.remove(card);
 			break;
 		}
 	}
@@ -137,8 +163,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 	}
 
 	public int getMaxNumCards() {
-		if(getMaxNumberCards().intValue()==0&&
-				!getMaxNumberCards().toString().equals("0.0")) //This validates that the field is not empty
+		if(getMaxNumberCards().intValue()==-1) //This validates that the field is not empty
 			return 0;
 		if(getMaxNumberCards().intValue()!=0)
 			return getMaxNumberCards().intValue();
@@ -160,6 +185,12 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 		this.isExceed = isExceed;
 	}
 
+	public boolean hasQueue(){
+		if(getSQLStatement()!=null)
+			return true;
+		else
+			return false;
+	}
 
 	public int getTotalCards() {
 		return totalCards;
@@ -167,5 +198,17 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 
 	public void setTotalCards(int totalCards) {
 		this.totalCards = totalCards;
+	}
+
+	public boolean hasMoreQueuedCards() {
+		if(!hasQueue()||queuedCardNumber>queuedRecords.size()-1)
+			return false;
+		return true;
+	}
+
+	public MKanbanCard getQueuedCard() {
+		MKanbanCard card = queuedRecords.get(queuedCardNumber);
+		queuedCardNumber++;
+		return card;
 	}
 }
