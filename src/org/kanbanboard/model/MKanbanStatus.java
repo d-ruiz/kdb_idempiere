@@ -107,9 +107,10 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 
 	public void removeRecord(MKanbanCard card){
 		for(MKanbanCard c:records){
-			if(c.equals(card))
+			if(c.equals(card)){
 				records.remove(card);
-			break;
+				break;
+			}
 		}
 	}
 	
@@ -126,6 +127,12 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 	}
 
 	public boolean hasMoreCards(){
+		if((!hasCards()&&!hasQueue())||totalCards<=cardNumber+queuedCardNumber)
+			return false;
+		return true;
+	}
+	
+	public boolean hasMoreStatusCards(){
 		if(!hasCards()||cardNumber>records.size()-1)
 			return false;
 		return true;
@@ -144,6 +151,15 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 		MKanbanCard card = records.get(cardNumber);
 		cardNumber++;
 		return card;
+	}
+	
+	public MKanbanCard getCard(int recordId){
+		for(MKanbanCard card: records){
+			if(card.getRecordID()==recordId){
+				return card;
+			}
+		}
+		return null;
 	}
 
 	public boolean hasCards(){

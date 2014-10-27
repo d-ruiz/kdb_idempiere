@@ -196,10 +196,6 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			kanbanPanel.makeNoStrip();
 			kanbanPanel.setVflex(false);
 			kanbanPanel.setSizedByContent(true);
-			//kanbanPanel.setHeight("100px");
-			//kanbanPanel.setStyle("overflow:auto");
-			//kanbanPanel.setHflex("1");
-			//kanbanPanel.setHeight(null);
 
 			int numCols=0;
 			numCols = getNumberOfStatuses();
@@ -256,18 +252,18 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				row.setStyle("background-color:" + getBackgroundColor() + ";");
 				if(!status.hasMoreCards()){
 					if(status.hasQueue()){
-						row.appendCellChild(createSpacer());
-						setEmptyCellProps(row.getLastCell(),status);
+						createEmptyCell(row,status);
 					}
-					row.appendCellChild(createSpacer());
-					setEmptyCellProps(row.getLastCell(),status);
+					createEmptyCell(row,status);
 				}
 				else{
 					if(status.hasQueue()){
-						if(status.hasMoreQueuedCards()){
+						if(!status.hasMoreQueuedCards()){
+							createEmptyCell(row,status);
+							createCardCell(row,status);
+							numberOfCards--;
+						}else{
 							MKanbanCard queuedCard = status.getQueuedCard();
-							if(queuedCard.isQueued())
-								System.out.println("Cola cola cola"+queuedCard.getKanbanCardText());
 							Vlayout l = createCell(queuedCard);
 							row.appendCellChild(l);
 							if(!isReadWrite())
@@ -275,25 +271,38 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 							else
 								setQueuedCellProps(row.getLastCell(), queuedCard);
 							numberOfCards--;
-						}else{
-							row.appendCellChild(createSpacer());
-							setEmptyCellProps(row.getLastCell(),status);
+							if(status.hasMoreStatusCards()){
+								createCardCell(row,status);
+								numberOfCards--;
+							}else{
+								createEmptyCell(row,status);
+							}
 						}
+					}else{
+						createCardCell(row,status);
+						numberOfCards--;	
 					}
-					MKanbanCard card = status.getCard();
-					Vlayout l = createCell(card);
-					row.appendCellChild(l);
-					if(isReadWrite())
-						setCellProps(row.getLastCell(), card);
-					else
-						setOnlyReadCellProps(row.getLastCell(), card);
-					numberOfCards--;
 				}
 			}
 			rows.appendChild(row);
 			row=new Row();
 		}
 	}//createRows
+
+	private void createEmptyCell(Row row, MKanbanStatus status){
+		row.appendCellChild(createSpacer());
+		setEmptyCellProps(row.getLastCell(),status);	
+	}
+
+	private void createCardCell(Row row, MKanbanStatus status){
+		MKanbanCard card = status.getCard();
+		Vlayout l = createCell(card);
+		row.appendCellChild(l);
+		if(isReadWrite())
+			setCellProps(row.getLastCell(), card);
+		else
+			setOnlyReadCellProps(row.getLastCell(), card);
+	}
 
 	private Vlayout createCell(MKanbanCard card){
 		Vlayout div = new Vlayout();
@@ -317,14 +326,14 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		cell.setStyle("border-style: outset; ");
 		mapCellColumn.put(cell, card);
 	}
-	
+
 	private void setQueuedCellProps(Cell cell, MKanbanCard card) {
 		cell.addEventListener(Events.ON_DOUBLE_CLICK, this);
 		cell.setStyle("text-align: left;");
 		cell.setStyle("border-style: outset; ");
 		mapCellColumn.put(cell, card);
 	}
-	
+
 	private void setOnlyReadCellProps(Cell cell, MKanbanCard card) {
 		cell.addEventListener(Events.ON_CLICK, this);
 		cell.addEventListener(Events.ON_DOUBLE_CLICK, this);
@@ -393,8 +402,10 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 				if(!swapCard(startStatus, endStatus, startField))
 					Messagebox.show(Msg.getMsg(Env.getCtx(), MKanbanCard.KDB_ErrorMessage));
-
-				repaintGrid();
+				else{
+					refreshBoard();
+					repaintGrid();
+				}
 			}
 		}else if (Events.ON_CLICK.equals(e.getName()) && e.getTarget() instanceof Button) {
 			if(kanbanBoardId!=-1){

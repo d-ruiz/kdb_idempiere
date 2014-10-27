@@ -69,6 +69,11 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	public void setBoardContent(){
 		getStatuses();
 		getKanbanCards();
+		for(MKanbanStatus status:statuses){
+			if(status.hasQueue()&&
+					!status.getSQLStatement().equals("C"))
+				getKanbanQueuedCards(status);
+		}
 	}
 
 	public MTable getTable() {
@@ -364,6 +369,72 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 			}
 		}
 	}//getKanbanCards
+	
+	/**
+	 *Get every card from the board
+	 *and assign them to its respective status
+	 */
+	public void getKanbanQueuedCards(MKanbanStatus status){
+
+		StringBuilder sql = new StringBuilder();
+		sql.append("SELECT ");
+
+		MTable table = getTable();
+		MColumn column = getStatusColumn();
+		String llaves[] = table.getKeyColumns();
+
+		sql.append(llaves[0]); 
+		
+		sql.append(" FROM "+table.getTableName());
+
+		StringBuilder whereClause = new StringBuilder();
+		whereClause.append(" WHERE ");
+
+		if(getWhereClause()!=null)
+			whereClause.append(getWhereClause()+" AND ");
+
+		whereClause.append(column.getColumnName()+ " IN ");
+
+		whereClause.append(getInValues());
+
+		whereClause.append(" AND AD_Client_ID IN (0, ?) AND IsActive='Y'");
+		whereClause.append(" AND "+status.getSQLStatement());
+		
+		sql.append(whereClause.toString());
+
+		log.info("Queue SQL"+sql.toString());
+
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			String sqlparsed = Env.parseContext(getCtx(), 0, sql.toString(), false);
+			pstmt = DB.prepareStatement(sqlparsed, get_TrxName());
+			pstmt.setInt(1, Env.getAD_Client_ID(Env.getCtx()));
+			rs = pstmt.executeQuery();
+			int id = -1;
+			while (rs.next())
+			{
+				id = rs.getInt(1);
+				MKanbanCard card = status.getCard(id);
+				if(card!=null){
+					status.removeRecord(card);
+					status.addQueuedRecord(card);
+					card.setQueued(true);	
+				}
+			}
+		}
+		catch (SQLException e)
+		{
+			log.log(Level.SEVERE, sql.toString(), e);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
+		}
+	}//getKanbanQueuedCards
 
 	private String getInValues(){
 
