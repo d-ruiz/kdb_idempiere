@@ -212,10 +212,18 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				//Create columns based on the states of the kanban board
 				Column  column;
 				for(MKanbanStatus status: getStatuses()){
+					if(status.hasQueue()){
+						column = new Column();
+						column.setWidth(equalWidth/2 + "%");
+						columns.appendChild(column);
+						column.setAlign("right");
+						column.setLabel(status.getPrintableName().substring(0, 1)+" Queue");
+						column.setStyle("background-color: yellow;");
+						columns.appendChild(column);
+					}
 					column = new Column();
 					column.setWidth(equalWidth + "%");
 					columns.appendChild(column);
-					//column.setHflex("min");
 					column.setAlign("right");
 					columns.appendChild(column);
 					if(status.getTotalCards()!=0)
@@ -247,10 +255,31 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			for(MKanbanStatus status: getStatuses()){
 				row.setStyle("background-color:" + getBackgroundColor() + ";");
 				if(!status.hasMoreCards()){
+					if(status.hasQueue()){
+						row.appendCellChild(createSpacer());
+						setEmptyCellProps(row.getLastCell(),status);
+					}
 					row.appendCellChild(createSpacer());
 					setEmptyCellProps(row.getLastCell(),status);
 				}
 				else{
+					if(status.hasQueue()){
+						if(status.hasMoreQueuedCards()){
+							MKanbanCard queuedCard = status.getQueuedCard();
+							if(queuedCard.isQueued())
+								System.out.println("Cola cola cola"+queuedCard.getKanbanCardText());
+							Vlayout l = createCell(queuedCard);
+							row.appendCellChild(l);
+							if(!isReadWrite())
+								setOnlyReadCellProps(row.getLastCell(), queuedCard);
+							else
+								setQueuedCellProps(row.getLastCell(), queuedCard);
+							numberOfCards--;
+						}else{
+							row.appendCellChild(createSpacer());
+							setEmptyCellProps(row.getLastCell(),status);
+						}
+					}
 					MKanbanCard card = status.getCard();
 					Vlayout l = createCell(card);
 					row.appendCellChild(l);
@@ -283,6 +312,13 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		cell.setDroppable("true");
 		cell.addEventListener(Events.ON_DROP, this);
 		cell.addEventListener(Events.ON_CLICK, this);
+		cell.addEventListener(Events.ON_DOUBLE_CLICK, this);
+		cell.setStyle("text-align: left;");
+		cell.setStyle("border-style: outset; ");
+		mapCellColumn.put(cell, card);
+	}
+	
+	private void setQueuedCellProps(Cell cell, MKanbanCard card) {
 		cell.addEventListener(Events.ON_DOUBLE_CLICK, this);
 		cell.setStyle("text-align: left;");
 		cell.setStyle("border-style: outset; ");

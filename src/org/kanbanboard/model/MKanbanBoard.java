@@ -169,10 +169,10 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 				pstmt.setInt(1, getKDB_KanbanBoard_ID());
 				pstmt.setInt(2, Env.getAD_Client_ID(Env.getCtx()));
 				rs = pstmt.executeQuery();
-				int kanbanStatusesId = 0;
+				int kanbanStatusId = 0;
 				while(rs.next()){
-					kanbanStatusesId = rs.getInt(1);
-					MKanbanStatus kanbanStatus = new MKanbanStatus(getCtx(), kanbanStatusesId, get_TrxName());
+					kanbanStatusId = rs.getInt(1);
+					MKanbanStatus kanbanStatus = new MKanbanStatus(getCtx(), kanbanStatusId, get_TrxName());
 					statuses.add(kanbanStatus);
 				}
 
@@ -320,7 +320,19 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 					id = rs.getInt(1);
 					correspondingColumn = rs.getString(2);
 					MKanbanStatus status = getStatus(correspondingColumn);
-					if(status.getMaxNumCards()==0&&!status.isShowOver()){
+					if(status.hasQueue()&&status.getSQLStatement().equals("C")    //Queued Records
+							&&status.getMaxNumCards()<=status.getRecords().size()){
+						MKanbanCard card = new MKanbanCard(id,status);
+						if(hasPriorityOrder()){
+							BigDecimal priorityValue = rs.getBigDecimal(3);
+							card.setPriorityValue(priorityValue);
+						}
+						status.addQueuedRecord(card);
+						numberOfCards++;
+						status.setTotalCards(status.getTotalCards()+1);
+						card.setQueued(true);
+					}
+					else if(status.getMaxNumCards()==0&&!status.isShowOver()){
 						status.setTotalCards(status.getTotalCards()+1);
 						continue;
 					}
@@ -334,9 +346,10 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 						numberOfCards++;
 						status.setTotalCards(status.getTotalCards()+1);
 					}
-					else if(!status.isShowOver())
+					else if(!status.isShowOver()){
 						status.setTotalCards(status.getTotalCards()+1);
-					status.setExceed(true);
+						status.setExceed(true);	
+					}
 				}
 			}
 			catch (SQLException e)
@@ -382,6 +395,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	public void resetStatusProperties() {
 		for(MKanbanStatus status:statuses){
 			status.setCardNumber(0);
+			status.setQueuedCardNumber(0);
 			if(hasPriorityOrder())
 				status.orderCards();
 		}
