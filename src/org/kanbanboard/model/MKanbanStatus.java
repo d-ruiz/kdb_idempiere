@@ -127,7 +127,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 	}
 
 	public boolean hasMoreCards(){
-		if((!hasCards()&&!hasQueue())||totalCards<=cardNumber+queuedCardNumber)
+		if((!hasMoreStatusCards()&&!hasQueue())||totalCards<=cardNumber+queuedCardNumber)
 			return false;
 		return true;
 	}
