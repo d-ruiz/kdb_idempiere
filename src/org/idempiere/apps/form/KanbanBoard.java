@@ -67,13 +67,13 @@ public class KanbanBoard {
 			sql = "SELECT k.KDB_KanbanBoard_ID, k.Name "
 					+ "FROM KDB_KanbanBoard k "
 					+ "WHERE k.AD_Client_ID IN (0, ?) AND k.IsActive='Y' "
-					+ "AND k.KDB_KanbanBoard_ID IN (SELECT KDB_KanbanBoard_ID FROM KDB_KanbanBoardControlAccess WHERE AD_Role_ID=?) "
+					+ "AND k.KDB_KanbanBoard_ID IN (SELECT KDB_KanbanBoard_ID FROM KDB_KanbanControlAccess WHERE AD_Role_ID=?) "
 					+ "ORDER BY k.Name";
 		else
 			sql = "SELECT k.KDB_KanbanBoard_ID, kt.Name "
 					+ "FROM KDB_KanbanBoard k JOIN KDB_KanbanBoard_Trl kt ON (k.KDB_KanbanBoard_ID=kt.KDB_KanbanBoard_ID) "
 					+ "WHERE k.AD_Client_ID IN (0, ?) AND k.IsActive='Y' "
-					+ "AND k.KDB_KanbanBoard_ID IN (SELECT KDB_KanbanBoard_ID FROM KDB_KanbanBoardControlAccess WHERE AD_Role_ID=?) "
+					+ "AND k.KDB_KanbanBoard_ID IN (SELECT KDB_KanbanBoard_ID FROM KDB_KanbanControlAccess WHERE AD_Role_ID=?) "
 					+ "ORDER BY kt.Name";
 
 		KeyNamePair[] list = DB.getKeyNamePairs(null, sql, true, Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Role_ID(Env.getCtx()));
@@ -83,7 +83,7 @@ public class KanbanBoard {
 	
 	public boolean isReadWrite(){
 		if(isReadWrite==null){
-			String sql = "SELECT isreadwrite FROM KDB_KanbanBoardControlAccess " +
+			String sql = "SELECT isreadwrite FROM KDB_KanbanControlAccess " +
 					"WHERE KDB_KanbanBoard_ID = ? AND AD_Role_ID= ? AND IsActive = 'Y'";
 
 			PreparedStatement pstmt = null;
