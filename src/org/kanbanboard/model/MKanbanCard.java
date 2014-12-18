@@ -26,8 +26,11 @@
 package org.kanbanboard.model;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 
+import org.adempiere.webui.apps.AEnv;
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
@@ -292,17 +295,27 @@ public class MKanbanCard{
 		} else if (col.getAD_Reference_ID() == DisplayType.Date || col.getAD_Reference_ID() == DisplayType.DateTime || col.getAD_Reference_ID() == DisplayType.Time) {
 			SimpleDateFormat sdf;
 			if(format != null && format.length() > 0){
-				sdf = new SimpleDateFormat(format);
+				sdf = new SimpleDateFormat(format, AEnv.getLocale(Env.getCtx()));
 			}else{
 				sdf = DisplayType.getDateFormat(col.getAD_Reference_ID());
 			}
-			value = sdf.format (po.get_Value(index));	
+			if(po.get_Value(index)!=null)
+				value = sdf.format (po.get_Value(index));	
 		} else if (col.getAD_Reference_ID() == DisplayType.YesNo) {
 			if (po.get_ValueAsBoolean(variable))
 				value = Msg.getMsg(Env.getCtx(), "Yes");
 			else
 				value = Msg.getMsg(Env.getCtx(), "No");
-		} else {
+		}else if (col.getAD_Reference_ID() == DisplayType.Number || col.getAD_Reference_ID() == DisplayType.Amount) {
+			DecimalFormat df;
+			if(format != null && format.length() > 0){
+				df =  new DecimalFormat(format);
+			}else{
+				df = DisplayType.getNumberFormat(col.getAD_Reference_ID());
+			}
+			if(po.get_Value(index)!=null)
+				value = df.format (po.get_Value(index));	
+		}else {
 			value = po.get_Value(index);
 		}
 		if (value == null)
