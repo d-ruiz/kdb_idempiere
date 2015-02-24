@@ -304,11 +304,16 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 			whereClause.append(" AND AD_Client_ID IN (0, ?) AND IsActive='Y' ");
 
 			sql.append(whereClause.toString());
-
-			if(hasPriorityOrder())
+			
+			if (getOrderByClause()!=null)
+			{
+				sql.append(" ORDER BY "+getOrderByClause());
+			}
+			else if(hasPriorityOrder())
 				sql.append(" ORDER BY "+getKDB_PrioritySQL()+" DESC");
 
 			log.info(sql.toString());
+			System.out.println(sql.toString()+ " " + Env.getAD_Client_ID(Env.getCtx()));
 
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;

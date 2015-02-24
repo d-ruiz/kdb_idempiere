@@ -139,12 +139,15 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 	}
 
 	public void orderCards(){
-		Collections.sort(records, Collections.reverseOrder(new Comparator<MKanbanCard>() {
-			@Override
-			public int compare(MKanbanCard card1, MKanbanCard card2) {
-				return card1.getPriorityValue().intValue()-(card2.getPriorityValue().intValue());
-			}
-		}));
+		if(kanbanBoard.getOrderByClause()==null)
+		{
+			Collections.sort(records, Collections.reverseOrder(new Comparator<MKanbanCard>() {
+				@Override
+				public int compare(MKanbanCard card1, MKanbanCard card2) {
+					return card1.getPriorityValue().intValue()-(card2.getPriorityValue().intValue());
+				}
+			}));
+		}
 	}
 
 	public MKanbanCard getCard(){
