@@ -194,8 +194,9 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 			setKanbanBoard(kanbanBoardId);
 			kanbanPanel.makeNoStrip();
-			kanbanPanel.setVflex(false);
+			kanbanPanel.setVflex(true);
 			kanbanPanel.setSizedByContent(true);
+			kanbanPanel.setSpan("true");
 
 			int numCols=0;
 			numCols = getNumberOfStatuses();
@@ -203,7 +204,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			if(numCols>0){
 				// set size in percentage per column leaving a MARGIN on right
 				Columns columns = new Columns();
-				int equalWidth = 100 / numCols;
+				int equalWidth = 100 ;
 
 				//Create columns based on the states of the kanban board
 				Column  column;

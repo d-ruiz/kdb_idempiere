@@ -313,7 +313,6 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 				sql.append(" ORDER BY "+getKDB_PrioritySQL()+" DESC");
 
 			log.info(sql.toString());
-			System.out.println(sql.toString()+ " " + Env.getAD_Client_ID(Env.getCtx()));
 
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
