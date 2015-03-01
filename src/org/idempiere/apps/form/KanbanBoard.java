@@ -74,6 +74,7 @@ public class KanbanBoard {
 					+ "FROM KDB_KanbanBoard k JOIN KDB_KanbanBoard_Trl kt ON (k.KDB_KanbanBoard_ID=kt.KDB_KanbanBoard_ID) "
 					+ "WHERE k.AD_Client_ID IN (0, ?) AND k.IsActive='Y' "
 					+ "AND k.KDB_KanbanBoard_ID IN (SELECT KDB_KanbanBoard_ID FROM KDB_KanbanControlAccess WHERE AD_Role_ID=?) "
+					+ "AND kt.AD_Language='" + Env.getAD_Language(Env.getCtx())+"'"
 					+ "ORDER BY kt.Name";
 
 		KeyNamePair[] list = DB.getKeyNamePairs(null, sql, true, Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Role_ID(Env.getCtx()));
