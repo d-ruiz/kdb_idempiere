@@ -46,7 +46,7 @@ import org.kanbanboard.model.MKanbanStatus;
 public class KanbanBoard {
 
 	public static CLogger log = CLogger.getCLogger(KanbanBoard.class);
-	
+
 	private MKanbanBoard        kanbanBoard = null;
 	private List<MKanbanStatus> statuses    = null;
 	private MKanbanStatus       activeStatus;
@@ -62,26 +62,30 @@ public class KanbanBoard {
 
 	public KeyNamePair[] getProcessList(){
 		String sql = null;
+		KeyNamePair[] list;
 		boolean baseLanguage = Env.isBaseLanguage(Env.getCtx(), MKanbanBoard.Table_Name);
-		if (baseLanguage)
+		if (baseLanguage){
 			sql = "SELECT k.KDB_KanbanBoard_ID, k.Name "
 					+ "FROM KDB_KanbanBoard k "
 					+ "WHERE k.AD_Client_ID IN (0, ?) AND k.IsActive='Y' "
 					+ "AND k.KDB_KanbanBoard_ID IN (SELECT KDB_KanbanBoard_ID FROM KDB_KanbanControlAccess WHERE AD_Role_ID=?) "
 					+ "ORDER BY k.Name";
-		else
+
+			list = DB.getKeyNamePairs(null, sql, true, Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Role_ID(Env.getCtx()));
+		}
+		else{
 			sql = "SELECT k.KDB_KanbanBoard_ID, kt.Name "
 					+ "FROM KDB_KanbanBoard k JOIN KDB_KanbanBoard_Trl kt ON (k.KDB_KanbanBoard_ID=kt.KDB_KanbanBoard_ID) "
 					+ "WHERE k.AD_Client_ID IN (0, ?) AND k.IsActive='Y' "
 					+ "AND k.KDB_KanbanBoard_ID IN (SELECT KDB_KanbanBoard_ID FROM KDB_KanbanControlAccess WHERE AD_Role_ID=?) "
-					+ "AND kt.AD_Language='" + Env.getAD_Language(Env.getCtx())+"'"
+					+ "AND kt.AD_Language=? "
 					+ "ORDER BY kt.Name";
-
-		KeyNamePair[] list = DB.getKeyNamePairs(null, sql, true, Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Role_ID(Env.getCtx()));
-
+			
+			list = DB.getKeyNamePairs(null, sql, true, Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Role_ID(Env.getCtx()),Env.getAD_Language(Env.getCtx()));
+		}
 		return list;
 	}
-	
+
 	public boolean isReadWrite(){
 		if(isReadWrite==null){
 			String sql = "SELECT isreadwrite FROM KDB_KanbanControlAccess " +
