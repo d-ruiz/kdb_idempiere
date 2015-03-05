@@ -28,7 +28,6 @@ package org.idempiere.webui.apps.form;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import org.adempiere.webui.LayoutUtils;
 import org.adempiere.webui.apps.AEnv;
@@ -307,15 +306,14 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 	private Vlayout createCell(MKanbanCard card){
 		Vlayout div = new Vlayout();
-		StringTokenizer str = new StringTokenizer(card.getKanbanCardText(), System.getProperty("line.separator"));
-		while(str.hasMoreTokens()){
-			Label label = new Label(str.nextToken());
+		String[] tokens = card.getKanbanCardText().split(System.getProperty("line.separator"));
+		for(String token:tokens){
+			Label label = new Label(token);
 			div.appendChild(label);
 		}
 		div.setStyle("text-align: left; background-color:" + card.getColor() + ";");
 		return div;
 	}//CreateCell
-
 
 	private void setCellProps(Cell cell, MKanbanCard card) {
 		cell.setDraggable("true");
