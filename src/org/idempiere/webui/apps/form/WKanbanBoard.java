@@ -311,7 +311,10 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			Label label = new Label(token);
 			div.appendChild(label);
 		}
-		div.setStyle("text-align: left; background-color:" + card.getColor() + ";");
+		if(!card.isQueued())
+			div.setStyle("cursor:hand;cursor:pointer; text-align: left; background-color:" + card.getColor() + ";");
+		else
+			div.setStyle("text-align: left; background-color:" + card.getColor() + ";");
 		return div;
 	}//CreateCell
 
