@@ -203,6 +203,8 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			if(numCols>0){
 				// set size in percentage per column leaving a MARGIN on right
 				Columns columns = new Columns();
+				columns.setMenupopup("auto");
+
 				int equalWidth = 100 ;
 
 				//Create columns based on the states of the kanban board
@@ -220,7 +222,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 					column = new Column();
 					column.setWidth(equalWidth + "%");
 					columns.appendChild(column);
-					column.setAlign("right");
+					column.setAlign("center");
 					columns.appendChild(column);
 					if(status.getTotalCards()!=0)
 						column.setLabel(status.getPrintableName()+"("+status.getTotalCards()+")");
