@@ -57,6 +57,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	private List<MKanbanPriority> priorityRules = new ArrayList<MKanbanPriority>();
 	private int numberOfCards =0;
 	private boolean isRefList = true;
+	private boolean statusProcessed = false;
 
 	public MKanbanBoard(Properties ctx, int KDB_KanbanBoard_ID, String trxName) {
 		super(ctx, KDB_KanbanBoard_ID, trxName);
@@ -162,8 +163,9 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 
 	public List<MKanbanStatus> getStatuses(){
 
-		if(statuses.size()==0&&getNumberOfStatuses()!=0){
+		if(!statusProcessed){
 
+			statusProcessed=true;
 			String sqlSelect = "SELECT kdb_kanbanStatus_id FROM KDB_kanbanStatus WHERE KDB_KanbanBoard_id = ? " +
 					" AND AD_Client_ID IN (0, ?) AND IsActive='Y' ORDER BY SeqNo";
 			PreparedStatement pstmt = null;
@@ -190,6 +192,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 				pstmt = null;
 			}
 		}
+
 		return statuses;
 	}//getStatuses
 
@@ -227,37 +230,9 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	}//getPriorityRules
 
 	public int getNumberOfStatuses(){
-
-		int numberOfStatuses = 0;
-		if (statuses.size()==0){
-
-			String sqlSelect = "SELECT COUNT(*) FROM KDB_kanbanStatus WHERE KDB_KanbanBoard_id = ? " +
-					" AND AD_Client_ID IN (0, ?) AND IsActive='Y'";
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
-			numberOfStatuses=-1;
-
-			try{
-				pstmt = DB.prepareStatement(sqlSelect, get_TrxName());
-				pstmt.setInt(1, getKDB_KanbanBoard_ID());
-				pstmt.setInt(2, Env.getAD_Client_ID(Env.getCtx()));
-				rs = pstmt.executeQuery();
-				if(rs.next())
-					numberOfStatuses=rs.getInt(1);
-
-			}catch (SQLException e) {
-				log.log(Level.SEVERE, sqlSelect , e);
-				//throw e;
-			} finally {
-				DB.close(rs, pstmt);
-				rs = null;
-				pstmt = null;
-			}
-		}
-		else 		
-			numberOfStatuses=statuses.size();
-
-		return numberOfStatuses;
+		if(!statusProcessed)
+			getStatuses();
+		return statuses.size();
 	}//getNumberOfStatuses
 
 	public boolean saveStatuses(){
