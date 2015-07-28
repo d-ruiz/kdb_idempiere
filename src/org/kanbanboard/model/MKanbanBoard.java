@@ -37,6 +37,7 @@ import java.util.logging.Level;
 import org.compiere.model.MColumn;
 import org.compiere.model.MRefList;
 import org.compiere.model.MTable;
+import org.compiere.model.Query;
 import org.compiere.print.MPrintColor;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -166,31 +167,13 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		if(!statusProcessed){
 
 			statusProcessed=true;
-			String sqlSelect = "SELECT kdb_kanbanStatus_id FROM KDB_kanbanStatus WHERE KDB_KanbanBoard_id = ? " +
-					" AND AD_Client_ID IN (0, ?) AND IsActive='Y' ORDER BY SeqNo";
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
 
-			try{
-				pstmt = DB.prepareStatement(sqlSelect, get_TrxName());
-				pstmt.setInt(1, getKDB_KanbanBoard_ID());
-				pstmt.setInt(2, Env.getAD_Client_ID(Env.getCtx()));
-				rs = pstmt.executeQuery();
-				int kanbanStatusId = 0;
-				while(rs.next()){
-					kanbanStatusId = rs.getInt(1);
-					MKanbanStatus kanbanStatus = new MKanbanStatus(getCtx(), kanbanStatusId, get_TrxName());
-					statuses.add(kanbanStatus);
-				}
-
-			}catch (SQLException e) {
-				log.log(Level.SEVERE, sqlSelect , e);
-				//throw e;
-			} finally {
-				DB.close(rs, pstmt);
-				rs = null;
-				pstmt = null;
-			}
+			statuses = new Query(getCtx(), MKanbanStatus.Table_Name, " KDB_KanbanBoard_ID = ? AND AD_Client_ID IN (0, ?) AND IsActive='Y' ", get_TrxName())
+			.setParameters(new Object[]{getKDB_KanbanBoard_ID(),Env.getAD_Client_ID(Env.getCtx())})
+			.setOnlyActiveRecords(true)
+			.setOrderBy("SeqNo")
+ 			.list();
+			
 		}
 
 		return statuses;
@@ -200,31 +183,12 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 
 		if(priorityRules.size()==0){
 
-			String sqlSelect = "SELECT kdb_kanbanpriority_id FROM KDB_kanbanpriority WHERE KDB_KanbanBoard_id = ? " +
-					" AND AD_Client_ID IN (0, ?) AND IsActive='Y' ORDER BY MinValue";
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
-
-			try{
-				pstmt = DB.prepareStatement(sqlSelect, get_TrxName());
-				pstmt.setInt(1, getKDB_KanbanBoard_ID());
-				pstmt.setInt(2, Env.getAD_Client_ID(Env.getCtx()));
-				rs = pstmt.executeQuery();
-				int kanbanPriorityId = 0;
-				while(rs.next()){
-					kanbanPriorityId = rs.getInt(1);
-					MKanbanPriority kanbanPriority = new MKanbanPriority(getCtx(), kanbanPriorityId, get_TrxName());
-					priorityRules.add(kanbanPriority);
-				}
-
-			}catch (SQLException e) {
-				log.log(Level.SEVERE, sqlSelect , e);
-				//throw e;
-			} finally {
-				DB.close(rs, pstmt);
-				rs = null;
-				pstmt = null;
-			}
+			priorityRules = new Query(getCtx(), MKanbanPriority.Table_Name, " KDB_KanbanBoard_id = ? AND AD_Client_ID IN (0, ?) AND IsActive='Y' ", get_TrxName())
+			.setParameters(new Object[]{getKDB_KanbanBoard_ID(),Env.getAD_Client_ID(Env.getCtx())})
+			.setOnlyActiveRecords(true)
+			.setOrderBy("MinValue")    
+ 			.list();
+			
 		}
 		return priorityRules;
 	}//getPriorityRules
