@@ -31,7 +31,7 @@ public class X_KDB_KanbanBoard extends PO implements I_KDB_KanbanBoard, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20150224L;
+	private static final long serialVersionUID = 20150815L;
 
     /** Standard Constructor */
     public X_KDB_KanbanBoard (Properties ctx, int KDB_KanbanBoard_ID, String trxName)
@@ -284,6 +284,23 @@ public class X_KDB_KanbanBoard extends PO implements I_KDB_KanbanBoard, I_Persis
 	public String getKDB_PrioritySQL () 
 	{
 		return (String)get_Value(COLUMNNAME_KDB_PrioritySQL);
+	}
+
+	/** Set Summary SQL.
+		@param KDB_SummarySQL 
+		Defines the SQL code that sets the summary that is set on every state of the Kanban Board
+	  */
+	public void setKDB_SummarySQL (String KDB_SummarySQL)
+	{
+		set_Value (COLUMNNAME_KDB_SummarySQL, KDB_SummarySQL);
+	}
+
+	/** Get Summary SQL.
+		@return Defines the SQL code that sets the summary that is set on every state of the Kanban Board
+	  */
+	public String getKDB_SummarySQL () 
+	{
+		return (String)get_Value(COLUMNNAME_KDB_SummarySQL);
 	}
 
 	/** Set Name.

@@ -32,7 +32,7 @@ public interface I_KDB_KanbanBoard
     /** TableName=KDB_KanbanBoard */
     public static final String Table_Name = "KDB_KanbanBoard";
 
-    /** AD_Table_ID=1000007 */
+    /** AD_Table_ID=1000000 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -211,6 +211,19 @@ public interface I_KDB_KanbanBoard
 
 	/** Get Priority SQL	  */
 	public String getKDB_PrioritySQL();
+
+    /** Column name KDB_SummarySQL */
+    public static final String COLUMNNAME_KDB_SummarySQL = "KDB_SummarySQL";
+
+	/** Set Summary SQL.
+	  * Defines the SQL code that sets the summary that is set on every state of the Kanban Board
+	  */
+	public void setKDB_SummarySQL (String KDB_SummarySQL);
+
+	/** Get Summary SQL.
+	  * Defines the SQL code that sets the summary that is set on every state of the Kanban Board
+	  */
+	public String getKDB_SummarySQL();
 
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
