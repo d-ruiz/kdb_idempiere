@@ -59,6 +59,8 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	private int numberOfCards =0;
 	private boolean isRefList = true;
 	private boolean statusProcessed = false;
+	private String summarySql;
+	private int summaryCounter   = 0;
 
 	public MKanbanBoard(Properties ctx, int KDB_KanbanBoard_ID, String trxName) {
 		super(ctx, KDB_KanbanBoard_ID, trxName);
@@ -444,4 +446,82 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		MPrintColor priorityColor = new MPrintColor(Env.getCtx(), getKDB_BackgroundColor_ID(), null);
 		return priorityColor.getName();
 	}
+	
+	public String getSummarySql(){
+
+		String summaryText = getKDB_SummarySQL();
+
+		if( summarySql == null && summaryText != null ){
+
+			int i = summaryText.indexOf("@SQL=");
+
+			if( i > -1 ){
+
+				i = summaryText.indexOf('=');
+				String inStr;
+				inStr = summaryText.substring(i+1, summaryText.length());	// from =
+
+				if(summarySql == null )
+					summarySql = addWhereClauseValidation(inStr);
+			}
+		}
+
+		return summarySql;
+	}//getSummarySql
+	
+	private int getSummaryNumberOfColumns(String sqlQuery) {
+
+		if( summaryCounter == 0){
+			int counter = 0;
+			int i = sqlQuery.indexOf("SELECT");
+
+			if( i > -1 ){
+
+				int j = sqlQuery.indexOf("FROM");
+				if( j > -1 ){
+					counter++;
+					String selectClause = sqlQuery.substring(i, j);
+
+					for( int k=0; k<selectClause.length(); k++ ) {
+						if( selectClause.charAt(k) == ',' ) {
+							counter++;
+						} 
+					}
+				}
+			}
+			summaryCounter = counter;
+		}
+		return summaryCounter;
+	}//getSummaryNumberofColumns
+	
+	public int getSummaryCounter(){
+		if(summarySql != null)
+			return getSummaryNumberOfColumns(summarySql);
+		return summaryCounter;
+	}//getSummaryCounter
+	
+	/**
+	 * Adds the AD_CLIENT_ID condition for info access security
+	 * @param sqlQuery
+	 */
+	private String addWhereClauseValidation(String sqlQuery){
+		
+		StringBuilder whereClause = new StringBuilder(""); 
+		int i = sqlQuery.indexOf("WHERE");
+		if( i > -1 ){
+			whereClause.append(sqlQuery.substring(i, sqlQuery.length()) + " AND " );
+			sqlQuery = sqlQuery.substring(0, i);
+		}
+		else{
+			whereClause.append(" WHERE ");
+		}
+
+		whereClause.append(table.getTableName() + ".AD_Client_ID IN (0, ?) AND "+ table.getTableName()+ ".IsActive='Y' ");
+		
+		sqlQuery = sqlQuery + whereClause;
+		
+		return sqlQuery;
+
+	}//addWhereClauseValidation
+
 }

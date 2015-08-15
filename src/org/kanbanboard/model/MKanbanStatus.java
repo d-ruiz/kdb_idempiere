@@ -25,12 +25,18 @@
 
 package org.kanbanboard.model;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+
+import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 
 public class MKanbanStatus extends X_KDB_KanbanStatus{
@@ -230,4 +236,52 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 		queuedCardNumber++;
 		return card;
 	}
+	
+	public String getSummary(String summarySql, int numberOfColumns) {		
+		
+		String result = null;
+
+		if( summarySql != null ){		
+			int j = summarySql.indexOf("@KanbanStatus@");		
+			if( j > -1 ){
+				summarySql = summarySql.replaceAll("@KanbanStatus@", "'" + getStatusValue() + "'");		
+			}
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;
+			try
+			{
+				pstmt = DB.prepareStatement(summarySql, get_TrxName());
+				pstmt.setInt(1, Env.getAD_Client_ID(Env.getCtx()));
+				rs = pstmt.executeQuery();
+				StringBuilder resultQuery = new StringBuilder();
+
+				if(rs.next()){
+					int column = 1;
+					String value;
+					while ( column <= numberOfColumns )
+					{
+						value = rs.getString(column);
+						if( value != null ){
+							resultQuery.append(value);
+							resultQuery.append(" /");
+						}
+						column++;
+					}
+					result = resultQuery.toString();
+					if( result.length() > 0 && result.charAt(result.length()-1)=='/' )
+						result = result.substring(0, result.length()-1);
+				}
+			}
+			catch (SQLException e){
+				log.log(Level.SEVERE, summarySql, e);
+			}
+			finally{
+				DB.close(rs, pstmt);
+				rs = null;
+				pstmt = null;
+			}
+		}
+		return result;
+	} //getSummary
+
 }

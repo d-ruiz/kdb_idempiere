@@ -51,6 +51,8 @@ public class KanbanBoard {
 	private List<MKanbanStatus> statuses    = null;
 	private MKanbanStatus       activeStatus;
 	private String              isReadWrite = null;
+	private String              summarySql = null;		
+	private int                 summaryCounter = 0;
 
 	public int getNumberOfCards() {
 		return kanbanBoard.getNumberOfCards();
@@ -138,11 +140,13 @@ public class KanbanBoard {
 		//Check if it's it's a new kanban board or the one already selected
 		if(kanbanBoardId==-1)
 			kanbanBoard=null;
-		else if(kanbanBoard==null||kanbanBoardId!=kanbanBoard.get_ID()){
+		else if( kanbanBoard == null || kanbanBoardId != kanbanBoard.get_ID() ){
 			kanbanBoard = new MKanbanBoard(Env.getCtx(), kanbanBoardId, null);
 			statuses=null;
 			isReadWrite = null;
 			kanbanBoard.setBoardContent();
+			summarySql = null;		
+			summaryCounter = 0;
 		}
 	}
 
@@ -203,5 +207,18 @@ public class KanbanBoard {
 	public Object getPOObject(MTable table, int recordID, String trxName){
 		PO object = table.getPO(recordID, trxName);
 		return object;
+	}
+	
+	public String getSummarySql(){		
+		if( summarySql == null && kanbanBoard.getKDB_SummarySQL() != null ){		
+			summarySql = kanbanBoard.getSummarySql();		
+		}		
+		return summarySql;		
+	}		
+			
+	public int getSummaryCounter(){		
+		if(summaryCounter == 0)		
+			summaryCounter = kanbanBoard.getSummaryCounter();		
+		return summaryCounter;		
 	}
 }

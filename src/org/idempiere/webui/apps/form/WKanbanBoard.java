@@ -55,6 +55,8 @@ import org.zkoss.zk.ui.event.DropEvent;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
+import org.zkoss.zul.Auxhead;
+import org.zkoss.zul.Auxheader;
 import org.zkoss.zul.Borderlayout;
 import org.zkoss.zul.Cell;
 import org.zkoss.zul.Column;
@@ -206,9 +208,11 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				columns.setMenupopup("auto");
 
 				int equalWidth = 100 ;
+				Auxhead auxhead = new Auxhead();
 
 				//Create columns based on the states of the kanban board
 				Column  column;
+				Auxheader auxheader;
 				for(MKanbanStatus status: getStatuses()){
 					if(status.hasQueue()){
 						column = new Column();
@@ -218,6 +222,10 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 						column.setLabel(status.getPrintableName().substring(0, 1)+" Queue");
 						column.setStyle("background-color: yellow;");
 						columns.appendChild(column);
+						if( status.getKanbanBoard().getKDB_SummarySQL() != null ){
+							auxheader = new Auxheader();
+							auxhead.appendChild(auxheader);
+						}
 					}
 					column = new Column();
 					column.setWidth(equalWidth + "%");
@@ -230,10 +238,18 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 						column.setLabel(status.getPrintableName());
 					if(status.isExceed())
 						column.setStyle("background-color: red;");
+					if( getSummarySql() != null ){
+						column.setStyle("background-color: #d9e3ec");
+						auxheader = new Auxheader();
+						auxheader.setLabel(status.getSummary(getSummarySql(),getSummaryCounter()));
+						auxheader.setTooltiptext(status.getSummary(getSummarySql(),getSummaryCounter()));
+						auxhead.appendChild(auxheader);
+					}
 				}
 				columns.setSizable(true);
 				createRows();	
 				kanbanPanel.appendChild(columns);
+				kanbanPanel.appendChild(auxhead);
 			}
 
 			if (numCols <= 0) {
