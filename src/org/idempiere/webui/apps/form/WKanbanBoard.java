@@ -268,7 +268,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		while(numberOfCards>0){
 			for(MKanbanStatus status: getStatuses()){
 				// [matica1] use background style instead of background-color and set transparent if no colors are set
-				if (getBackgroundColor() != null && getBackgroundColor().equals("") == false)
+				if (getBackgroundColor() != null && !getBackgroundColor().equals(""))
 				{
 					row.setStyle("background:" + getBackgroundColor() + ";");
 				}else
