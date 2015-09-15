@@ -26,42 +26,60 @@
 package org.idempiere.webui.apps.form;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.adempiere.webui.LayoutUtils;
 import org.adempiere.webui.apps.AEnv;
+import org.adempiere.webui.apps.BusyDialog;
+import org.adempiere.webui.apps.ProcessModalDialog;
+import org.adempiere.webui.apps.WProcessCtl;
 import org.adempiere.webui.component.Button;
 import org.adempiere.webui.component.Grid;
 import org.adempiere.webui.component.GridFactory;
 import org.adempiere.webui.component.Label;
 import org.adempiere.webui.component.Listbox;
 import org.adempiere.webui.component.ListboxFactory;
+import org.adempiere.webui.component.Menupopup;
 import org.adempiere.webui.component.Panel;
+import org.adempiere.webui.component.ProcessInfoDialog;
 import org.adempiere.webui.component.Row;
 import org.adempiere.webui.component.Rows;
+import org.adempiere.webui.event.DialogEvents;
 import org.adempiere.webui.panel.ADForm;
 import org.adempiere.webui.panel.CustomForm;
 import org.adempiere.webui.panel.IFormController;
+import org.adempiere.webui.session.SessionManager;
 import org.adempiere.webui.theme.ThemeManager;
+import org.compiere.model.MPInstance;
+import org.compiere.model.MProcess;
+import org.compiere.process.ProcessInfo;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
 import org.idempiere.apps.form.KanbanBoard;
 import org.kanbanboard.model.MKanbanCard;
+import org.kanbanboard.model.MKanbanProcess;
 import org.kanbanboard.model.MKanbanStatus;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.DropEvent;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
+import org.zkoss.zk.ui.event.OpenEvent;
 import org.zkoss.zul.Auxhead;
 import org.zkoss.zul.Auxheader;
 import org.zkoss.zul.Borderlayout;
 import org.zkoss.zul.Cell;
 import org.zkoss.zul.Column;
 import org.zkoss.zul.Columns;
+import org.zkoss.zul.Div;
 import org.zkoss.zul.Hbox;
+import org.zkoss.zul.Menuitem;
+import org.zkoss.zul.Menuseparator;
 import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.North;
 import org.zkoss.zul.South;
@@ -76,6 +94,10 @@ import org.zkoss.zul.Vlayout;
 
 public class WKanbanBoard extends KanbanBoard implements IFormController, EventListener<Event>{
 
+
+	private static final String KDB_REFRESH_BUTTON_ID = "refreshKdb";
+	protected final static String PROCESS_ID_KEY = "processId";
+
 	private CustomForm kForm = new CustomForm();;	
 
 	private Borderlayout	mainLayout	= new Borderlayout();
@@ -86,6 +108,17 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	private Listbox cbProcess = ListboxFactory.newDropdownListbox();
 	private int kanbanBoardId=-1;
 	private Button bRefresh = new Button();
+	private Menupopup menupopup;
+	private Menupopup cardpopup;
+	private Hbox      northPanelHbox;
+	
+	//Process Functionality
+	private Div boardButtonsDiv;
+	private ArrayList<Integer>	m_results = new ArrayList<Integer>(3);
+	private BusyDialog progressWindow;
+	private int rightClickedCard = 0;
+
+	private int windowNo = 0;
 
 	Map<Cell, MKanbanCard> mapCellColumn = new HashMap<Cell, MKanbanCard>();
 	Map<Cell, MKanbanStatus> mapEmptyCellField = new HashMap<Cell, MKanbanStatus>();
@@ -102,6 +135,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 		try
 		{
+			windowNo = SessionManager.getAppDesktop().registerWindow(this);
 			dynList();
 			jbInit();
 			LayoutUtils.sendDeferLayoutEvent(mainLayout, 100);
@@ -132,17 +166,19 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		Rows rows = gridLayout.newRows();
 		Row row = rows.newRow();
 		bRefresh.setImage(ThemeManager.getThemeResource("images/Refresh16.png"));
+		bRefresh.setId(KDB_REFRESH_BUTTON_ID);
 		bRefresh.setTooltiptext(Msg.getMsg(Env.getCtx(), "Refresh"));
 		bRefresh.addEventListener(Events.ON_CLICK, this);
-		Hbox hbox = new Hbox();
-		hbox.appendChild(lProcess.rightAlign());
-		hbox.appendChild(cbProcess);
-		hbox.appendChild(bRefresh);
+
+		northPanelHbox = new Hbox();
+		northPanelHbox.appendChild(lProcess.rightAlign());
+		northPanelHbox.appendChild(cbProcess);
+		northPanelHbox.appendChild(bRefresh);
 		Cell cell = new Cell();
 		cell.setColspan(3);
 		cell.setRowspan(1);
 		cell.setAlign("left");
-		cell.appendChild(hbox);
+		cell.appendChild(northPanelHbox);
 		row.appendChild(cell);
 
 		North north = new North();
@@ -180,6 +216,45 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		cbProcess.addEventListener(Events.ON_SELECT, this);
 
 	}   //  dynList
+	
+	/**
+	 * Load info process for Kanban Board
+	 */
+	private void initKanbanProcess() {
+
+		if (kanbanPanel == null)
+			return;
+		if(menupopup!=null){
+			kForm.removeChild(menupopup);
+			menupopup = null;
+		}
+		
+		if(cardpopup!=null){
+			kForm.removeChild(cardpopup);
+			cardpopup = null;
+		}
+		
+		if(boardButtonsDiv!=null){
+			northPanelHbox.removeChild(boardButtonsDiv);
+			boardButtonsDiv = null;
+		}
+
+		if( getNumberOfProcesses() > 0  && getProcesses() != null ){
+			//Fill the lists - (Status,board,card) process
+			for( MKanbanProcess process: getProcesses() ){
+				if(MKanbanProcess.KDB_PROCESSSCOPE_Status.equals(process.getKDB_ProcessScope()))
+					getStatusProcesses().add(process);
+				else if(MKanbanProcess.KDB_PROCESSSCOPE_Board.equals(process.getKDB_ProcessScope()))
+					getBoardProcesses().add(process);
+				else if(MKanbanProcess.KDB_PROCESSSCOPE_Card.equals(process.getKDB_ProcessScope()))
+					getCardProcesses().add(process);
+			}
+			setProcessMenupopup();
+			setCardMenupopup();
+			setBoardProcess();
+		}
+
+	}
 
 	/**
 	 * Create the panel where the kanban board
@@ -198,6 +273,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			kanbanPanel.setVflex(true);
 			kanbanPanel.setSizedByContent(true);
 			kanbanPanel.setSpan("true");
+			initKanbanProcess();
 
 			int numCols=0;
 			numCols = getNumberOfStatuses();
@@ -205,7 +281,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			if(numCols>0){
 				// set size in percentage per column leaving a MARGIN on right
 				Columns columns = new Columns();
-				columns.setMenupopup("auto");
+				columns.setMenupopup(getBoardMenupopup());
 
 				int equalWidth = 100 ;
 				Auxhead auxhead = new Auxhead();
@@ -228,6 +304,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 						}
 					}
 					column = new Column();
+					column.setId(Integer.toString(status.get_ID()));
 					column.setWidth(equalWidth + "%");
 					columns.appendChild(column);
 					column.setAlign("center");
@@ -350,8 +427,10 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		cell.addEventListener(Events.ON_DROP, this);
 		cell.addEventListener(Events.ON_CLICK, this);
 		cell.addEventListener(Events.ON_DOUBLE_CLICK, this);
+		cell.addEventListener(Events.ON_RIGHT_CLICK, this);
 		cell.setStyle("text-align: left;");
 		cell.setStyle("border-style: outset; ");
+		cell.setContext(cardpopup);
 		mapCellColumn.put(cell, card);
 	}
 
@@ -376,6 +455,113 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		lastCell.addEventListener(Events.ON_DROP, this);
 		mapEmptyCellField.put(lastCell, status);
 	}
+	
+	/**
+	 * Set Process Menupopup if there are status scope processes
+	 */
+	private void setProcessMenupopup(){
+		
+		if( getStatusProcesses()!= null && getStatusProcesses().size()>0 ){
+			menupopup = new Menupopup();
+			menupopup.setId("processMenu");
+			menupopup.addEventListener(Events.ON_OPEN, this);
+			Menuitem menuitem;
+			
+			//Add the processes
+			for(MKanbanProcess process: getStatusProcesses()){
+				menuitem = new Menuitem();
+				menuitem.setId(Integer.toString(process.getKDB_KanbanProcess_ID()));
+				menuitem.setLabel(process.getName());
+				menuitem.setImage(ThemeManager.getThemeResource("images/Process16.png"));
+				menuitem.setAttribute(PROCESS_ID_KEY, new Integer(process.getAD_Process_ID()));
+				menuitem.setAttribute(PROCESS_TYPE, STATUS_PROCESS);
+				menuitem.addEventListener(Events.ON_CLICK, this);
+				menupopup.appendChild(menuitem);
+			}
+			
+			Menuseparator ms = new Menuseparator();
+			menupopup.appendChild(ms);
+			
+			//Reproduce behavior of "auto" for customized menupopup
+			for(MKanbanStatus status: getStatuses()){
+				menuitem = new Menuitem();
+				menuitem.setId(Integer.toString(status.get_ID()));
+				menuitem.setLabel(status.getPrintableName());
+				menuitem.setChecked(true);
+				menuitem.setCheckmark(true);
+				menuitem.setAutocheck(true);
+				menuitem.addEventListener(Events.ON_CLICK, this);
+				
+				menupopup.appendChild(menuitem);
+			}
+			
+			kForm.appendChild(menupopup);
+		}
+	}//setProcessMenupopup
+	
+	/**
+	 * Set Card Menupopup if there are card scope processes
+	 */
+	private void setCardMenupopup(){
+		
+		cardpopup = new Menupopup();
+		
+		if( getCardProcesses() != null && getCardProcesses().size()>0 ){
+			
+			cardpopup.setId("cardMenu");
+			Menuitem menuitem;
+			
+			//Add the processes
+			for( MKanbanProcess process : getCardProcesses() ){
+				menuitem = new Menuitem();
+				menuitem.setId(Integer.toString(process.getKDB_KanbanProcess_ID()));
+				menuitem.setLabel(process.getName());
+				menuitem.setImage(ThemeManager.getThemeResource("images/Process16.png"));
+				menuitem.setAttribute(PROCESS_ID_KEY, new Integer(process.getAD_Process_ID()));
+				menuitem.setAttribute(PROCESS_TYPE, CARD_PROCESS);
+				menuitem.addEventListener(Events.ON_CLICK, this);
+				cardpopup.appendChild(menuitem);
+			}
+			
+		}
+		kForm.appendChild(cardpopup);
+	}//setCardMenupopup
+	
+	/**
+	 * Set Process Buttons if there are board scope processes
+	 */
+	private void setBoardProcess(){
+
+		if( getBoardProcesses() != null && getBoardProcesses().size()>0 ){
+			boardButtonsDiv = new Div();
+			Button b;
+			for(MKanbanProcess process:getBoardProcesses()){
+				b = new Button();
+				b.setId(Integer.toString(process.getKDB_KanbanProcess_ID()));
+				b.setImage(null);
+				b.setLabel(process.getProcess().get_Translation(MProcess.COLUMNNAME_Name));
+				b.setAttribute(PROCESS_ID_KEY, new Integer(process.getAD_Process_ID()));
+				b.setAttribute(PROCESS_TYPE, BOARD_PROCESS);
+				b.addEventListener(Events.ON_CLICK, this);
+				boardButtonsDiv.appendChild(b);
+			}
+			northPanelHbox.appendChild(boardButtonsDiv);
+		}
+	}//setBoardProcess
+	
+	/**
+	 * When no processes are set up returns the default menupopup
+	 * Otherwise returns a customize menupopup with the processes defined
+	 * @return
+	 */
+	private String getBoardMenupopup(){
+	
+		String idMenupopup = "auto";
+		if( menupopup != null ){
+			idMenupopup = "processMenu";
+		}
+		return idMenupopup;
+	}//getBoardMenupopup
 
 	/**************************************************************************
 	 *  Action Listener
@@ -435,17 +621,152 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 					repaintGrid();
 				}
 			}
-		}else if (Events.ON_CLICK.equals(e.getName()) && e.getTarget() instanceof Button) {
-			if(kanbanBoardId!=-1){
-				refreshBoard();
-				repaintGrid();
+		}
+		//Check Event on click for processes
+		else if (Events.ON_CLICK.equals(e.getName()) && e.getTarget() instanceof Button) {
+			Button clickedButton = (Button) e.getTarget();
+
+			if(clickedButton.getId().equals(KDB_REFRESH_BUTTON_ID)){
+				if(kanbanBoardId!=-1){
+					refreshBoard();
+					repaintGrid();
+				}
 			}
-		}//OnCLICK
+			else{
+				runProcess(clickedButton.getAttribute(PROCESS_ID_KEY), getSaveKeys(BOARD_PROCESS, 0));
+			}
+		}else if (Events.ON_CLICK.equals(e.getName()) && e.getTarget() instanceof Menuitem) {
+			Menuitem selectedItem = (Menuitem) e.getTarget();
+			//Reproduce behavior of "auto" for customized menupopup
+			if(selectedItem.isCheckmark()){
+				Column column = (Column) kanbanPanel.getColumns().getFirstChild();
+				while ( column != null ){
+					if( column.getId().equals(selectedItem.getId()) ){
+						column.setVisible(selectedItem.isChecked());
+						break;
+					}
+					column = (Column) column.getNextSibling();
+				}
+			}
+			else{
+				enableButtons(false);
+				int referenceID = 0;
+				if(CARD_PROCESS.equals(selectedItem.getAttribute(PROCESS_TYPE))){
+					referenceID = rightClickedCard;
+				}else if(STATUS_PROCESS.equals(selectedItem.getAttribute(PROCESS_TYPE))){
+					Menupopup popup = (Menupopup) e.getTarget().getParent();
+					Column clickedColumn = (Column) popup.getAttribute("columnRef");
+					referenceID = Integer.parseInt(clickedColumn.getId());
+				}
+				runProcess(selectedItem.getAttribute(PROCESS_ID_KEY), getSaveKeys((String) selectedItem.getAttribute(PROCESS_TYPE),referenceID));
+			}
+		}
+		//Right click on cards for associated process
+		else if (Events.ON_RIGHT_CLICK.equals(e.getName()) && (e.getTarget() instanceof Cell)) {
+			//Sets the record ID of the selected card to use in the associated process
+			MKanbanCard card = mapCellColumn.get(e.getTarget());
+			rightClickedCard = card.getRecordID();
+		}
+
+		else if (Events.ON_OPEN.equals(e.getName()) && (e.getTarget() instanceof Menupopup)) {
+
+			OpenEvent openEvt = (OpenEvent) e;
+			Menupopup popup = (Menupopup)openEvt.getTarget();
+			Component referencedComponent = openEvt.getReference();
+
+			// set the referenced object in a hidden reference of the popup
+			popup.setAttribute("columnRef", referencedComponent);
+		}
 	}//onEvent
 
 	private void zoom(int recordId, int ad_table_id) {
 		AEnv.zoom(ad_table_id, recordId);
 	}
+	
+	/**
+     * Run a process.
+     * show process dialog,
+     * before start process, save id of record selected
+     * after run process, show message report result 
+     * @param processIdObj
+	 * @param collection 
+     */
+    protected void runProcess (Object processIdObj, final Collection<KeyNamePair> saveKeys){
+    	final Integer processId = (Integer)processIdObj;
+    	final MProcess mProcess = MProcess.get(Env.getCtx(), processId);
+    	final ProcessInfo m_pi = new ProcessInfo(mProcess.getName(), processId);
+		m_pi.setAD_User_ID(Env.getAD_User_ID(Env.getCtx()));
+		m_pi.setAD_Client_ID(Env.getAD_Client_ID(Env.getCtx()));
+		MPInstance instance = new MPInstance(Env.getCtx(), processId, 0);
+		instance.saveEx();
+		final int pInstanceID = instance.getAD_PInstance_ID();
+		// Execute Process
+		m_pi.setAD_PInstance_ID(pInstanceID);
+		
+		//HengSin - to let process end with message and requery
+		WProcessCtl.process(windowNo, m_pi, null, new EventListener<Event>() {
+			@Override
+			public void onEvent(Event event) throws Exception {
+				ProcessModalDialog processModalDialog = (ProcessModalDialog)event.getTarget();
+				if (DialogEvents.ON_BEFORE_RUN_PROCESS.equals(event.getName())){
+					// store in T_Selection table selected rows for Execute Process that retrieves from T_Selection in code.
+					DB.createT_SelectionNew(pInstanceID, saveKeys, null);
+					showBusyDialog();
+				}else if (ProcessModalDialog.ON_WINDOW_CLOSE.equals(event.getName())){ 
+					if (processModalDialog.isCancel()){
+						m_results.clear();
+					}else if (m_pi.isError()){
+						ProcessInfoDialog.showProcessInfo(m_pi, windowNo, kForm, true);
+					}else if (!m_pi.isError()){
+						ProcessInfoDialog.showProcessInfo(m_pi, windowNo, kForm, true);	
+					}
+					// enable or disable control button rely selected record status 
+					enableButtons();
+					refreshBoard();
+					repaintGrid();
+					hideBusyDialog();
+				}
+		//HengSin -- end --
+			}
+		}); 
+    }
+    
+    /**
+	 * enable all control button or disable all rely to selected record 
+	 */
+	protected void enableButtons (){
+		boolean enable = true;
+		enableButtons(enable);
+	}//enableButtons
+	
+	private void showBusyDialog() {
+		progressWindow = new BusyDialog();
+		progressWindow.setPage(kForm.getPage());
+		progressWindow.doHighlighted();				
+	}//showBusyDialog
+	
+	private void hideBusyDialog() {
+		if (progressWindow != null) {
+			progressWindow.dispose();
+			progressWindow = null;
+		}
+	}//hideBusyDialog
+	
+	/**
+	 * enable or disable all control button
+	 *  Enable OK, History, Zoom if row/s selected
+     *  ---
+     *  Changes: Changed the logic for accommodating multiple selection
+     *  @author ashley
+	 */
+	protected void enableButtons (boolean enable)
+	{
+		if(boardButtonsDiv != null && boardButtonsDiv.getChildren()!= null ){
+			for (Component btProcess : boardButtonsDiv.getChildren()){
+				((Button) btProcess).setEnabled(enable);
+			}
+		}
+	}//  enableButtons
 
 	private Component createSpacer() {
 		return new Space();
