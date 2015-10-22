@@ -10,7 +10,8 @@ Bundle-ActivationPolicy: lazy
 Export-Package: org.idempiere.apps.form,
  org.idempiere.process,
  org.idempiere.webui.apps.form,
- org.idempiere.webui.factory
+ org.idempiere.webui.factory,
+ org.kanbanboard.model
 Require-Bundle: org.adempiere.base;bundle-version="2.0.0",
  org.adempiere.plugin.utils;bundle-version="2.0.0",
  org.adempiere.ui.zk;bundle-version="2.0.0",
