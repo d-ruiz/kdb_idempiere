@@ -21,25 +21,25 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for KDB_KanbanPriority
+/** Generated Interface for KDB_KanbanProcess
  *  @author iDempiere (generated) 
- *  @version Release 3.1
+ *  @version Release 2.1
  */
 @SuppressWarnings("all")
-public interface I_KDB_KanbanPriority 
+public interface I_KDB_KanbanProcess 
 {
 
-    /** TableName=KDB_KanbanPriority */
-    public static final String Table_Name = "KDB_KanbanPriority";
+    /** TableName=KDB_KanbanProcess */
+    public static final String Table_Name = "KDB_KanbanProcess";
 
-    /** AD_Table_ID=1000032 */
+    /** AD_Table_ID=1000025 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 6 - System - Client 
+    /** AccessLevel = 3 - Client - Org 
      */
-    BigDecimal accessLevel = BigDecimal.valueOf(6);
+    BigDecimal accessLevel = BigDecimal.valueOf(3);
 
     /** Load Meta Data */
 
@@ -64,6 +64,21 @@ public interface I_KDB_KanbanPriority
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name AD_Process_ID */
+    public static final String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
+
+	/** Set Process.
+	  * Process or Report
+	  */
+	public void setAD_Process_ID (int AD_Process_ID);
+
+	/** Get Process.
+	  * Process or Report
+	  */
+	public int getAD_Process_ID();
+
+	public org.compiere.model.I_AD_Process getAD_Process() throws RuntimeException;
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -79,6 +94,19 @@ public interface I_KDB_KanbanPriority
 	  * User who created this records
 	  */
 	public int getCreatedBy();
+
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
+
+	/** Set Description.
+	  * Optional short description of the record
+	  */
+	public void setDescription (String Description);
+
+	/** Get Description.
+	  * Optional short description of the record
+	  */
+	public String getDescription();
 
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
@@ -104,67 +132,49 @@ public interface I_KDB_KanbanPriority
 
 	public org.kanbanboard.model.I_KDB_KanbanBoard getKDB_KanbanBoard() throws RuntimeException;
 
-    /** Column name KDB_KanbanPriority_ID */
-    public static final String COLUMNNAME_KDB_KanbanPriority_ID = "KDB_KanbanPriority_ID";
+    /** Column name KDB_KanbanProcess_ID */
+    public static final String COLUMNNAME_KDB_KanbanProcess_ID = "KDB_KanbanProcess_ID";
 
-	/** Set Kanban Priority	  */
-	public void setKDB_KanbanPriority_ID (int KDB_KanbanPriority_ID);
+	/** Set Kanban Associated Process	  */
+	public void setKDB_KanbanProcess_ID (int KDB_KanbanProcess_ID);
 
-	/** Get Kanban Priority	  */
-	public int getKDB_KanbanPriority_ID();
+	/** Get Kanban Associated Process	  */
+	public int getKDB_KanbanProcess_ID();
 
-    /** Column name KDB_KanbanPriority_UU */
-    public static final String COLUMNNAME_KDB_KanbanPriority_UU = "KDB_KanbanPriority_UU";
+    /** Column name KDB_KanbanProcess_UU */
+    public static final String COLUMNNAME_KDB_KanbanProcess_UU = "KDB_KanbanProcess_UU";
 
-	/** Set KDB_KanbanPriority_UU	  */
-	public void setKDB_KanbanPriority_UU (String KDB_KanbanPriority_UU);
+	/** Set KDB_KanbanProcess_UU	  */
+	public void setKDB_KanbanProcess_UU (String KDB_KanbanProcess_UU);
 
-	/** Get KDB_KanbanPriority_UU	  */
-	public String getKDB_KanbanPriority_UU();
+	/** Get KDB_KanbanProcess_UU	  */
+	public String getKDB_KanbanProcess_UU();
 
-    /** Column name KDB_PriorityColor_ID */
-    public static final String COLUMNNAME_KDB_PriorityColor_ID = "KDB_PriorityColor_ID";
+    /** Column name KDB_ProcessScope */
+    public static final String COLUMNNAME_KDB_ProcessScope = "KDB_ProcessScope";
 
-	/** Set Priority Color	  */
-	public void setKDB_PriorityColor_ID (int KDB_PriorityColor_ID);
-
-	/** Get Priority Color	  */
-	public int getKDB_PriorityColor_ID();
-
-	public org.compiere.model.I_AD_PrintColor getKDB_PriorityColor() throws RuntimeException;
-
-    /** Column name KDB_PriorityTextColor_ID */
-    public static final String COLUMNNAME_KDB_PriorityTextColor_ID = "KDB_PriorityTextColor_ID";
-
-	/** Set Text Color.
-	  * Text color in the card
+	/** Set Scope.
+	  * Defines the scope of the defined process
 	  */
-	public void setKDB_PriorityTextColor_ID (int KDB_PriorityTextColor_ID);
+	public void setKDB_ProcessScope (String KDB_ProcessScope);
 
-	/** Get Text Color.
-	  * Text color in the card
+	/** Get Scope.
+	  * Defines the scope of the defined process
 	  */
-	public int getKDB_PriorityTextColor_ID();
+	public String getKDB_ProcessScope();
 
-	public org.compiere.model.I_AD_PrintColor getKDB_PriorityTextColor() throws RuntimeException;
+    /** Column name Name */
+    public static final String COLUMNNAME_Name = "Name";
 
-    /** Column name MaxValue */
-    public static final String COLUMNNAME_MaxValue = "MaxValue";
+	/** Set Name.
+	  * Alphanumeric identifier of the entity
+	  */
+	public void setName (String Name);
 
-	/** Set Max Value	  */
-	public void setMaxValue (int MaxValue);
-
-	/** Get Max Value	  */
-	public int getMaxValue();
-
-    /** Column name MinValue */
-    public static final String COLUMNNAME_MinValue = "MinValue";
-
-	/** Set Min Value	  */
-	public void setMinValue (int MinValue);
-
-	/** Get Min Value	  */
-	public int getMinValue();
+	/** Get Name.
+	  * Alphanumeric identifier of the entity
+	  */
+	public String getName();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
