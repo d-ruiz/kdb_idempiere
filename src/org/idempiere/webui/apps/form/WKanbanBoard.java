@@ -208,6 +208,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				columns.setMenupopup("auto");
 
 				int equalWidth = 100 ;
+				int stdColumnWidth = getStdColumnWidth();
 				Auxhead auxhead = new Auxhead();
 
 				//Create columns based on the states of the kanban board
@@ -216,7 +217,10 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				for(MKanbanStatus status: getStatuses()){
 					if(status.hasQueue()){
 						column = new Column();
-						column.setWidth(equalWidth/2 + "%");
+						if( stdColumnWidth == 0 )
+							column.setWidth(equalWidth/2 + "%");
+						else
+							column.setWidth(stdColumnWidth/2 + "px");
 						columns.appendChild(column);
 						column.setAlign("right");
 						column.setLabel(status.getPrintableName().substring(0, 1)+" Queue");
@@ -228,7 +232,12 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 						}
 					}
 					column = new Column();
-					column.setWidth(equalWidth + "%");
+					
+					if( stdColumnWidth == 0 )
+						column.setWidth(equalWidth + "%");
+					else
+						column.setWidth(stdColumnWidth + "px");
+					
 					columns.appendChild(column);
 					column.setAlign("center");
 					columns.appendChild(column);
@@ -333,14 +342,28 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	private Vlayout createCell(MKanbanCard card){
 		Vlayout div = new Vlayout();
 		String[] tokens = card.getKanbanCardText().split(System.getProperty("line.separator"));
+		
+		StringBuilder divStyle = new StringBuilder();
+		
+		divStyle.append("text-align: left; ");
+		divStyle.append("background-color:" + card.getColor() + "; ");
+		
+		if(!card.isQueued())
+			divStyle.append("cursor:hand; cursor:pointer; ");
+
+		if( getStdCardheight() != 0 ) {
+			div.setHeight(getStdCardheight() + "px");
+			divStyle.append("overflow:auto");
+		}
+		
+		div.setStyle(divStyle.toString());
+		
 		for(String token:tokens){
 			Label label = new Label(token);
+			label.setStyle("color:"+card.getTextColor());
 			div.appendChild(label);
 		}
-		if(!card.isQueued())
-			div.setStyle("cursor:hand;cursor:pointer; text-align: left; background-color:" + card.getColor() + ";");
-		else
-			div.setStyle("text-align: left; background-color:" + card.getColor() + ";");
+
 		return div;
 	}//CreateCell
 

@@ -31,7 +31,7 @@ public class X_KDB_KanbanBoard extends PO implements I_KDB_KanbanBoard, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20150815L;
+	private static final long serialVersionUID = 20151208L;
 
     /** Standard Constructor */
     public X_KDB_KanbanBoard (Properties ctx, int KDB_KanbanBoard_ID, String trxName)
@@ -284,6 +284,46 @@ public class X_KDB_KanbanBoard extends PO implements I_KDB_KanbanBoard, I_Persis
 	public String getKDB_PrioritySQL () 
 	{
 		return (String)get_Value(COLUMNNAME_KDB_PrioritySQL);
+	}
+
+	/** Set Standard Card Height.
+		@param KDB_StdCardHeight 
+		Standard Card Height
+	  */
+	public void setKDB_StdCardHeight (int KDB_StdCardHeight)
+	{
+		set_Value (COLUMNNAME_KDB_StdCardHeight, Integer.valueOf(KDB_StdCardHeight));
+	}
+
+	/** Get Standard Card Height.
+		@return Standard Card Height
+	  */
+	public int getKDB_StdCardHeight () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_KDB_StdCardHeight);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Standard Column Width.
+		@param KDB_StdColumnWidth 
+		Standard Column Width
+	  */
+	public void setKDB_StdColumnWidth (int KDB_StdColumnWidth)
+	{
+		set_Value (COLUMNNAME_KDB_StdColumnWidth, Integer.valueOf(KDB_StdColumnWidth));
+	}
+
+	/** Get Standard Column Width.
+		@return Standard Column Width
+	  */
+	public int getKDB_StdColumnWidth () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_KDB_StdColumnWidth);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Summary SQL.

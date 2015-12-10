@@ -53,6 +53,8 @@ public class MKanbanCard{
 	private PO			  m_po           = null;
 	private String 		  kanbanCardText = null;
 	private boolean		  isQueued       = false;
+	
+	private String        textColor      = null;
 
 	public BigDecimal getPriorityValue() {
 		return priorityValue;
@@ -164,12 +166,18 @@ public class MKanbanCard{
 
 				if(priorityValue.compareTo(minValue)>=0&&priorityValue.compareTo(maxValue)<=0){
 					MPrintColor priorityColor = new MPrintColor(Env.getCtx(), priorityRule.getKDB_PriorityColor_ID(), null);
+					MPrintColor PriorityTextColor = new MPrintColor(Env.getCtx(), priorityRule.getKDB_PriorityTextColor_ID(), null);
 					color = priorityColor.getName();
+					textColor = PriorityTextColor.getName();
 					break;
 				}
 			} 
 		}
 		return color;
+	}
+	
+	public String getTextColor() {
+		return textColor;
 	}
 
 	public String getKanbanCardText(){
