@@ -209,6 +209,15 @@ public class KanbanBoard {
 		return object;
 	}
 	
+	public int getStdColumnWidth() {
+		return kanbanBoard.getKDB_StdColumnWidth();
+	}
+	
+	public int getStdCardheight() {
+		return kanbanBoard.getKDB_StdCardHeight();
+	}
+	
+	
 	public String getSummarySql(){		
 		if( summarySql == null && kanbanBoard.getKDB_SummarySQL() != null ){		
 			summarySql = kanbanBoard.getSummarySql();		
