@@ -23,7 +23,7 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for KDB_KanbanBoard
  *  @author iDempiere (generated) 
- *  @version Release 2.1
+ *  @version Release 3.1
  */
 @SuppressWarnings("all")
 public interface I_KDB_KanbanBoard 
@@ -32,7 +32,7 @@ public interface I_KDB_KanbanBoard
     /** TableName=KDB_KanbanBoard */
     public static final String Table_Name = "KDB_KanbanBoard";
 
-    /** AD_Table_ID=1000000 */
+    /** AD_Table_ID=1000029 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);

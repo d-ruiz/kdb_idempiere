@@ -30,12 +30,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
 import org.compiere.model.MColumn;
 import org.compiere.model.MRefList;
+import org.compiere.model.MRole;
 import org.compiere.model.MTable;
 import org.compiere.model.Query;
 import org.compiere.print.MPrintColor;
@@ -61,6 +63,10 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	private boolean statusProcessed = false;
 	private String summarySql;
 	private int summaryCounter   = 0;
+	
+	//Associated Processes
+	private boolean processRead = false;
+	private List<MKanbanProcess> associatedProcesses = new ArrayList<MKanbanProcess>();
 
 	public MKanbanBoard(Properties ctx, int KDB_KanbanBoard_ID, String trxName) {
 		super(ctx, KDB_KanbanBoard_ID, trxName);
@@ -163,6 +169,15 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		}
 		return null;
 	}
+	
+	public MKanbanStatus getStatus(int statusID){		
+		for(MKanbanStatus status: statuses){		
+			if(status.getKDB_KanbanStatus_ID() == statusID){		
+				return status;		
+			}		
+		}		
+		return null;		
+	}
 
 	public List<MKanbanStatus> getStatuses(){
 
@@ -180,6 +195,41 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 
 		return statuses;
 	}//getStatuses
+	
+	/**		
+	 * Fills the associatedProcesses List with all the process associated to the board		
+	 * @return		
+	 */		
+	public List<MKanbanProcess> getAssociatedProcesses(){
+
+		if( !processRead ){
+			
+			processRead = true;
+			
+			associatedProcesses = new Query(getCtx(), MKanbanProcess.Table_Name, " KDB_KanbanBoard_ID = ? AND AD_Client_ID IN (0, ?) AND IsActive='Y' ", get_TrxName())
+			.setParameters(new Object[]{getKDB_KanbanBoard_ID(),Env.getAD_Client_ID(Env.getCtx())})
+			.setOnlyActiveRecords(true)
+ 			.list();
+
+			checkProcessRight(associatedProcesses);
+		}
+		return associatedProcesses;
+	}//getAssociatedProcesses
+			
+	/**		
+    * if user haven't right to run a process, set kanbanProcess to null 		
+    * @param associatedProcesses		
+    */		
+	protected void checkProcessRight (List<MKanbanProcess> list) {		
+		Iterator<MKanbanProcess> iterator = list.iterator();		
+		while (iterator.hasNext()){		
+			MKanbanProcess testKanbanProcess = iterator.next();		
+			Boolean access = MRole.getDefault().getProcessAccess(testKanbanProcess.getAD_Process_ID());		
+			if (access == null || !access.booleanValue()) {		
+				list.remove(testKanbanProcess);		
+			}		
+		}		
+	}//checkProcessRight
 
 	public List<MKanbanPriority> getPriorityRules(){
 
@@ -200,6 +250,15 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 			getStatuses();
 		return statuses.size();
 	}//getNumberOfStatuses
+	
+	/** Return the total amount of processes associated to the board
+	 * @return
+	 */
+	public int getNumberOfProcesses(){
+		if(!processRead)
+			getAssociatedProcesses();
+		return associatedProcesses.size();
+	}//getNumberOfProcesses
 
 	public boolean saveStatuses(){
 		for (MKanbanStatus status : statuses) {
