@@ -55,6 +55,7 @@ public class MKanbanCard{
 	private boolean		  isQueued       = false;
 	
 	private String        textColor      = null;
+	private String        cardColor      = null;
 
 	public BigDecimal getPriorityValue() {
 		return priorityValue;
@@ -156,8 +157,7 @@ public class MKanbanCard{
 	}
 
 
-	public String getColor() {
-		String color = null;
+	public void getPriorityColor() {
 
 		if(kanbanBoard.hasPriorityOrder()&&kanbanBoard.getPriorityRules().size()>0){
 			for(MKanbanPriority priorityRule:kanbanBoard.getPriorityRules()){
@@ -167,17 +167,24 @@ public class MKanbanCard{
 				if(priorityValue.compareTo(minValue)>=0&&priorityValue.compareTo(maxValue)<=0){
 					MPrintColor priorityColor = new MPrintColor(Env.getCtx(), priorityRule.getKDB_PriorityColor_ID(), null);
 					MPrintColor PriorityTextColor = new MPrintColor(Env.getCtx(), priorityRule.getKDB_PriorityTextColor_ID(), null);
-					color = priorityColor.getName();
+					cardColor = priorityColor.getName();
 					textColor = PriorityTextColor.getName();
 					break;
 				}
 			} 
 		}
-		return color;
 	}
 	
 	public String getTextColor() {
+		if(textColor == null)
+			getPriorityColor();
 		return textColor;
+	}
+	
+	public String getCardColor() {
+		if(cardColor == null)
+			getPriorityColor();
+		return cardColor;
 	}
 
 	public String getKanbanCardText(){
