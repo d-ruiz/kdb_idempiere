@@ -423,7 +423,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		StringBuilder divStyle = new StringBuilder();
 		
 		divStyle.append("text-align: left; ");
-		divStyle.append("background-color:" + card.getColor() + "; ");
+		divStyle.append("background-color:" + card.getCardColor() + "; ");
 		
 		if(!card.isQueued())
 			divStyle.append("cursor:hand; cursor:pointer; ");
