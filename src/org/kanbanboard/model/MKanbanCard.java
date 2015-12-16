@@ -115,7 +115,7 @@ public class MKanbanCard{
 
 	public boolean changeStatus(String statusColumn, String newStatusValue){
 
-		if(m_po==null)
+		if(m_po == null)
 			return false;
 		boolean success=true;
 
@@ -159,12 +159,12 @@ public class MKanbanCard{
 
 	public void getPriorityColor() {
 
-		if(kanbanBoard.hasPriorityOrder()&&kanbanBoard.getPriorityRules().size()>0){
-			for(MKanbanPriority priorityRule:kanbanBoard.getPriorityRules()){
+		if(kanbanBoard.hasPriorityOrder() && kanbanBoard.getPriorityRules().size() > 0){
+			for(MKanbanPriority priorityRule : kanbanBoard.getPriorityRules()){
 				BigDecimal minValue = new BigDecimal(priorityRule.getMinValue());
 				BigDecimal maxValue = new BigDecimal(priorityRule.getMaxValue());
 
-				if(priorityValue.compareTo(minValue)>=0&&priorityValue.compareTo(maxValue)<=0){
+				if(priorityValue.compareTo(minValue) >= 0 && priorityValue.compareTo(maxValue) <= 0){
 					MPrintColor priorityColor = new MPrintColor(Env.getCtx(), priorityRule.getKDB_PriorityColor_ID(), null);
 					MPrintColor PriorityTextColor = new MPrintColor(Env.getCtx(), priorityRule.getKDB_PriorityTextColor_ID(), null);
 					cardColor = priorityColor.getName();
@@ -199,7 +199,7 @@ public class MKanbanCard{
 	private void translate()
 	{
 		//	Default if no Translation
-		if(kanbanBoard.getKDB_KanbanCard()!=null)
+		if(kanbanBoard.getKDB_KanbanCard() != null)
 			kanbanCardText=kanbanBoard.get_Translation(MKanbanBoard.COLUMNNAME_KDB_KanbanCard);
 		else
 			kanbanCardText=Integer.toString(recordId);
@@ -274,7 +274,7 @@ public class MKanbanCard{
 		int index = po.get_ColumnIndex(variable);
 		if (index == -1){
 			int i = variable.indexOf('.');
-			if(i!=-1)
+			if(i != -1)
 			{
 				StringBuilder outStr = new StringBuilder();
 				outStr.append(variable.substring(0, i));
