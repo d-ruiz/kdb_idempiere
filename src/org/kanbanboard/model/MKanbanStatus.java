@@ -87,12 +87,12 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 		this.queuedCardNumber = queuedCardNumber;
 	}
 
-	public void setPrintableName (String printingName){
+	public void setPrintableName (String printingName) {
 		this.printableName = printingName;
 	}
 
-	public String getPrintableName(){
-		if(getStatusAlias()!=null)
+	public String getPrintableName() {
+		if (getStatusAlias() != null)
 			return getStatusAlias();
 		return printableName;
 	}
@@ -107,45 +107,45 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 		kanbanBoard = new MKanbanBoard(ctx, getKDB_KanbanBoard_ID(), trxName);
 	}
 
-	public void addRecord(MKanbanCard card){
+	public void addRecord(MKanbanCard card) {
 		records.add(card);
 	}
 
-	public void removeRecord(MKanbanCard card){
-		for(MKanbanCard c:records){
-			if(c.equals(card)){
+	public void removeRecord(MKanbanCard card) {
+		for (MKanbanCard c : records){
+			if (c.equals(card)) {
 				records.remove(card);
 				break;
 			}
 		}
 	}
 	
-	public void addQueuedRecord(MKanbanCard card){
+	public void addQueuedRecord(MKanbanCard card) {
 		queuedRecords.add(card);
 	}
 
-	public void removeQueuedRecord(MKanbanCard card){
-		for(MKanbanCard c:queuedRecords){
-			if(c.equals(card))
+	public void removeQueuedRecord(MKanbanCard card) {
+		for (MKanbanCard c : queuedRecords) {
+			if (c.equals(card))
 				queuedRecords.remove(card);
 			break;
 		}
 	}
 
-	public boolean hasMoreCards(){
-		if((!hasMoreStatusCards()&&!hasQueue())||totalCards<=cardNumber+queuedCardNumber)
+	public boolean hasMoreCards() {
+		if ((!hasMoreStatusCards() && !hasQueue()) || totalCards <= cardNumber+queuedCardNumber)
 			return false;
 		return true;
 	}
 	
-	public boolean hasMoreStatusCards(){
-		if(!hasCards()||cardNumber>records.size()-1)
+	public boolean hasMoreStatusCards() {
+		if (!hasCards() || cardNumber>records.size()-1)
 			return false;
 		return true;
 	}
 
-	public void orderCards(){
-		if(kanbanBoard.getOrderByClause()==null)
+	public void orderCards() {
+		if (kanbanBoard.getOrderByClause() == null)
 		{
 			Collections.sort(records, Collections.reverseOrder(new Comparator<MKanbanCard>() {
 				@Override
@@ -156,31 +156,31 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 		}
 	}
 
-	public MKanbanCard getCard(){
+	public MKanbanCard getCard() {
 		MKanbanCard card = records.get(cardNumber);
 		cardNumber++;
 		return card;
 	}
 	
-	public MKanbanCard getCard(int recordId){
-		for(MKanbanCard card: records){
-			if(card.getRecordID()==recordId){
+	public MKanbanCard getCard(int recordId) {
+		for (MKanbanCard card : records) {
+			if (card.getRecordID() == recordId) {
 				return card;
 			}
 		}
 		return null;
 	}
 
-	public boolean hasCards(){
-		if(records.isEmpty())
+	public boolean hasCards() {
+		if (records.isEmpty())
 			return false;
 		else
 			return true;
 	}
 
-	public String getStatusValue(){
+	public String getStatusValue() {
 		String statusValue;
-		if(kanbanBoard.isRefList())
+		if (kanbanBoard.isRefList())
 			statusValue =  getKDB_StatusListValue();
 		else
 			statusValue = getKDB_StatusTableID();
@@ -188,9 +188,9 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 	}
 
 	public int getMaxNumCards() {
-		if(getMaxNumberCards().intValue()==-1) //This validates that the field is not empty
+		if (getMaxNumberCards().intValue() == -1) //This validates that the field is not empty
 			return 0;
-		if(getMaxNumberCards().intValue()!=0)
+		if (getMaxNumberCards().intValue() != 0)
 			return getMaxNumberCards().intValue();
 
 		return maxNumCards;
@@ -201,7 +201,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 	}
 
 	public boolean isExceed() {
-		if(getRecords().size()>getMaxNumCards())
+		if(getRecords().size() > getMaxNumCards())
 			isExceed = true;
 		return isExceed;
 	}
@@ -210,8 +210,8 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 		this.isExceed = isExceed;
 	}
 
-	public boolean hasQueue(){
-		if(getSQLStatement()!=null)
+	public boolean hasQueue() {
+		if(getSQLStatement() != null)
 			return true;
 		else
 			return false;
@@ -226,7 +226,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 	}
 
 	public boolean hasMoreQueuedCards() {
-		if(!hasQueue()||queuedCardNumber>queuedRecords.size()-1)
+		if(!hasQueue() || queuedCardNumber>queuedRecords.size()-1)
 			return false;
 		return true;
 	}
@@ -241,9 +241,9 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 		
 		String result = null;
 
-		if( summarySql != null ){		
+		if (summarySql != null) {		
 			int j = summarySql.indexOf("@KanbanStatus@");		
-			if( j > -1 ){
+			if (j > -1) {
 				summarySql = summarySql.replaceAll("@KanbanStatus@", "'" + getStatusValue() + "'");		
 			}
 			PreparedStatement pstmt = null;
@@ -255,20 +255,20 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 				rs = pstmt.executeQuery();
 				StringBuilder resultQuery = new StringBuilder();
 
-				if(rs.next()){
+				if (rs.next()) {
 					int column = 1;
 					String value;
-					while ( column <= numberOfColumns )
+					while (column <= numberOfColumns)
 					{
 						value = rs.getString(column);
-						if( value != null ){
+						if (value != null) {
 							resultQuery.append(value);
 							resultQuery.append(" /");
 						}
 						column++;
 					}
 					result = resultQuery.toString();
-					if( result.length() > 0 && result.charAt(result.length()-1)=='/' )
+					if (result.length() > 0 && result.charAt(result.length()-1) == '/')
 						result = result.substring(0, result.length()-1);
 				}
 			}
