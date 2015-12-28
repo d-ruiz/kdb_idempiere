@@ -44,6 +44,7 @@ import org.adempiere.webui.panel.ADForm;
 import org.adempiere.webui.panel.CustomForm;
 import org.adempiere.webui.panel.IFormController;
 import org.adempiere.webui.theme.ThemeManager;
+import org.compiere.model.MSysConfig;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
@@ -66,6 +67,7 @@ import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.North;
 import org.zkoss.zul.South;
 import org.zkoss.zul.Space;
+import org.zkoss.zul.Timer;
 import org.zkoss.zul.Vlayout;
 
 /**
@@ -85,6 +87,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	private Label lProcess = new Label();
 	private Listbox cbProcess = ListboxFactory.newDropdownListbox();
 	private int kanbanBoardId=-1;
+	private Timer timer;
 	private Button bRefresh = new Button();
 
 	Map<Cell, MKanbanCard> mapCellColumn = new HashMap<Cell, MKanbanCard>();
@@ -158,6 +161,20 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		centerVLayout.setHeight("100%");
 		centerVLayout.appendChild(kanbanPanel);
 		centerVLayout.setStyle("overflow:auto");
+		
+		// Auto refresh in milliseconds
+		int refreshInterval = MSysConfig.getIntValue("KDB_KanbanBoard_RefreshInterval", 0,
+				Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()));
+
+		if (refreshInterval > 0) {
+			timer = new Timer();
+			timer.setDelay(refreshInterval);
+			timer.addEventListener(Events.ON_TIMER, this);
+			timer.setRepeats(true);
+			timer.start();
+			timer.setVisible(false);
+			centerVLayout.appendChild(timer);
+		}
 
 		South south = new South();
 		LayoutUtils.addSclass("tab-editor-form-center-panel", south);
@@ -458,7 +475,8 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 					repaintGrid();
 				}
 			}
-		}else if (Events.ON_CLICK.equals(e.getName()) && e.getTarget() instanceof Button) {
+		}else if (Events.ON_CLICK.equals(e.getName()) && e.getTarget() instanceof Button 
+				|| Events.ON_TIMER.equals(e.getName())) {
 			if(kanbanBoardId!=-1){
 				refreshBoard();
 				repaintGrid();
