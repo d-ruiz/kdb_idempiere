@@ -55,6 +55,7 @@ import org.adempiere.webui.session.SessionManager;
 import org.adempiere.webui.theme.ThemeManager;
 import org.compiere.model.MPInstance;
 import org.compiere.model.MProcess;
+import org.compiere.model.MSysConfig;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -85,6 +86,7 @@ import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.North;
 import org.zkoss.zul.South;
 import org.zkoss.zul.Space;
+import org.zkoss.zul.Timer;
 import org.zkoss.zul.Vlayout;
 
 /**
@@ -109,6 +111,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	private Listbox cbProcess = ListboxFactory.newDropdownListbox();
 	private int kanbanBoardId=-1;
 	private Button bRefresh = new Button();
+	private Timer timer;
 	private Menupopup menupopup;
 	private Menupopup cardpopup;
 	private Hbox      northPanelHbox;
@@ -195,6 +198,20 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		centerVLayout.setHeight("100%");
 		centerVLayout.appendChild(kanbanPanel);
 		centerVLayout.setStyle("overflow:auto");
+		
+		// Auto refresh in milliseconds
+		int refreshInterval = MSysConfig.getIntValue("KDB_KanbanBoard_RefreshInterval", 0,
+				Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()));
+
+		if (refreshInterval > 0) {
+			timer = new Timer();
+			timer.setDelay(refreshInterval);
+			timer.addEventListener(Events.ON_TIMER, this);
+			timer.setRepeats(true);
+			timer.start();
+			timer.setVisible(false);
+			centerVLayout.appendChild(timer);
+		}
 
 		South south = new South();
 		LayoutUtils.addSclass("tab-editor-form-center-panel", south);
@@ -712,6 +729,12 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 			// set the referenced object in a hidden reference of the popup
 			popup.setAttribute("columnRef", referencedComponent);
+		} else if (Events.ON_TIMER.equals(e.getName())) {
+			//Auto refresh
+			if (kanbanBoardId != -1) {
+				refreshBoard();
+				repaintGrid();
+			}
 		}
 	}//onEvent
 
