@@ -302,4 +302,8 @@ public class KanbanBoard {
     	
     	return saveKeys;
 	}
+	
+	public boolean isHTML() {
+		return kanbanBoard.get_ValueAsBoolean("IsHtml");
+	}
 }

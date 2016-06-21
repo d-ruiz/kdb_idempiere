@@ -78,6 +78,7 @@ import org.zkoss.zul.Column;
 import org.zkoss.zul.Columns;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Hbox;
+import org.zkoss.zul.Html;
 import org.zkoss.zul.Menuitem;
 import org.zkoss.zul.Menuseparator;
 import org.zkoss.zul.Messagebox;
@@ -417,9 +418,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	}
 
 	private Vlayout createCell(MKanbanCard card){
-		Vlayout div = new Vlayout();
-		String[] tokens = card.getKanbanCardText().split(System.getProperty("line.separator"));
-		
+		Vlayout div = new Vlayout();		
 		StringBuilder divStyle = new StringBuilder();
 		
 		divStyle.append("text-align: left; ");
@@ -435,10 +434,24 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		
 		div.setStyle(divStyle.toString());
 		
-		for(String token:tokens){
-			Label label = new Label(token);
-			label.setStyle("color:"+card.getTextColor());
-			div.appendChild(label);
+		if (isHTML()) {
+			String htmlText = card.getKanbanCardText();
+
+			Div content = new Div();
+	    	div.appendChild(content);
+	    	content.setStyle("color:"+card.getTextColor());
+	    	Html htmlCard = new Html();
+	        content.appendChild(htmlCard);
+	        htmlCard.setContent(htmlText);
+	        
+		} else {
+			String[] tokens = card.getKanbanCardText().split(System.getProperty("line.separator"));
+
+			for(String token:tokens){
+				Label label = new Label(token);
+				label.setStyle("color:"+card.getTextColor());
+				div.appendChild(label);
+			}		
 		}
 
 		return div;
