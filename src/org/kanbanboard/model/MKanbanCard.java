@@ -114,12 +114,13 @@ public class MKanbanCard{
 
 	public boolean changeStatus(String statusColumn, String newStatusValue){
 
-		if(m_po==null)
+		if (m_po == null)
 			return false;
+
 		boolean success=true;
 
-		if(statusColumn.equals(MKanbanBoard.STATUSCOLUMN_DocStatus)){
-			if(m_po instanceof DocAction && m_po.get_ColumnIndex("DocAction") >= 0){
+		if (statusColumn.equals(MKanbanBoard.STATUSCOLUMN_DocStatus)) {
+			if (m_po instanceof DocAction && m_po.get_ColumnIndex("DocAction") >= 0) {
 				String p_docAction = newStatusValue;
 				m_po.set_ValueOfColumn("DocAction", p_docAction);
 				try {
@@ -140,11 +141,11 @@ public class MKanbanCard{
 			}			
 		}
 		else{
-			if(m_po.get_ColumnIndex("DocAction") >= 0){
-				if(((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Completed)||
-						((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Voided)||
-						((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Reversed)||
-						((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Closed)){
+			if (m_po.get_ColumnIndex("DocAction") >= 0) {
+				if (((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Completed) ||
+						((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Voided) ||
+						((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Reversed) ||
+						((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Closed)) {
 					KDB_ErrorMessage = "KDB_CompletedCard";
 					return false;
 				}
@@ -159,12 +160,12 @@ public class MKanbanCard{
 	public String getColor() {
 		String color = null;
 
-		if(kanbanBoard.hasPriorityOrder()&&kanbanBoard.getPriorityRules().size()>0){
-			for(MKanbanPriority priorityRule:kanbanBoard.getPriorityRules()){
+		if (kanbanBoard.hasPriorityOrder() && kanbanBoard.getPriorityRules().size() > 0) {
+			for (MKanbanPriority priorityRule:kanbanBoard.getPriorityRules()) {
 				BigDecimal minValue = new BigDecimal(priorityRule.getMinValue());
 				BigDecimal maxValue = new BigDecimal(priorityRule.getMaxValue());
 
-				if(priorityValue.compareTo(minValue)>=0&&priorityValue.compareTo(maxValue)<=0){
+				if (priorityValue.compareTo(minValue) >= 0 && priorityValue.compareTo(maxValue) <= 0) {
 					MPrintColor priorityColor = new MPrintColor(Env.getCtx(), priorityRule.getKDB_PriorityColor_ID(), null);
 					MPrintColor PriorityTextColor = new MPrintColor(Env.getCtx(), priorityRule.getKDB_PriorityTextColor_ID(), null);
 					color = priorityColor.getName();
@@ -181,7 +182,7 @@ public class MKanbanCard{
 	}
 
 	public String getKanbanCardText(){
-		if(kanbanCardText==null)
+		if (kanbanCardText == null)
 			translate();
 		return parse(kanbanCardText);
 	}
@@ -192,7 +193,7 @@ public class MKanbanCard{
 	private void translate()
 	{
 		//	Default if no Translation
-		if(kanbanBoard.getKDB_KanbanCard()!=null)
+		if (kanbanBoard.getKDB_KanbanCard() != null)
 			kanbanCardText=kanbanBoard.get_Translation(MKanbanBoard.COLUMNNAME_KDB_KanbanCard);
 		else
 			kanbanCardText=Integer.toString(recordId);
@@ -265,9 +266,9 @@ public class MKanbanCard{
 	private String parseVariable (String variable, String format,PO po)
 	{
 		int index = po.get_ColumnIndex(variable);
-		if (index == -1){
+		if (index == -1) {
 			int i = variable.indexOf('.');
-			if(i!=-1)
+			if (i != -1)
 			{
 				StringBuilder outStr = new StringBuilder();
 				outStr.append(variable.substring(0, i));
@@ -278,12 +279,12 @@ public class MKanbanCard{
 
 				Integer subRecordId;
 
-				if (index != -1){
+				if (index != -1) {
 					MColumn column = MColumn.get(Env.getCtx(), po.get_TableName(), po.get_ColumnName(index));
 					MTable table = MTable.get(Env.getCtx(),column.getReferenceTableName());
 
 					subRecordId = (Integer)po.get_Value(outStr.toString());
-					if(subRecordId==null)
+					if (subRecordId == null)
 						return "";
 					PO subPo = table.getPO(subRecordId, null);						
 					return parseVariable(variable,format,subPo);
@@ -300,28 +301,28 @@ public class MKanbanCard{
 			value = "********";
 		} else if (col.getAD_Reference_ID() == DisplayType.Date || col.getAD_Reference_ID() == DisplayType.DateTime || col.getAD_Reference_ID() == DisplayType.Time) {
 			SimpleDateFormat sdf;
-			if(format != null && format.length() > 0){
+			if (format != null && format.length() > 0) {
 				sdf = new SimpleDateFormat(format, Env.getLanguage(Env.getCtx()).getLocale());
-			}else{
+			} else {
 				sdf = DisplayType.getDateFormat(col.getAD_Reference_ID());
 			}
-			if(po.get_Value(index)!=null)
+			if (po.get_Value(index)!= null)
 				value = sdf.format (po.get_Value(index));	
 		} else if (col.getAD_Reference_ID() == DisplayType.YesNo) {
 			if (po.get_ValueAsBoolean(variable))
 				value = Msg.getMsg(Env.getCtx(), "Yes");
 			else
 				value = Msg.getMsg(Env.getCtx(), "No");
-		}else if (col.getAD_Reference_ID() == DisplayType.Number || col.getAD_Reference_ID() == DisplayType.Amount) {
+		} else if (col.getAD_Reference_ID() == DisplayType.Number || col.getAD_Reference_ID() == DisplayType.Amount) {
 			DecimalFormat df;
-			if(format != null && format.length() > 0){
+			if (format != null && format.length() > 0) {
 				df =  DisplayType.getNumberFormat(col.getAD_Reference_ID(),null,format);
-			}else{
+			} else {
 				df = DisplayType.getNumberFormat(col.getAD_Reference_ID());
 			}
-			if(po.get_Value(index)!=null)
+			if (po.get_Value(index)!=null)
 				value = df.format (po.get_Value(index));	
-		}else {
+		} else {
 			value = po.get_Value(index);
 		}
 		if (value == null)
