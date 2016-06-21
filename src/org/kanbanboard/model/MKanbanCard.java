@@ -181,10 +181,16 @@ public class MKanbanCard{
 		return textColor;
 	}
 
-	public String getKanbanCardText(){
+	public String getKanbanCardText() {
 		if (kanbanCardText == null)
 			translate();
-		return parse(kanbanCardText);
+		
+		String parsedText = parse(kanbanCardText);
+		
+		if (kanbanBoard.get_ValueAsBoolean("IsHtml"))
+			parsedText = parseHTML(parsedText);
+		
+		return parsedText;
 	}
 
 	/**
@@ -207,6 +213,19 @@ public class MKanbanCard{
 		text = parse (text, m_po);
 		return text;
 	}	//	parse
+	
+	private String parseHTML(String text) {
+		
+		if(text == null)
+			return "";
+		
+    	StringBuilder sb = new StringBuilder();
+    	sb.append("<html>\n<body>\n<div class=\"help-content\">\n");
+    	sb.append(text);
+    	sb.append("</div>\n</body>\n</html>");	
+		
+		return sb.toString();
+	} //parseHTML
 
 	/**
 	 * 	Parse text
@@ -246,11 +265,14 @@ public class MKanbanCard{
 				token = token.substring(0, f);
 			}
 
-			outStr.append(parseVariable(token, format,po));		// replace context
+			outStr.append(parseVariable(token, format, po));		// replace context
 
 			inStr = inStr.substring(j+1, inStr.length());	// from second @
 			i = inStr.indexOf('@');
-			outStr.append(System.getProperty("line.separator"));
+			
+			//if not HTML behave as usual - break line per field
+			if (!kanbanBoard.get_ValueAsBoolean("IsHtml"))
+				outStr.append(System.getProperty("line.separator"));
 		}
 
 		outStr.append(inStr);				//	add remainder

@@ -230,4 +230,8 @@ public class KanbanBoard {
 			summaryCounter = kanbanBoard.getSummaryCounter();		
 		return summaryCounter;		
 	}
+	
+	public boolean isHTML() {
+		return kanbanBoard.get_ValueAsBoolean("IsHtml");
+	}
 }
