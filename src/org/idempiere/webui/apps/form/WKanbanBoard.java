@@ -51,6 +51,7 @@ import org.compiere.util.Msg;
 import org.idempiere.apps.form.KanbanBoard;
 import org.kanbanboard.model.MKanbanCard;
 import org.kanbanboard.model.MKanbanStatus;
+import org.zkoss.zhtml.Div;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.DropEvent;
 import org.zkoss.zk.ui.event.Event;
@@ -63,6 +64,7 @@ import org.zkoss.zul.Cell;
 import org.zkoss.zul.Column;
 import org.zkoss.zul.Columns;
 import org.zkoss.zul.Hbox;
+import org.zkoss.zul.Html;
 import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.North;
 import org.zkoss.zul.South;
@@ -358,7 +360,6 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 	private Vlayout createCell(MKanbanCard card){
 		Vlayout div = new Vlayout();
-		String[] tokens = card.getKanbanCardText().split(System.getProperty("line.separator"));
 		
 		StringBuilder divStyle = new StringBuilder();
 		
@@ -375,12 +376,26 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		
 		div.setStyle(divStyle.toString());
 		
-		for(String token:tokens){
-			Label label = new Label(token);
-			label.setStyle("color:"+card.getTextColor());
-			div.appendChild(label);
-		}
+		if (isHTML()) {
+			String htmlText = card.getKanbanCardText();
 
+			Div content = new Div();
+	    	div.appendChild(content);
+	    	content.setStyle("color:"+card.getTextColor());
+	    	Html htmlCard = new Html();
+	        content.appendChild(htmlCard);
+	        htmlCard.setContent(htmlText);
+	        
+		} else {
+			String[] tokens = card.getKanbanCardText().split(System.getProperty("line.separator"));
+
+			for(String token:tokens){
+				Label label = new Label(token);
+				label.setStyle("color:"+card.getTextColor());
+				div.appendChild(label);
+			}		
+		}
+			
 		return div;
 	}//CreateCell
 
