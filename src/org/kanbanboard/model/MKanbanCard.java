@@ -113,17 +113,21 @@ public class MKanbanCard {
 		m_po = kanbanBoard.getTable().getPO(recordId, null);
 	}
 
-	public boolean changeStatus(String statusColumn, String newStatusValue){
+	public boolean changeStatus(String statusColumn, String newStatusValue) {
 
 		if(m_po == null)
 			return false;
 		boolean success=true;
 
 		if(statusColumn.equals(MKanbanBoard.STATUSCOLUMN_DocStatus)){
-			if(m_po instanceof DocAction && m_po.get_ColumnIndex("DocAction") >= 0){
-				String p_docAction = newStatusValue;
-				m_po.set_ValueOfColumn("DocAction", p_docAction);
+			if(m_po instanceof DocAction && m_po.get_ColumnIndex("DocAction") >= 0) {
 				try {
+					String p_docAction = kanbanBoard.getDocAction(newStatusValue);
+					//No valid action
+					if (p_docAction == null)
+						throw new IllegalStateException();
+
+					m_po.set_ValueOfColumn("DocAction", p_docAction);
 					if (!((DocAction) m_po).processIt(p_docAction))
 					{
 						throw new IllegalStateException();

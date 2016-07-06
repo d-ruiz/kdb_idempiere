@@ -58,6 +58,10 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 	public MKanbanBoard getKanbanBoard() {
 		return kanbanBoard;
 	}
+	
+	public void setKanbanBoard(MKanbanBoard kanbanBoard) {
+		this.kanbanBoard = kanbanBoard;
+	}
 
 	public List<MKanbanCard> getRecords() {
 		return records;
