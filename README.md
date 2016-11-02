@@ -10,7 +10,6 @@ Features
 --------
 - Copyright: 
     2014 Diego Ruiz
-- Repository: https://bitbucket.org/druiz/kdb_idempiere
 - License: GPLv2
 - Language: Java
 - IDE: Eclipse
