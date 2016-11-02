@@ -3,8 +3,8 @@ Kanban Board in iDempiere
 
 Description
 -----------
-[Video guide](http://www.youtube.com/watch?v=1CExXqfpPeE)
-[Red1's review](http://youtu.be/Rt1aLdrfN3Y)
+* [Video guide](http://www.youtube.com/watch?v=1CExXqfpPeE)
+* [Red1's review](http://youtu.be/Rt1aLdrfN3Y)
 
 Features
 --------
@@ -21,4 +21,4 @@ Documentation
 
 Questions or feedback
 -------------
-- Feel free to ask and comment in the [group](https://groups.google.com/forum/#!forum/idempiere) 
+- Feel free to ask and comment in the [group](https://groups.google.com/forum/#!forum/idempiere)
