@@ -23,7 +23,7 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for KDB_KanbanBoard
  *  @author iDempiere (generated) 
- *  @version Release 2.1
+ *  @version Release 3.1
  */
 @SuppressWarnings("all")
 public interface I_KDB_KanbanBoard 
@@ -32,7 +32,7 @@ public interface I_KDB_KanbanBoard
     /** TableName=KDB_KanbanBoard */
     public static final String Table_Name = "KDB_KanbanBoard";
 
-    /** AD_Table_ID=1000000 */
+    /** AD_Table_ID=1000029 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -211,6 +211,32 @@ public interface I_KDB_KanbanBoard
 
 	/** Get Priority SQL	  */
 	public String getKDB_PrioritySQL();
+
+    /** Column name KDB_StdCardHeight */
+    public static final String COLUMNNAME_KDB_StdCardHeight = "KDB_StdCardHeight";
+
+	/** Set Standard Card Height.
+	  * Standard Card Height
+	  */
+	public void setKDB_StdCardHeight (int KDB_StdCardHeight);
+
+	/** Get Standard Card Height.
+	  * Standard Card Height
+	  */
+	public int getKDB_StdCardHeight();
+
+    /** Column name KDB_StdColumnWidth */
+    public static final String COLUMNNAME_KDB_StdColumnWidth = "KDB_StdColumnWidth";
+
+	/** Set Standard Column Width.
+	  * Standard Column Width
+	  */
+	public void setKDB_StdColumnWidth (int KDB_StdColumnWidth);
+
+	/** Get Standard Column Width.
+	  * Standard Column Width
+	  */
+	public int getKDB_StdColumnWidth();
 
     /** Column name KDB_SummarySQL */
     public static final String COLUMNNAME_KDB_SummarySQL = "KDB_SummarySQL";

@@ -55,6 +55,7 @@ import org.adempiere.webui.session.SessionManager;
 import org.adempiere.webui.theme.ThemeManager;
 import org.compiere.model.MPInstance;
 import org.compiere.model.MProcess;
+import org.compiere.model.MSysConfig;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -78,12 +79,14 @@ import org.zkoss.zul.Column;
 import org.zkoss.zul.Columns;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Hbox;
+import org.zkoss.zul.Html;
 import org.zkoss.zul.Menuitem;
 import org.zkoss.zul.Menuseparator;
 import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.North;
 import org.zkoss.zul.South;
 import org.zkoss.zul.Space;
+import org.zkoss.zul.Timer;
 import org.zkoss.zul.Vlayout;
 
 /**
@@ -108,6 +111,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	private Listbox cbProcess = ListboxFactory.newDropdownListbox();
 	private int kanbanBoardId=-1;
 	private Button bRefresh = new Button();
+	private Timer timer;
 	private Menupopup menupopup;
 	private Menupopup cardpopup;
 	private Hbox      northPanelHbox;
@@ -194,6 +198,20 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		centerVLayout.setHeight("100%");
 		centerVLayout.appendChild(kanbanPanel);
 		centerVLayout.setStyle("overflow:auto");
+		
+		// Auto refresh in milliseconds
+		int refreshInterval = MSysConfig.getIntValue("KDB_KanbanBoard_RefreshInterval", 0,
+				Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()));
+
+		if (refreshInterval > 0) {
+			timer = new Timer();
+			timer.setDelay(refreshInterval);
+			timer.addEventListener(Events.ON_TIMER, this);
+			timer.setRepeats(true);
+			timer.start();
+			timer.setVisible(false);
+			centerVLayout.appendChild(timer);
+		}
 
 		South south = new South();
 		LayoutUtils.addSclass("tab-editor-form-center-panel", south);
@@ -284,6 +302,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				columns.setMenupopup(getBoardMenupopup());
 
 				int equalWidth = 100 ;
+				int stdColumnWidth = getStdColumnWidth();
 				Auxhead auxhead = new Auxhead();
 
 				//Create columns based on the states of the kanban board
@@ -292,7 +311,10 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				for(MKanbanStatus status: getStatuses()){
 					if(status.hasQueue()){
 						column = new Column();
-						column.setWidth(equalWidth/2 + "%");
+						if( stdColumnWidth == 0 )
+							column.setWidth(equalWidth/2 + "%");
+						else
+							column.setWidth(stdColumnWidth/2 + "px");
 						columns.appendChild(column);
 						column.setAlign("right");
 						column.setLabel(status.getPrintableName().substring(0, 1)+" Queue");
@@ -305,7 +327,12 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 					}
 					column = new Column();
 					column.setId(Integer.toString(status.get_ID()));
-					column.setWidth(equalWidth + "%");
+					
+					if( stdColumnWidth == 0 )
+						column.setWidth(equalWidth + "%");
+					else
+						column.setWidth(stdColumnWidth + "px");
+					
 					columns.appendChild(column);
 					column.setAlign("center");
 					columns.appendChild(column);
@@ -408,16 +435,42 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	}
 
 	private Vlayout createCell(MKanbanCard card){
-		Vlayout div = new Vlayout();
-		String[] tokens = card.getKanbanCardText().split(System.getProperty("line.separator"));
-		for(String token:tokens){
-			Label label = new Label(token);
-			div.appendChild(label);
-		}
+		Vlayout div = new Vlayout();		
+		StringBuilder divStyle = new StringBuilder();
+		
+		divStyle.append("text-align: left; ");
+		divStyle.append("background-color:" + card.getCardColor() + "; ");
+		
 		if(!card.isQueued())
-			div.setStyle("cursor:hand;cursor:pointer; text-align: left; background-color:" + card.getColor() + ";");
-		else
-			div.setStyle("text-align: left; background-color:" + card.getColor() + ";");
+			divStyle.append("cursor:hand; cursor:pointer; ");
+
+		if( getStdCardheight() != 0 ) {
+			div.setHeight(getStdCardheight() + "px");
+			divStyle.append("overflow:auto");
+		}
+		
+		div.setStyle(divStyle.toString());
+		
+		if (isHTML()) {
+			String htmlText = card.getKanbanCardText();
+
+			Div content = new Div();
+	    	div.appendChild(content);
+	    	content.setStyle("color:"+card.getTextColor());
+	    	Html htmlCard = new Html();
+	        content.appendChild(htmlCard);
+	        htmlCard.setContent(htmlText);
+	        
+		} else {
+			String[] tokens = card.getKanbanCardText().split(System.getProperty("line.separator"));
+
+			for(String token:tokens){
+				Label label = new Label(token);
+				label.setStyle("color:"+card.getTextColor());
+				div.appendChild(label);
+			}		
+		}
+
 		return div;
 	}//CreateCell
 
@@ -676,6 +729,12 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 			// set the referenced object in a hidden reference of the popup
 			popup.setAttribute("columnRef", referencedComponent);
+		} else if (Events.ON_TIMER.equals(e.getName())) {
+			//Auto refresh
+			if (kanbanBoardId != -1) {
+				refreshBoard();
+				repaintGrid();
+			}
 		}
 	}//onEvent
 
@@ -792,3 +851,4 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	}
 
 }
+

@@ -23,14 +23,14 @@ import org.compiere.model.*;
 
 /** Generated Model for KDB_KanbanPriority
  *  @author iDempiere (generated) 
- *  @version Release 2.0 - $Id$ */
+ *  @version Release 3.1 - $Id$ */
 public class X_KDB_KanbanPriority extends PO implements I_KDB_KanbanPriority, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20140613L;
+	private static final long serialVersionUID = 20151209L;
 
     /** Standard Constructor */
     public X_KDB_KanbanPriority (Properties ctx, int KDB_KanbanPriority_ID, String trxName)
@@ -150,6 +150,34 @@ public class X_KDB_KanbanPriority extends PO implements I_KDB_KanbanPriority, I_
 	public int getKDB_PriorityColor_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_KDB_PriorityColor_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public org.compiere.model.I_AD_PrintColor getKDB_PriorityTextColor() throws RuntimeException
+    {
+		return (org.compiere.model.I_AD_PrintColor)MTable.get(getCtx(), org.compiere.model.I_AD_PrintColor.Table_Name)
+			.getPO(getKDB_PriorityTextColor_ID(), get_TrxName());	}
+
+	/** Set Text Color.
+		@param KDB_PriorityTextColor_ID 
+		Text color in the card
+	  */
+	public void setKDB_PriorityTextColor_ID (int KDB_PriorityTextColor_ID)
+	{
+		if (KDB_PriorityTextColor_ID < 1) 
+			set_Value (COLUMNNAME_KDB_PriorityTextColor_ID, null);
+		else 
+			set_Value (COLUMNNAME_KDB_PriorityTextColor_ID, Integer.valueOf(KDB_PriorityTextColor_ID));
+	}
+
+	/** Get Text Color.
+		@return Text color in the card
+	  */
+	public int getKDB_PriorityTextColor_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_KDB_PriorityTextColor_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
