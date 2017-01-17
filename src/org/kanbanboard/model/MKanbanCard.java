@@ -40,7 +40,7 @@ import org.compiere.util.Msg;
 
 
 
-public class MKanbanCard{
+public class MKanbanCard {
 
 
 	public static String KDB_ErrorMessage = "KDB_InvalidTransition";
@@ -53,6 +53,9 @@ public class MKanbanCard{
 	private PO			  m_po           = null;
 	private String 		  kanbanCardText = null;
 	private boolean		  isQueued       = false;
+	
+	private String        textColor      = null;
+	private String        cardColor      = null;
 
 	public BigDecimal getPriorityValue() {
 		return priorityValue;
@@ -110,17 +113,21 @@ public class MKanbanCard{
 		m_po = kanbanBoard.getTable().getPO(recordId, null);
 	}
 
-	public boolean changeStatus(String statusColumn, String newStatusValue){
+	public boolean changeStatus(String statusColumn, String newStatusValue) {
 
-		if(m_po==null)
+		if(m_po == null)
 			return false;
 		boolean success=true;
 
 		if(statusColumn.equals(MKanbanBoard.STATUSCOLUMN_DocStatus)){
-			if(m_po instanceof DocAction && m_po.get_ColumnIndex("DocAction") >= 0){
-				String p_docAction = newStatusValue;
-				m_po.set_ValueOfColumn("DocAction", p_docAction);
+			if(m_po instanceof DocAction && m_po.get_ColumnIndex("DocAction") >= 0) {
 				try {
+					String p_docAction = kanbanBoard.getDocAction(newStatusValue);
+					//No valid action
+					if (p_docAction == null)
+						throw new IllegalStateException();
+
+					m_po.set_ValueOfColumn("DocAction", p_docAction);
 					if (!((DocAction) m_po).processIt(p_docAction))
 					{
 						throw new IllegalStateException();
@@ -154,29 +161,46 @@ public class MKanbanCard{
 	}
 
 
-	public String getColor() {
-		String color = null;
+	public void getPriorityColor() {
 
-		if(kanbanBoard.hasPriorityOrder()&&kanbanBoard.getPriorityRules().size()>0){
-			for(MKanbanPriority priorityRule:kanbanBoard.getPriorityRules()){
+		if(kanbanBoard.hasPriorityOrder() && kanbanBoard.getPriorityRules().size() > 0){
+			for(MKanbanPriority priorityRule : kanbanBoard.getPriorityRules()){
 				BigDecimal minValue = new BigDecimal(priorityRule.getMinValue());
 				BigDecimal maxValue = new BigDecimal(priorityRule.getMaxValue());
 
-				if(priorityValue.compareTo(minValue)>=0&&priorityValue.compareTo(maxValue)<=0){
+				if(priorityValue.compareTo(minValue) >= 0 && priorityValue.compareTo(maxValue) <= 0){
 					MPrintColor priorityColor = new MPrintColor(Env.getCtx(), priorityRule.getKDB_PriorityColor_ID(), null);
-					color = priorityColor.getName();
+					MPrintColor PriorityTextColor = new MPrintColor(Env.getCtx(), priorityRule.getKDB_PriorityTextColor_ID(), null);
+					cardColor = priorityColor.getName();
+					textColor = PriorityTextColor.getName();
 					break;
 				}
 			} 
 		}
-		return color;
+	}
+	
+	public String getTextColor() {
+		if(textColor == null)
+			getPriorityColor();
+		return textColor;
+	}
+	
+	public String getCardColor() {
+		if(cardColor == null)
+			getPriorityColor();
+		return cardColor;
 	}
 
-	public String getKanbanCardText(){
+	public String getKanbanCardText() {
 		if(kanbanCardText==null)
 			translate();
-		return parse(kanbanCardText);
-	}
+		
+		String parsedText = parse(kanbanCardText);
+		
+		if (kanbanBoard.get_ValueAsBoolean("IsHtml"))
+			parsedText = parseHTML(parsedText);
+		
+		return parsedText;	}
 
 	/**
 	 * 	Translate to BPartner Language
@@ -184,7 +208,7 @@ public class MKanbanCard{
 	private void translate()
 	{
 		//	Default if no Translation
-		if(kanbanBoard.getKDB_KanbanCard()!=null)
+		if(kanbanBoard.getKDB_KanbanCard() != null)
 			kanbanCardText=kanbanBoard.get_Translation(MKanbanBoard.COLUMNNAME_KDB_KanbanCard);
 		else
 			kanbanCardText=Integer.toString(recordId);
@@ -198,6 +222,19 @@ public class MKanbanCard{
 		text = parse (text, m_po);
 		return text;
 	}	//	parse
+	
+	private String parseHTML(String text) {
+
+		if(text == null)
+			return "";
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("<html>\n<body>\n<div class=\"help-content\">\n");
+		sb.append(text);
+		sb.append("</div>\n</body>\n</html>");	
+
+		return sb.toString();
+	} //parseHTML
 
 	/**
 	 * 	Parse text
@@ -237,11 +274,14 @@ public class MKanbanCard{
 				token = token.substring(0, f);
 			}
 
-			outStr.append(parseVariable(token, format,po));		// replace context
+			outStr.append(parseVariable(token, format, po));		// replace context
 
 			inStr = inStr.substring(j+1, inStr.length());	// from second @
 			i = inStr.indexOf('@');
-			outStr.append(System.getProperty("line.separator"));
+
+			//if not HTML behave as usual - break line per field
+			if (!kanbanBoard.get_ValueAsBoolean("IsHtml"))
+				outStr.append(System.getProperty("line.separator"));
 		}
 
 		outStr.append(inStr);				//	add remainder
@@ -257,9 +297,9 @@ public class MKanbanCard{
 	private String parseVariable (String variable, String format,PO po)
 	{
 		int index = po.get_ColumnIndex(variable);
-		if (index == -1){
+		if (index == -1) {
 			int i = variable.indexOf('.');
-			if(i!=-1)
+			if(i != -1)
 			{
 				StringBuilder outStr = new StringBuilder();
 				outStr.append(variable.substring(0, i));

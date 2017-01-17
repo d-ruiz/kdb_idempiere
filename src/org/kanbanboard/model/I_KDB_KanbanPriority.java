@@ -23,7 +23,7 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for KDB_KanbanPriority
  *  @author iDempiere (generated) 
- *  @version Release 2.0
+ *  @version Release 3.1
  */
 @SuppressWarnings("all")
 public interface I_KDB_KanbanPriority 
@@ -32,7 +32,7 @@ public interface I_KDB_KanbanPriority
     /** TableName=KDB_KanbanPriority */
     public static final String Table_Name = "KDB_KanbanPriority";
 
-    /** AD_Table_ID=1000012 */
+    /** AD_Table_ID=1000032 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -132,6 +132,21 @@ public interface I_KDB_KanbanPriority
 	public int getKDB_PriorityColor_ID();
 
 	public org.compiere.model.I_AD_PrintColor getKDB_PriorityColor() throws RuntimeException;
+
+    /** Column name KDB_PriorityTextColor_ID */
+    public static final String COLUMNNAME_KDB_PriorityTextColor_ID = "KDB_PriorityTextColor_ID";
+
+	/** Set Text Color.
+	  * Text color in the card
+	  */
+	public void setKDB_PriorityTextColor_ID (int KDB_PriorityTextColor_ID);
+
+	/** Get Text Color.
+	  * Text color in the card
+	  */
+	public int getKDB_PriorityTextColor_ID();
+
+	public org.compiere.model.I_AD_PrintColor getKDB_PriorityTextColor() throws RuntimeException;
 
     /** Column name MaxValue */
     public static final String COLUMNNAME_MaxValue = "MaxValue";

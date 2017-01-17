@@ -30,6 +30,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -41,6 +42,7 @@ import org.compiere.model.MRole;
 import org.compiere.model.MTable;
 import org.compiere.model.Query;
 import org.compiere.print.MPrintColor;
+import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -63,6 +65,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	private boolean statusProcessed = false;
 	private String summarySql;
 	private int summaryCounter   = 0;
+	private HashMap<String, String> targetAction;
 	
 	//Associated Processes
 	private boolean processRead = false;
@@ -76,14 +79,42 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		super(ctx, rs, trxName);
 	}
 
-	public void setBoardContent(){
+	public void setBoardContent() {
+		initTargetAction();
 		getStatuses();
 		getKanbanCards();
-		for(MKanbanStatus status:statuses){
-			if(status.hasQueue()&&
+		for (MKanbanStatus status : statuses) {
+			if(status.hasQueue() &&
 					!status.getSQLStatement().equals("C"))
 				getKanbanQueuedCards(status);
 		}
+	}
+	
+	/**
+	 * Maps the DocStatus to the corresponding DocAction
+	 */
+	private void initTargetAction() {
+		targetAction = new HashMap<>();
+		
+		//No movement to this states manually
+		targetAction.put(DocAction.STATUS_Drafted, null);
+		targetAction.put(DocAction.STATUS_Invalid, null);
+		targetAction.put(DocAction.STATUS_Unknown, null);
+		targetAction.put(DocAction.STATUS_WaitingConfirmation, null);
+		targetAction.put(DocAction.STATUS_WaitingPayment, null);
+
+		//Map the DocStatus to DocAction 
+		targetAction.put(DocAction.STATUS_Completed, DocAction.ACTION_Complete);
+		targetAction.put(DocAction.STATUS_NotApproved, DocAction.ACTION_Reject);
+		targetAction.put(DocAction.STATUS_Voided, DocAction.ACTION_Void);
+		targetAction.put(DocAction.STATUS_Approved, DocAction.ACTION_Approve);		
+		targetAction.put(DocAction.STATUS_Reversed, DocAction.ACTION_Reverse_Correct);
+		targetAction.put(DocAction.STATUS_Closed, DocAction.ACTION_Close);
+		targetAction.put(DocAction.STATUS_InProgress, DocAction.ACTION_Prepare);
+	}
+	
+	public String getDocAction(String newDocStatus) {
+		return targetAction.get(newDocStatus);
 	}
 
 	public MTable getTable() {
@@ -95,21 +126,21 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	}
 
 	public int getNumberOfCards() {
-		if(numberOfCards<=0)
+		if (numberOfCards <= 0)
 			getKanbanCards();
 		return numberOfCards;
 	}
 
 	public boolean isRefList(){
-		if (getKDB_ColumnList_ID()!=0){
+		if (getKDB_ColumnList_ID() != 0) {
 			isRefList=true;
-		}else if (getKDB_ColumnTable_ID()!=0){
+		}else if (getKDB_ColumnTable_ID() != 0) {
 			isRefList=false;
 		}
 		return isRefList;
 	}
 
-	public MColumn getStatusColumn(){
+	public MColumn getStatusColumn() {
 		int columnId = 0;
 		if (isRefList())
 			columnId = getKDB_ColumnList_ID();
@@ -122,21 +153,21 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 
 	}
 
-	public void setPrintableNames(){
+	public void setPrintableNames() {
 
-		if (statuses.size()==0){
+		if (statuses.size() == 0) {
 			statuses = getStatuses();
 		}
 
 		MColumn column = getStatusColumn();
 		ValueNamePair list[] = MRefList.getList(getCtx(), column.getAD_Reference_Value_ID(), false);
-		if(column.getAD_Reference_Value_ID()!=0&&list.length>0){
+		if (column.getAD_Reference_Value_ID()!=0&&list.length>0) {
 			int posStatus;
-			for(posStatus=0;posStatus<statuses.size();posStatus++){
+			for (posStatus=0; posStatus<statuses.size(); posStatus++) {
 				int posList=0;
 				boolean match = false;
-				while(posList<list.length&&!match){
-					if(statuses.get(posStatus).getKDB_StatusListValue().equals(list[posList].getValue())){
+				while (posList<list.length && !match) {
+					if(statuses.get(posStatus).getKDB_StatusListValue().equals(list[posList].getValue())) {
 						statuses.get(posStatus).setPrintableName(list[posList].toString());
 						match=true;
 					}
@@ -146,11 +177,10 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		}else
 		{
 			MTable table =  MTable.get(getCtx(),column.getReferenceTableName());
-			//table.getPO("RRequest Estado", get_TrxName());
-			if (table!=null){
-				for(MKanbanStatus status: statuses){
+			if (table != null) {
+				for (MKanbanStatus status : statuses) {
 					String name = table.get_Translation(column.getName()); //No esta funcionando, necesito traducir el nombre
-					if(name==null)
+					if (name == null)
 						name=status.getName();
 
 					status.setPrintableName(name);
@@ -159,29 +189,31 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		}
 	}//setPrintableNames
 
-	public MKanbanStatus getStatus(String statusName){
-		for(MKanbanStatus status: statuses){
+	public MKanbanStatus getStatus(String statusName) {
+		if (statusName == null)
+			return null;
+		for (MKanbanStatus status : statuses) {
 			String statusN;
 			statusN = status.getStatusValue();
-			if(statusN.equals(statusName)){
+			if (statusName.equals(statusN)) {
 				return status;
 			}
 		}
 		return null;
 	}
 	
-	public MKanbanStatus getStatus(int statusID){		
-		for(MKanbanStatus status: statuses){		
-			if(status.getKDB_KanbanStatus_ID() == statusID){		
+	public MKanbanStatus getStatus(int statusID) {		
+		for (MKanbanStatus status : statuses) {		
+			if (status.getKDB_KanbanStatus_ID() == statusID) {		
 				return status;		
 			}		
 		}		
 		return null;		
 	}
 
-	public List<MKanbanStatus> getStatuses(){
+	public List<MKanbanStatus> getStatuses() {
 
-		if(!statusProcessed){
+		if (!statusProcessed) {
 
 			statusProcessed=true;
 
@@ -191,6 +223,8 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 			.setOrderBy("SeqNo")
  			.list();
 			
+			for (MKanbanStatus status : statuses)
+				status.setKanbanBoard(this);
 		}
 
 		return statuses;
@@ -200,9 +234,9 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	 * Fills the associatedProcesses List with all the process associated to the board		
 	 * @return		
 	 */		
-	public List<MKanbanProcess> getAssociatedProcesses(){
+	public List<MKanbanProcess> getAssociatedProcesses() {
 
-		if( !processRead ){
+		if(!processRead) {
 			
 			processRead = true;
 			
@@ -222,7 +256,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
     */		
 	protected void checkProcessRight (List<MKanbanProcess> list) {		
 		Iterator<MKanbanProcess> iterator = list.iterator();		
-		while (iterator.hasNext()){		
+		while (iterator.hasNext()) {		
 			MKanbanProcess testKanbanProcess = iterator.next();		
 			Boolean access = MRole.getDefault().getProcessAccess(testKanbanProcess.getAD_Process_ID());		
 			if (access == null || !access.booleanValue()) {		
@@ -231,9 +265,9 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		}		
 	}//checkProcessRight
 
-	public List<MKanbanPriority> getPriorityRules(){
+	public List<MKanbanPriority> getPriorityRules() {
 
-		if(priorityRules.size()==0){
+		if (priorityRules.size() == 0) {
 
 			priorityRules = new Query(getCtx(), MKanbanPriority.Table_Name, " KDB_KanbanBoard_id = ? AND AD_Client_ID IN (0, ?) AND IsActive='Y' ", get_TrxName())
 			.setParameters(new Object[]{getKDB_KanbanBoard_ID(),Env.getAD_Client_ID(Env.getCtx())})
@@ -245,8 +279,8 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		return priorityRules;
 	}//getPriorityRules
 
-	public int getNumberOfStatuses(){
-		if(!statusProcessed)
+	public int getNumberOfStatuses() {
+		if (!statusProcessed)
 			getStatuses();
 		return statuses.size();
 	}//getNumberOfStatuses
@@ -254,13 +288,13 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	/** Return the total amount of processes associated to the board
 	 * @return
 	 */
-	public int getNumberOfProcesses(){
+	public int getNumberOfProcesses() {
 		if(!processRead)
 			getAssociatedProcesses();
 		return associatedProcesses.size();
 	}//getNumberOfProcesses
 
-	public boolean saveStatuses(){
+	public boolean saveStatuses() {
 		for (MKanbanStatus status : statuses) {
 			if (status.isActive())
 				status.save(get_TrxName());
@@ -272,9 +306,9 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	 *Get every card from the board
 	 *and assign them to its respective status
 	 */
-	public void getKanbanCards(){
+	public void getKanbanCards() {
 
-		if(numberOfCards<=0){
+		if (numberOfCards <= 0) {
 			StringBuilder sql = new StringBuilder();
 			sql.append("SELECT ");
 
@@ -286,7 +320,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 			sql.append(llaves[0]); 
 			sql.append(","+column.getColumnName());
 
-			if(hasPriorityOrder())
+			if (hasPriorityOrder())
 				sql.append(", "+getKDB_PrioritySQL());
 
 			sql.append(" FROM "+table.getTableName());
@@ -294,7 +328,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 			StringBuilder whereClause = new StringBuilder();
 			whereClause.append(" WHERE ");
 
-			if(getWhereClause()!=null)
+			if (getWhereClause() != null)
 				whereClause.append(getWhereClause()+" AND ");
 
 			whereClause.append(column.getColumnName()+ " IN ");
@@ -305,7 +339,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 
 			sql.append(whereClause.toString());
 			
-			if (getOrderByClause()!=null)
+			if (getOrderByClause() != null)
 			{
 				sql.append(" ORDER BY "+getOrderByClause());
 			}
@@ -329,10 +363,10 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 					id = rs.getInt(1);
 					correspondingColumn = rs.getString(2);
 					MKanbanStatus status = getStatus(correspondingColumn);
-					if(status.hasQueue()&&status.getSQLStatement().equals("C")    //Queued Records
-							&&status.getMaxNumCards()<=status.getRecords().size()){
+					if (status.hasQueue() && status.getSQLStatement().equals("C")    //Queued Records
+							&& status.getMaxNumCards() <= status.getRecords().size()) {
 						MKanbanCard card = new MKanbanCard(id,status);
-						if(hasPriorityOrder()){
+						if(hasPriorityOrder()) {
 							BigDecimal priorityValue = rs.getBigDecimal(3);
 							card.setPriorityValue(priorityValue);
 						}
@@ -341,13 +375,13 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 						status.setTotalCards(status.getTotalCards()+1);
 						card.setQueued(true);
 					}
-					else if(status.getMaxNumCards()==0&&!status.isShowOver()){
+					else if (status.getMaxNumCards() == 0 && !status.isShowOver()) {
 						status.setTotalCards(status.getTotalCards()+1);
 						continue;
 					}
-					else if(status.isShowOver()||status.getMaxNumCards()>status.getRecords().size()){
+					else if (status.isShowOver() || status.getMaxNumCards() > status.getRecords().size()) {
 						MKanbanCard card = new MKanbanCard(id,status);
-						if(hasPriorityOrder()){
+						if(hasPriorityOrder()) {
 							BigDecimal priorityValue = rs.getBigDecimal(3);
 							card.setPriorityValue(priorityValue);
 						}
@@ -355,7 +389,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 						numberOfCards++;
 						status.setTotalCards(status.getTotalCards()+1);
 					}
-					else if(!status.isShowOver()){
+					else if (!status.isShowOver()) {
 						status.setTotalCards(status.getTotalCards()+1);
 						status.setExceed(true);	
 					}
@@ -378,7 +412,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	 *Get every card from the board
 	 *and assign them to its respective status
 	 */
-	public void getKanbanQueuedCards(MKanbanStatus status){
+	public void getKanbanQueuedCards(MKanbanStatus status) {
 
 		StringBuilder sql = new StringBuilder();
 		sql.append("SELECT ");
@@ -394,7 +428,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		StringBuilder whereClause = new StringBuilder();
 		whereClause.append(" WHERE ");
 
-		if(getWhereClause()!=null)
+		if (getWhereClause() != null)
 			whereClause.append(getWhereClause()+" AND ");
 
 		whereClause.append(column.getColumnName()+ " IN ");
@@ -421,7 +455,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 			{
 				id = rs.getInt(1);
 				MKanbanCard card = status.getCard(id);
-				if(card!=null){
+				if (card != null) {
 					status.removeRecord(card);
 					status.addQueuedRecord(card);
 					card.setQueued(true);	
@@ -440,17 +474,17 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		}
 	}//getKanbanQueuedCards
 
-	private String getInValues(){
+	private String getInValues() {
 
 		StringBuilder values = new StringBuilder();
 		values.append("(");
-		for(MKanbanStatus status:statuses){
-			if(isRefList)
+		for (MKanbanStatus status : statuses) {
+			if (isRefList)
 				values.append("'"+status.getStatusValue()+"'");
 			else
 				values.append(status.getStatusValue());
 
-			if(status.equals(statuses.get(statuses.size()-1)))
+			if (status.equals(statuses.get(statuses.size()-1)))
 				values.append(")");
 			else 
 				values.append(",");
@@ -459,25 +493,25 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		return values.toString();
 	}//getInValues
 
-	boolean hasPriorityOrder(){
+	boolean hasPriorityOrder() {
 		//Check if there's a  valid priority rule 
-		if(getKDB_PrioritySQL()!=null) 
+		if (getKDB_PrioritySQL() != null) 
 			return true;
 		else
 			return false;
 	}
 
 	public void resetStatusProperties() {
-		for(MKanbanStatus status:statuses){
+		for (MKanbanStatus status : statuses) {
 			status.setCardNumber(0);
 			status.setQueuedCardNumber(0);
-			if(hasPriorityOrder())
+			if (hasPriorityOrder())
 				status.orderCards();
 		}
 	}
 
 	public boolean deleteStatus(MKanbanStatus status) {
-		if(status.delete(true, get_TrxName())){
+		if (status.delete(true, get_TrxName())) {
 			statuses.remove(status);
 			return true;
 		}
@@ -489,10 +523,10 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		// Check if it is a valid priority rule
 		String priorityRule = getKDB_PrioritySQL();
 
-		if(priorityRule!=null){
+		if (priorityRule != null) {
 			String sql = "Select "+priorityRule+" FROM "+getAD_Table().getTableName();
 
-			if(DB.getSQLValue(get_TrxName(), sql)==-1){
+			if (DB.getSQLValue(get_TrxName(), sql) == -1) {
 				log.saveError("Error", Msg.getMsg(Env.getCtx(), "KDB_InvalidPriority"));
 				return false;
 			}
@@ -506,21 +540,21 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		return priorityColor.getName();
 	}
 	
-	public String getSummarySql(){
+	public String getSummarySql() {
 
 		String summaryText = getKDB_SummarySQL();
 
-		if( summarySql == null && summaryText != null ){
+		if (summarySql == null && summaryText != null) {
 
 			int i = summaryText.indexOf("@SQL=");
 
-			if( i > -1 ){
+			if (i > -1) {
 
 				i = summaryText.indexOf('=');
 				String inStr;
 				inStr = summaryText.substring(i+1, summaryText.length());	// from =
 
-				if(summarySql == null )
+				if (summarySql == null)
 					summarySql = addWhereClauseValidation(inStr);
 			}
 		}
@@ -530,19 +564,19 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	
 	private int getSummaryNumberOfColumns(String sqlQuery) {
 
-		if( summaryCounter == 0){
+		if (summaryCounter == 0) {
 			int counter = 0;
 			int i = sqlQuery.indexOf("SELECT");
 
-			if( i > -1 ){
+			if (i > -1) {
 
 				int j = sqlQuery.indexOf("FROM");
-				if( j > -1 ){
+				if (j > -1) {
 					counter++;
 					String selectClause = sqlQuery.substring(i, j);
 
-					for( int k=0; k<selectClause.length(); k++ ) {
-						if( selectClause.charAt(k) == ',' ) {
+					for (int k=0; k<selectClause.length(); k++) {
+						if(selectClause.charAt(k) == ',') {
 							counter++;
 						} 
 					}
@@ -553,8 +587,8 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		return summaryCounter;
 	}//getSummaryNumberofColumns
 	
-	public int getSummaryCounter(){
-		if(summarySql != null)
+	public int getSummaryCounter() {
+		if (summarySql != null)
 			return getSummaryNumberOfColumns(summarySql);
 		return summaryCounter;
 	}//getSummaryCounter
@@ -563,15 +597,15 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	 * Adds the AD_CLIENT_ID condition for info access security
 	 * @param sqlQuery
 	 */
-	private String addWhereClauseValidation(String sqlQuery){
+	private String addWhereClauseValidation(String sqlQuery) {
 		
 		StringBuilder whereClause = new StringBuilder(""); 
 		int i = sqlQuery.indexOf("WHERE");
-		if( i > -1 ){
+		if(i > -1) {
 			whereClause.append(sqlQuery.substring(i, sqlQuery.length()) + " AND " );
 			sqlQuery = sqlQuery.substring(0, i);
 		}
-		else{
+		else {
 			whereClause.append(" WHERE ");
 		}
 
