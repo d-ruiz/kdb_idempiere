@@ -318,7 +318,11 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 			String llaves[] = table.getKeyColumns();
 
 			sql.append(llaves[0]); 
-			sql.append(","+column.getColumnName());
+			sql.append(",");
+			if (column.isVirtualColumn()) {
+				sql.append("(").append(column.getColumnSQL()).append(") AS ");
+			}
+			sql.append(column.getColumnName());
 
 			if (hasPriorityOrder())
 				sql.append(", "+getKDB_PrioritySQL());
@@ -331,7 +335,12 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 			if (getWhereClause() != null)
 				whereClause.append(getWhereClause()+" AND ");
 
-			whereClause.append(column.getColumnName()+ " IN ");
+			if (column.isVirtualColumn()) {
+				whereClause.append("(").append(column.getColumnSQL()).append(")");
+			} else {
+				whereClause.append(column.getColumnName());
+			}
+			whereClause.append(" IN ");
 
 			whereClause.append(getInValues());
 
