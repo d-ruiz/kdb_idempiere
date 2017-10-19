@@ -254,7 +254,8 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 			ResultSet rs = null;
 			try
 			{
-				pstmt = DB.prepareStatement(summarySql, get_TrxName());
+				String sqlparsed = Env.parseContext(getCtx(), 0, summarySql, false);
+				pstmt = DB.prepareStatement(sqlparsed, get_TrxName());
 				pstmt.setInt(1, Env.getAD_Client_ID(Env.getCtx()));
 				rs = pstmt.executeQuery();
 				StringBuilder resultQuery = new StringBuilder();
