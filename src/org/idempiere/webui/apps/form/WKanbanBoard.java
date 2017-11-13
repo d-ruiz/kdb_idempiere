@@ -155,7 +155,6 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	 */
 	private void jbInit() throws Exception
 	{
-		kForm.setSizable(true);
 		kForm.setClosable(true);
 		kForm.setMaximizable(true);
 		kForm.setWidth("95%");
