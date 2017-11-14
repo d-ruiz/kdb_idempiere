@@ -24,14 +24,14 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Model for KDB_KanbanBoard
  *  @author iDempiere (generated) 
- *  @version Release 3.1 - $Id$ */
+ *  @version Release 5.1 - $Id$ */
 public class X_KDB_KanbanBoard extends PO implements I_KDB_KanbanBoard, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20151209L;
+	private static final long serialVersionUID = 20171114L;
 
     /** Standard Constructor */
     public X_KDB_KanbanBoard (Properties ctx, int KDB_KanbanBoard_ID, String trxName)
@@ -40,6 +40,8 @@ public class X_KDB_KanbanBoard extends PO implements I_KDB_KanbanBoard, I_Persis
       /** if (KDB_KanbanBoard_ID == 0)
         {
 			setAD_Table_ID (0);
+			setIsHtml (false);
+// N
 			setKDB_KanbanBoard_ID (0);
 			setName (null);
         } */
@@ -147,6 +149,30 @@ public class X_KDB_KanbanBoard extends PO implements I_KDB_KanbanBoard, I_Persis
 	public String getHelp () 
 	{
 		return (String)get_Value(COLUMNNAME_Help);
+	}
+
+	/** Set HTML.
+		@param IsHtml 
+		Text has HTML tags
+	  */
+	public void setIsHtml (boolean IsHtml)
+	{
+		set_Value (COLUMNNAME_IsHtml, Boolean.valueOf(IsHtml));
+	}
+
+	/** Get HTML.
+		@return Text has HTML tags
+	  */
+	public boolean isHtml () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsHtml);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	public org.compiere.model.I_AD_PrintColor getKDB_BackgroundColor() throws RuntimeException
@@ -324,6 +350,23 @@ public class X_KDB_KanbanBoard extends PO implements I_KDB_KanbanBoard, I_Persis
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Summary Message.
+		@param KDB_SummaryMsg 
+		Message that will be present on every state of the Kanban Board
+	  */
+	public void setKDB_SummaryMsg (String KDB_SummaryMsg)
+	{
+		set_Value (COLUMNNAME_KDB_SummaryMsg, KDB_SummaryMsg);
+	}
+
+	/** Get Summary Message.
+		@return Message that will be present on every state of the Kanban Board
+	  */
+	public String getKDB_SummaryMsg () 
+	{
+		return (String)get_Value(COLUMNNAME_KDB_SummaryMsg);
 	}
 
 	/** Set Summary SQL.

@@ -60,7 +60,6 @@ public class KanbanBoard {
 	private MKanbanStatus       activeStatus;
 	private String              isReadWrite = null;
 	private String              summarySql = null;		
-	private int                 summaryCounter = 0;
 	
 	//Associated processes
 	private List<MKanbanProcess> processes  = null;
@@ -164,7 +163,6 @@ public class KanbanBoard {
 			isReadWrite = null;
 			kanbanBoard.setBoardContent();
 			summarySql = null;		
-			summaryCounter = 0;
 		}
 	}
 
@@ -268,18 +266,12 @@ public class KanbanBoard {
 	
 	
 	public String getSummarySql(){		
-		if( summarySql == null && kanbanBoard.getKDB_SummarySQL() != null ){		
-			summarySql = kanbanBoard.getSummarySql();		
-		}		
+		if (summarySql == null && kanbanBoard.getKDB_SummarySQL() != null) {
+			summarySql = kanbanBoard.getSummarySql();
+		}
 		return summarySql;		
 	}		
-			
-	public int getSummaryCounter(){		
-		if(summaryCounter == 0)		
-			summaryCounter = kanbanBoard.getSummaryCounter();		
-		return summaryCounter;		
-	}
-	
+
 	public Collection<KeyNamePair> getSaveKeys (String processType, int referenceID){
 		// clear result from prev time
     	Collection<KeyNamePair> saveKeys = new ArrayList <KeyNamePair>();
