@@ -341,11 +341,16 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 						column.setLabel(status.getPrintableName());
 					if(status.isExceed())
 						column.setStyle("background-color: red;");
-					if( getSummarySql() != null ){
+					if (getSummarySql() != null) {
 						column.setStyle("background-color: #d9e3ec");
 						auxheader = new Auxheader();
-						auxheader.setLabel(status.getSummary(getSummarySql(),getSummaryCounter()));
-						auxheader.setTooltiptext(status.getSummary(getSummarySql(),getSummaryCounter()));
+						if (status.getTotalCards()!= 0) {
+							String statusSummary = status.getSummary();
+							if (statusSummary != null) {
+								auxheader.setLabel(statusSummary);
+								auxheader.setTooltiptext(statusSummary);							
+							}							
+						}
 						auxhead.appendChild(auxheader);
 					}
 				}

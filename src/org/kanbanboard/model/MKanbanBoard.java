@@ -58,13 +58,13 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	public static final String STATUSCOLUMN_DocStatus = "DocStatus";
 
 	private MTable table = MTable.get(Env.getCtx(), getAD_Table_ID());
+	private String keyColumn;
 	private List<MKanbanStatus> statuses = new ArrayList<MKanbanStatus>();
 	private List<MKanbanPriority> priorityRules = new ArrayList<MKanbanPriority>();
 	private int numberOfCards =0;
 	private boolean isRefList = true;
 	private boolean statusProcessed = false;
 	private String summarySql;
-	private int summaryCounter   = 0;
 	private HashMap<String, String> targetAction;
 	
 	//Associated Processes
@@ -316,8 +316,9 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 			MTable table = getTable();
 			MColumn column = getStatusColumn();
 			String llaves[] = table.getKeyColumns();
-
-			sql.append(llaves[0]); 
+			keyColumn = llaves[0]; 
+			
+			sql.append(keyColumn); 
 			sql.append(",");
 			if (column.isVirtualColumn()) {
 				sql.append("(").append(column.getColumnSQL()).append(") AS ");
@@ -555,75 +556,47 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 
 		if (summarySql == null && summaryText != null) {
 
-			int i = summaryText.indexOf("@SQL=");
+			//Remove @SQL= if it brings it
+			if (summaryText.indexOf("@SQL=") > -1) {
 
-			if (i > -1) {
-
-				i = summaryText.indexOf('=');
-				String inStr;
-				inStr = summaryText.substring(i+1, summaryText.length());	// from =
-
-				if (summarySql == null)
-					summarySql = addWhereClauseValidation(inStr);
+				int i = summaryText.indexOf('=');
+				summaryText = summaryText.substring(i+1, summaryText.length());	// from =
 			}
+
+			if (summarySql == null)
+				summarySql = addWhereClauseValidation(summaryText);
+
 		}
 
 		return summarySql;
 	}//getSummarySql
 	
-	private int getSummaryNumberOfColumns(String sqlQuery) {
-
-		if (summaryCounter == 0) {
-			int counter = 0;
-			int i = sqlQuery.indexOf("SELECT");
-
-			if (i > -1) {
-
-				int j = sqlQuery.indexOf("FROM");
-				if (j > -1) {
-					counter++;
-					String selectClause = sqlQuery.substring(i, j);
-
-					for (int k=0; k<selectClause.length(); k++) {
-						if(selectClause.charAt(k) == ',') {
-							counter++;
-						} 
-					}
-				}
-			}
-			summaryCounter = counter;
-		}
-		return summaryCounter;
-	}//getSummaryNumberofColumns
-	
-	public int getSummaryCounter() {
-		if (summarySql != null)
-			return getSummaryNumberOfColumns(summarySql);
-		return summaryCounter;
-	}//getSummaryCounter
-	
 	/**
-	 * Adds the AD_CLIENT_ID condition for info access security
+	 * Records ID that belong to the status 
 	 * @param sqlQuery
 	 */
 	private String addWhereClauseValidation(String sqlQuery) {
 		
 		StringBuilder whereClause = new StringBuilder(""); 
 		int i = sqlQuery.indexOf("WHERE");
-		if(i > -1) {
+		if (i > -1) {
 			whereClause.append(sqlQuery.substring(i, sqlQuery.length()) + " AND " );
 			sqlQuery = sqlQuery.substring(0, i);
 		}
 		else {
 			whereClause.append(" WHERE ");
 		}
-
-		whereClause.append(table.getTableName() + ".AD_Client_ID IN (0, ?) AND "+ table.getTableName()+ ".IsActive='Y' ");
 		
-		sqlQuery = sqlQuery + whereClause;
+		whereClause.append(table.getTableName());
+		whereClause.append(".");
+		whereClause.append(keyColumn);
+		whereClause.append(" IN (");
+		whereClause.append(MKanbanStatus.STATUS_RECORDS_IDS);
+		whereClause.append(")");
+		
+		sqlQuery = sqlQuery + whereClause.toString();
 		
 		return sqlQuery;
-
 	}//addWhereClauseValidation
 
 }
