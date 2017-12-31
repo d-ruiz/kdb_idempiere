@@ -61,7 +61,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	private String keyColumn;
 	private List<MKanbanStatus> statuses = new ArrayList<MKanbanStatus>();
 	private List<MKanbanPriority> priorityRules = new ArrayList<MKanbanPriority>();
-	private int numberOfCards =0;
+	private int numberOfCards = 0;
 	private boolean isRefList = true;
 	private boolean statusProcessed = false;
 	private String summarySql;
@@ -131,10 +131,10 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		return numberOfCards;
 	}
 
-	public boolean isRefList(){
+	public boolean isRefList() {
 		if (getKDB_ColumnList_ID() != 0) {
 			isRefList=true;
-		}else if (getKDB_ColumnTable_ID() != 0) {
+		} else if (getKDB_ColumnTable_ID() != 0) {
 			isRefList=false;
 		}
 		return isRefList;
@@ -161,21 +161,20 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 
 		MColumn column = getStatusColumn();
 		ValueNamePair list[] = MRefList.getList(getCtx(), column.getAD_Reference_Value_ID(), false);
-		if (column.getAD_Reference_Value_ID()!=0&&list.length>0) {
+		if (column.getAD_Reference_Value_ID() != 0 && list.length > 0) {
 			int posStatus;
 			for (posStatus=0; posStatus<statuses.size(); posStatus++) {
 				int posList=0;
 				boolean match = false;
-				while (posList<list.length && !match) {
-					if(statuses.get(posStatus).getKDB_StatusListValue().equals(list[posList].getValue())) {
+				while (posList < list.length && !match) {
+					if (statuses.get(posStatus).getKDB_StatusListValue().equals(list[posList].getValue())) {
 						statuses.get(posStatus).setPrintableName(list[posList].toString());
 						match=true;
 					}
 					posList++;
 				}
 			}
-		}else
-		{
+		} else {
 			MTable table =  MTable.get(getCtx(),column.getReferenceTableName());
 			if (table != null) {
 				for (MKanbanStatus status : statuses) {
@@ -236,7 +235,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	 */		
 	public List<MKanbanProcess> getAssociatedProcesses() {
 
-		if(!processRead) {
+		if (!processRead) {
 			
 			processRead = true;
 			
@@ -289,7 +288,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	 * @return
 	 */
 	public int getNumberOfProcesses() {
-		if(!processRead)
+		if (!processRead)
 			getAssociatedProcesses();
 		return associatedProcesses.size();
 	}//getNumberOfProcesses
@@ -349,34 +348,30 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 
 			sql.append(whereClause.toString());
 			
-			if (getOrderByClause() != null)
-			{
+			if (getOrderByClause() != null) {
 				sql.append(" ORDER BY "+getOrderByClause());
-			}
-			else if(hasPriorityOrder())
+			} else if(hasPriorityOrder())
 				sql.append(" ORDER BY "+getKDB_PrioritySQL()+" DESC");
 
 			log.info(sql.toString());
 
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
-			try
-			{
+			try {
 				String sqlparsed = Env.parseContext(getCtx(), 0, sql.toString(), false);
 				pstmt = DB.prepareStatement(sqlparsed, get_TrxName());
 				pstmt.setInt(1, Env.getAD_Client_ID(Env.getCtx()));
 				rs = pstmt.executeQuery();
 				int id = -1;
 				String correspondingColumn= null;
-				while (rs.next())
-				{
+				while (rs.next()) {
 					id = rs.getInt(1);
 					correspondingColumn = rs.getString(2);
 					MKanbanStatus status = getStatus(correspondingColumn);
 					if (status.hasQueue() && status.getSQLStatement().equals("C")    //Queued Records
 							&& status.getMaxNumCards() <= status.getRecords().size()) {
 						MKanbanCard card = new MKanbanCard(id,status);
-						if(hasPriorityOrder()) {
+						if (hasPriorityOrder()) {
 							BigDecimal priorityValue = rs.getBigDecimal(3);
 							card.setPriorityValue(priorityValue);
 						}
@@ -384,33 +379,26 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 						numberOfCards++;
 						status.setTotalCards(status.getTotalCards()+1);
 						card.setQueued(true);
-					}
-					else if (status.getMaxNumCards() == 0 && !status.isShowOver()) {
+					} else if (status.getMaxNumCards() == 0 && !status.isShowOver()) {
 						status.setTotalCards(status.getTotalCards()+1);
 						continue;
-					}
-					else if (status.isShowOver() || status.getMaxNumCards() > status.getRecords().size()) {
+					} else if (status.isShowOver() || status.getMaxNumCards() > status.getRecords().size()) {
 						MKanbanCard card = new MKanbanCard(id,status);
-						if(hasPriorityOrder()) {
+						if (hasPriorityOrder()) {
 							BigDecimal priorityValue = rs.getBigDecimal(3);
 							card.setPriorityValue(priorityValue);
 						}
 						status.addRecord(card);
 						numberOfCards++;
 						status.setTotalCards(status.getTotalCards()+1);
-					}
-					else if (!status.isShowOver()) {
+					} else if (!status.isShowOver()) {
 						status.setTotalCards(status.getTotalCards()+1);
 						status.setExceed(true);	
 					}
 				}
-			}
-			catch (SQLException e)
-			{
+			} catch (SQLException e) {
 				log.log(Level.SEVERE, sql.toString(), e);
-			}
-			finally
-			{
+			} finally {
 				DB.close(rs, pstmt);
 				rs = null;
 				pstmt = null;
@@ -454,15 +442,13 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		try
-		{
+		try {
 			String sqlparsed = Env.parseContext(getCtx(), 0, sql.toString(), false);
 			pstmt = DB.prepareStatement(sqlparsed, get_TrxName());
 			pstmt.setInt(1, Env.getAD_Client_ID(Env.getCtx()));
 			rs = pstmt.executeQuery();
 			int id = -1;
-			while (rs.next())
-			{
+			while (rs.next()) {
 				id = rs.getInt(1);
 				MKanbanCard card = status.getCard(id);
 				if (card != null) {
@@ -471,13 +457,9 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 					card.setQueued(true);	
 				}
 			}
-		}
-		catch (SQLException e)
-		{
+		} catch (SQLException e) {
 			log.log(Level.SEVERE, sql.toString(), e);
-		}
-		finally
-		{
+		} finally {
 			DB.close(rs, pstmt);
 			rs = null;
 			pstmt = null;

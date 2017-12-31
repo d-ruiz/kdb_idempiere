@@ -44,7 +44,7 @@ public class MKanbanProcess extends X_KDB_KanbanProcess{
 		super(ctx, KDB_KanbanProcess_ID, trxName);
 	}
 	
-	public MProcess getProcess(){
+	public MProcess getProcess() {
 		return MProcess.get(Env.getCtx(), getAD_Process_ID());
 	}
 
