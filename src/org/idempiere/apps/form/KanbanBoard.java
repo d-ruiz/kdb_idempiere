@@ -71,15 +71,15 @@ public class KanbanBoard {
 		return kanbanBoard.getNumberOfCards();
 	}
 
-	public String getBackgroundColor(){
+	public String getBackgroundColor() {
 		return kanbanBoard.getBackgroundColor();
 	}
 
-	public KeyNamePair[] getProcessList(){
+	public KeyNamePair[] getProcessList() {
 		String sql = null;
 		KeyNamePair[] list;
 		boolean baseLanguage = Env.isBaseLanguage(Env.getCtx(), MKanbanBoard.Table_Name);
-		if (baseLanguage){
+		if (baseLanguage) {
 			sql = "SELECT k.KDB_KanbanBoard_ID, k.Name "
 					+ "FROM KDB_KanbanBoard k "
 					+ "WHERE k.AD_Client_ID IN (0, ?) AND k.IsActive='Y' "
@@ -87,8 +87,7 @@ public class KanbanBoard {
 					+ "ORDER BY k.Name";
 
 			list = DB.getKeyNamePairs(null, sql, true, Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Role_ID(Env.getCtx()));
-		}
-		else{
+		} else {
 			sql = "SELECT k.KDB_KanbanBoard_ID, kt.Name "
 					+ "FROM KDB_KanbanBoard k JOIN KDB_KanbanBoard_Trl kt ON (k.KDB_KanbanBoard_ID=kt.KDB_KanbanBoard_ID) "
 					+ "WHERE k.AD_Client_ID IN (0, ?) AND k.IsActive='Y' "
@@ -101,8 +100,8 @@ public class KanbanBoard {
 		return list;
 	}
 
-	public boolean isReadWrite(){
-		if(isReadWrite==null){
+	public boolean isReadWrite() {
+		if (isReadWrite == null) {
 			String sql = "SELECT isreadwrite FROM KDB_KanbanControlAccess " +
 					"WHERE KDB_KanbanBoard_ID = ? AND AD_Role_ID= ? AND IsActive = 'Y'";
 
@@ -114,11 +113,11 @@ public class KanbanBoard {
 				pstmt.setInt(1, kanbanBoard.getKDB_KanbanBoard_ID());
 				pstmt.setInt(2, Env.getAD_Role_ID(Env.getCtx()));
 				rs = pstmt.executeQuery();
-				while(rs.next()){
+				while (rs.next()) {
 					isReadWrite = rs.getString(1);
 				}
 
-			}catch (SQLException e) {
+			} catch (SQLException e) {
 				log.log(Level.SEVERE, sql , e);
 				//throw e;
 			} finally {
@@ -127,7 +126,7 @@ public class KanbanBoard {
 				pstmt = null;
 			}
 		}
-		if(isReadWrite.equals("Y"))
+		if (isReadWrite.equals("Y"))
 			return true;
 		else 
 			return false;
@@ -149,11 +148,11 @@ public class KanbanBoard {
 		this.kanbanBoard = kanbanBoard;
 	}
 
-	public void setKanbanBoard(int kanbanBoardId){
+	public void setKanbanBoard(int kanbanBoardId) {
 		//Check if it's it's a new kanban board or the one already selected
-		if(kanbanBoardId==-1)
+		if (kanbanBoardId==-1)
 			kanbanBoard=null;
-		else if( kanbanBoard == null || kanbanBoardId != kanbanBoard.get_ID() ){
+		else if (kanbanBoard == null || kanbanBoardId != kanbanBoard.get_ID()) {
 			kanbanBoard = new MKanbanBoard(Env.getCtx(), kanbanBoardId, null);
 			statuses = null;
 			processes = null;
@@ -166,12 +165,12 @@ public class KanbanBoard {
 		}
 	}
 
-	public void refreshBoard(){
+	public void refreshBoard() {
 		setKanbanBoard(-1);
 	}
 
-	public  List<MKanbanStatus> getStatuses(){
-		if(statuses==null){
+	public List<MKanbanStatus> getStatuses() {
+		if (statuses == null) {
 			setPrintableNames();
 			statuses= kanbanBoard.getStatuses();
 		}
@@ -179,27 +178,27 @@ public class KanbanBoard {
 		return statuses;
 	}
 	
-	public  List<MKanbanProcess> getProcesses(){
-		if(processes==null){
-			processes= kanbanBoard.getAssociatedProcesses();
+	public List<MKanbanProcess> getProcesses() {
+		if (processes == null) {
+			processes = kanbanBoard.getAssociatedProcesses();
 		}
 		return processes;
 	}
 
 	public List<MKanbanProcess> getStatusProcesses() {
-		if(statusProcesses == null)
+		if (statusProcesses == null)
 			statusProcesses = new ArrayList<MKanbanProcess>();
 		return statusProcesses;
 	}
 
 	public List<MKanbanProcess> getBoardProcesses() {
-		if(boardProcesses == null)
+		if (boardProcesses == null)
 			boardProcesses = new ArrayList<MKanbanProcess>();
 		return boardProcesses;
 	}
 
 	public List<MKanbanProcess> getCardProcesses() {
-		if(cardProcesses == null)
+		if (cardProcesses == null)
 			cardProcesses = new ArrayList<MKanbanProcess>();
 		return cardProcesses;
 	}
@@ -218,10 +217,10 @@ public class KanbanBoard {
 		});
 	}
 
-	public boolean swapCard(MKanbanStatus startStatus, MKanbanStatus endStatus, MKanbanCard card){
+	public boolean swapCard(MKanbanStatus startStatus, MKanbanStatus endStatus, MKanbanCard card) {
 
 		boolean statusChanged = card.changeStatus(kanbanBoard.getStatusColumn().getColumnName(), endStatus.getStatusValue());
-		if(statusChanged){
+		if (statusChanged) {
 			startStatus.removeRecord(card);
 			endStatus.addRecord(card);
 			card.setBelongingStatus(endStatus);
@@ -229,29 +228,29 @@ public class KanbanBoard {
 		return statusChanged;
 	}
 
-	public int getAd_Table_id(){
+	public int getAd_Table_id() {
 		return kanbanBoard.getAD_Table_ID();
 	}
 
-	public int getNumberOfStatuses(){
-		if(statuses==null)
+	public int getNumberOfStatuses() {
+		if (statuses == null)
 			return kanbanBoard.getNumberOfStatuses();
 		else
 			return statuses.size();
 	}
 	
-	public int getNumberOfProcesses(){
-		if( processes==null )
+	public int getNumberOfProcesses() {
+		if (processes==null)
 			return kanbanBoard.getNumberOfProcesses();
 		else
 			return processes.size();
 	}
 
-	public void setPrintableNames(){
+	public void setPrintableNames() {
 		kanbanBoard.setPrintableNames();
 	}
 
-	public Object getPOObject(MTable table, int recordID, String trxName){
+	public Object getPOObject(MTable table, int recordID, String trxName) {
 		PO object = table.getPO(recordID, trxName);
 		return object;
 	}
@@ -265,31 +264,31 @@ public class KanbanBoard {
 	}
 	
 	
-	public String getSummarySql(){		
+	public String getSummarySql() {
 		if (summarySql == null && kanbanBoard.getKDB_SummarySQL() != null) {
 			summarySql = kanbanBoard.getSummarySql();
 		}
 		return summarySql;		
 	}		
 
-	public Collection<KeyNamePair> getSaveKeys (String processType, int referenceID){
+	public Collection<KeyNamePair> getSaveKeys (String processType, int referenceID) {
 		// clear result from prev time
     	Collection<KeyNamePair> saveKeys = new ArrayList <KeyNamePair>();
     	
-    	if(processType.equals(CARD_PROCESS)){
+    	if (processType.equals(CARD_PROCESS)) {
     		// Record-ID - Kanban Board -ID
-    		saveKeys.add ( new KeyNamePair(referenceID, Integer.toString(kanbanBoard.getKDB_KanbanBoard_ID()) ) );
-    	}else if(processType.equals(STATUS_PROCESS)){
+    		saveKeys.add(new KeyNamePair(referenceID, Integer.toString(kanbanBoard.getKDB_KanbanBoard_ID())));
+    	} else if(processType.equals(STATUS_PROCESS)) {
     		// - Status ID -- (Table Reference ID)
     		String statusValue = null;
-    		if(kanbanBoard.getStatus(referenceID) != null)
+    		if (kanbanBoard.getStatus(referenceID) != null)
     			statusValue = kanbanBoard.getStatus(referenceID).getStatusValue();
     		
-    		saveKeys.add ( new KeyNamePair(referenceID, statusValue) );
-    	}else if(processType.equals(BOARD_PROCESS)){
+    		saveKeys.add(new KeyNamePair(referenceID, statusValue));
+    	} else if (processType.equals(BOARD_PROCESS)) {
     		//Kanban Board ID - Table ID
     		saveKeys.add (new KeyNamePair(kanbanBoard.getKDB_KanbanBoard_ID(), Integer.toString(getAd_Table_id())));
-    	}else
+    	} else
     		return null;
     	
     	return saveKeys;

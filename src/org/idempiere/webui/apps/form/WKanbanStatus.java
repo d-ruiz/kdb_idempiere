@@ -122,14 +122,11 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 
 	public void initForm() {
 
-		try
-		{
+		try {
 			dynList();
 			jbInit();
 			LayoutUtils.sendDeferLayoutEvent(mainLayout, 100);
-		}
-		catch (Exception ex)
-		{
+		} catch (Exception ex) {
 			log.log(Level.SEVERE, "init", ex);
 		}
 	}
@@ -138,8 +135,7 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 	 * 	Static init
 	 *	@throws Exception
 	 */
-	private void jbInit() throws Exception
-	{
+	private void jbInit() throws Exception {
 		kForm.setSizable(true);
 		kForm.setClosable(true);
 		kForm.setMaximizable(true);
@@ -195,18 +191,16 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 	/**
 	 *  Initialize List of existing processes
 	 */
-	private void dynList()
-	{
+	private void dynList() {
 		//		Fill Process
-		for(KeyNamePair process: getProcessList())
+		for (KeyNamePair process : getProcessList())
 			cbProcess.addItem(process);
 
 		cbProcess.addEventListener(Events.ON_SELECT, this);
 
 	}   //  dynList
 
-	private Grid createPropertiesGrid()
-	{
+	private Grid createPropertiesGrid() {
 		Grid gridView = GridFactory.newGridLayout();
 		//
 		Columns columns = new Columns();
@@ -310,12 +304,12 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 	 * is going to be painted
 	 * @throws SQLException 
 	 */
-	public void createKanbanBoardPanel(){
+	public void createKanbanBoardPanel() {
 		mapCellColumn.clear();
 		mapEmptyCellField.clear();
 		kanbanPanel = new Listbox();
 
-		if(kanbanBoardId!=-1){
+		if (kanbanBoardId != -1) {
 			setKanbanBoard(kanbanBoardId);
 			currentGroup = null;
 			rowList = null;
@@ -331,7 +325,7 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 			ListHead columns = new ListHead();
 
 			int equalWidth=0;
-			if(numCols!=0)
+			if (numCols != 0)
 				equalWidth = 98 / numCols;
 
 			/*
@@ -339,7 +333,7 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 			 */
 			ListHeader  column;
 
-			for(MKanbanStatus status: getStatuses()){
+			for (MKanbanStatus status : getStatuses()) {
 				column = new ListHeader();
 				column.setWidth(equalWidth + "%");
 				columns.appendChild(column);
@@ -367,7 +361,7 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 	 *  Action Listener
 	 *  @param e event
 	 */
-	public void onEvent(Event e){
+	public void onEvent(Event e) {
 
 		// select an item within the list -- set it active and show the properties
 		if (Events.ON_SELECT.equals(e.getName()) && e.getTarget() instanceof Listbox) {
@@ -389,7 +383,7 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 			ListHeader column = (ListHeader) e.getTarget();
 			int columnId=column.getColumnIndex();
 			MKanbanStatus status = mapCellColumn.get(columnId);
-			if(status!=null){
+			if (status != null) {
 				setProperties(status);
 				setActiveStatus(status);
 			}
@@ -423,16 +417,10 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 					repaintGrid();
 				}
 			}
-		}
-
-		else if (e.getTarget().getId().equals("Cancel"))
-		{
+		} else if (e.getTarget().getId().equals("Cancel")) {
 			SessionManager.getAppDesktop().closeActiveWindow();
-		}
-
-		//	OK - Save
-		else if (e.getTarget().getId().equals("Ok"))
-		{
+		} //	OK - Save
+		else if (e.getTarget().getId().equals("Ok")) {
 			if (!saveStatuses())
 				Messagebox.show(Msg.getMsg(Env.getCtx(), "AccessCannotDelete"));
 		}
@@ -451,12 +439,11 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 	} // Set Properties
 
 
-	public ADForm getForm()
-	{
+	public ADForm getForm() {
 		return kForm;
 	}
 
-	private void repaintGrid(){
+	private void repaintGrid() {
 		centerHLayout.removeChild(kanbanPanel);
 		if (kanbanPanel.getListHead() != null)
 			kanbanPanel.removeChild(kanbanPanel.getListHead());

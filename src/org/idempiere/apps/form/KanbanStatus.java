@@ -27,43 +27,43 @@ package org.idempiere.apps.form;
 
 import org.kanbanboard.model.MKanbanStatus;
 
-public class KanbanStatus extends KanbanBoard{
+public class KanbanStatus extends KanbanBoard {
 
 	final int SEQNO_RAISE = 10;
 
 	public boolean saveStatuses() {
-		if(getKanbanBoard()!=null)
+		if (getKanbanBoard() != null )
 			return getKanbanBoard().saveStatuses();
 		return false;
 	}
 
-	public boolean deleteStatus(MKanbanStatus status){
+	public boolean deleteStatus(MKanbanStatus status) {
 		return getKanbanBoard().deleteStatus(status);
 	}
 
-	public void swapStatuses(MKanbanStatus startStatus, MKanbanStatus endStatus){
+	public void swapStatuses(MKanbanStatus startStatus, MKanbanStatus endStatus) {
 		int startSeqNo = startStatus.getSeqNo();
 		int endSeqNo = endStatus.getSeqNo();
 		String statusName = null;
 		boolean leftToRight = false;
-		if(startSeqNo>endSeqNo){
+		
+		if (startSeqNo > endSeqNo) {
 			startStatus.setSeqNo(endSeqNo);
 			statusName = startStatus.getName();
-		}
-		else if(startSeqNo<endSeqNo){
+		} else if (startSeqNo < endSeqNo) {
 			startStatus.setSeqNo(endSeqNo);
 			statusName = startStatus.getName();
 			leftToRight=true;
 		}
-		for(MKanbanStatus status: getStatuses()){
-			if(leftToRight){
-				if(status.getSeqNo()>startSeqNo&&
-						(status.getSeqNo()<=endSeqNo&&!status.getName().equals(statusName)))
+		
+		for (MKanbanStatus status : getStatuses()) {
+			if (leftToRight) {
+				if (status.getSeqNo() > startSeqNo &&
+						(status.getSeqNo() <= endSeqNo && !status.getName().equals(statusName)))
 					status.setSeqNo(status.getSeqNo()-SEQNO_RAISE);
-			}
-			else{
-				if(status.getSeqNo()>=endSeqNo&&
-						(status.getSeqNo()<startSeqNo&&!status.getName().equals(statusName)))
+			} else {
+				if (status.getSeqNo() >= endSeqNo &&
+						(status.getSeqNo() < startSeqNo && !status.getName().equals(statusName)))
 					status.setSeqNo(status.getSeqNo()+SEQNO_RAISE);
 			}
 		}

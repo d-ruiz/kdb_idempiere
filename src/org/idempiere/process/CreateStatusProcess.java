@@ -38,7 +38,7 @@ import org.compiere.util.DisplayType;
 import org.kanbanboard.model.MKanbanBoard;
 import org.kanbanboard.model.MKanbanStatus;
 
-public class CreateStatusProcess extends SvrProcess{
+public class CreateStatusProcess extends SvrProcess {
 
 	private int m_kanbanBoard_id;
 
@@ -52,7 +52,7 @@ public class CreateStatusProcess extends SvrProcess{
 
 		boolean isRefList = true;
 
-		if (m_kanbanBoard_id==0)
+		if (m_kanbanBoard_id == 0)
 			throw new IllegalArgumentException("KanbanBoard_ID == 0");
 
 		MKanbanBoard kanbanBoard = new MKanbanBoard(getCtx(),m_kanbanBoard_id,get_TrxName());
@@ -61,28 +61,26 @@ public class CreateStatusProcess extends SvrProcess{
 		StringBuilder sqlSelect = new StringBuilder();
 
 		MColumn column = null;
-		if (kanbanBoard.getKDB_ColumnList_ID()!=0){
+		if (kanbanBoard.getKDB_ColumnList_ID() != 0) {
 			columnId = kanbanBoard.getKDB_ColumnList_ID();
 			column = new MColumn(getCtx(), columnId, get_TrxName());
 
 			//Reference List
-			if(column.getAD_Reference_ID()==DisplayType.List){
-				if(column.getAD_Reference_Value_ID()!=0){
+			if (column.getAD_Reference_ID() == DisplayType.List) {
+				if (column.getAD_Reference_Value_ID() != 0) {
 					// Reference Key is not a table but a RefList
 					sqlSelect.append("SELECT DISTINCT Name, Value FROM AD_Ref_List ")
 						.append("WHERE AD_Reference_ID = ? AND IsActive = 'Y'");
 				}
-
 			}
 			isRefList= true;
-		}
-		else if (kanbanBoard.getKDB_ColumnTable_ID()!=0){
+		} else if (kanbanBoard.getKDB_ColumnTable_ID() != 0) {
 			columnId = kanbanBoard.getKDB_ColumnTable_ID();
 			column = new MColumn(getCtx(), columnId, get_TrxName());
 			//Table, Table direct or Search Reference
-			if(column.getAD_Reference_ID()==DisplayType.Table
-					||column.getAD_Reference_ID()==DisplayType.Search
-					||column.getAD_Reference_ID()==DisplayType.TableDir){					
+			if (column.getAD_Reference_ID() == DisplayType.Table ||
+					column.getAD_Reference_ID() == DisplayType.Search ||
+					column.getAD_Reference_ID() == DisplayType.TableDir) {					
 
 				MTable table =  MTable.get(getCtx(),column.getReferenceTableName());
 				String llaves[] = table.getKeyColumns();
@@ -126,7 +124,7 @@ public class CreateStatusProcess extends SvrProcess{
 					MKanbanStatus kanbanStatus = new MKanbanStatus(getCtx(), 0, get_TrxName());
 					kanbanStatus.setKDB_KanbanBoard_ID(m_kanbanBoard_id);
 					kanbanStatus.setName(statusName);
-					if(isRefList)
+					if (isRefList)
 						kanbanStatus.setKDB_StatusListValue(reference);
 					else
 						kanbanStatus.setKDB_StatusTableID(reference);
@@ -147,5 +145,4 @@ public class CreateStatusProcess extends SvrProcess{
 
 		return "@KDB_KanbanStatus_ID@ @Inserted@=" + cnt;
 	}
-
 }

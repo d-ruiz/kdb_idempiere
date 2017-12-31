@@ -102,11 +102,11 @@ public class MKanbanCard {
 		this.isQueued = isQueued;
 	}
 
-	public MKanbanCard(int cardRecord){
+	public MKanbanCard(int cardRecord) {
 		recordId = cardRecord;
 	}
 
-	public MKanbanCard(int cardRecord, MKanbanStatus status){
+	public MKanbanCard(int cardRecord, MKanbanStatus status) {
 		recordId = cardRecord;
 		belongingStatus=status;
 		kanbanBoard=belongingStatus.getKanbanBoard();
@@ -115,12 +115,12 @@ public class MKanbanCard {
 
 	public boolean changeStatus(String statusColumn, String newStatusValue) {
 
-		if(m_po == null)
+		if (m_po == null)
 			return false;
 		boolean success=true;
 
-		if(statusColumn.equals(MKanbanBoard.STATUSCOLUMN_DocStatus)){
-			if(m_po instanceof DocAction && m_po.get_ColumnIndex("DocAction") >= 0) {
+		if (statusColumn.equals(MKanbanBoard.STATUSCOLUMN_DocStatus)) {
+			if (m_po instanceof DocAction && m_po.get_ColumnIndex("DocAction") >= 0) {
 				try {
 					String p_docAction = kanbanBoard.getDocAction(newStatusValue);
 					//No valid action
@@ -128,12 +128,11 @@ public class MKanbanCard {
 						throw new IllegalStateException();
 
 					m_po.set_ValueOfColumn("DocAction", p_docAction);
-					if (!((DocAction) m_po).processIt(p_docAction))
-					{
+					if (!((DocAction) m_po).processIt(p_docAction)) {
 						throw new IllegalStateException();
-					}
-					else
+					} else
 						m_po.saveEx();
+
 				} catch (IllegalStateException e) {
 					KDB_ErrorMessage = "KDB_InvalidTransition";
 					return false;
@@ -143,13 +142,12 @@ public class MKanbanCard {
 					return false;
 				}
 			}			
-		}
-		else{
-			if(m_po.get_ColumnIndex("DocAction") >= 0){
-				if(((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Completed)||
+		} else {
+			if (m_po.get_ColumnIndex("DocAction") >= 0) {
+				if (((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Completed)||
 						((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Voided)||
 						((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Reversed)||
-						((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Closed)){
+						((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Closed)) {
 					KDB_ErrorMessage = "KDB_CompletedCard";
 					return false;
 				}
@@ -160,15 +158,14 @@ public class MKanbanCard {
 		return success;
 	}
 
-
 	public void getPriorityColor() {
 
-		if(kanbanBoard.hasPriorityOrder() && kanbanBoard.getPriorityRules().size() > 0){
-			for(MKanbanPriority priorityRule : kanbanBoard.getPriorityRules()){
+		if (kanbanBoard.hasPriorityOrder() && kanbanBoard.getPriorityRules().size() > 0) {
+			for (MKanbanPriority priorityRule : kanbanBoard.getPriorityRules()) {
 				BigDecimal minValue = new BigDecimal(priorityRule.getMinValue());
 				BigDecimal maxValue = new BigDecimal(priorityRule.getMaxValue());
 
-				if(priorityValue.compareTo(minValue) >= 0 && priorityValue.compareTo(maxValue) <= 0){
+				if (priorityValue.compareTo(minValue) >= 0 && priorityValue.compareTo(maxValue) <= 0) {
 					MPrintColor priorityColor = new MPrintColor(Env.getCtx(), priorityRule.getKDB_PriorityColor_ID(), null);
 					MPrintColor PriorityTextColor = new MPrintColor(Env.getCtx(), priorityRule.getKDB_PriorityTextColor_ID(), null);
 					cardColor = priorityColor.getName();
@@ -180,33 +177,33 @@ public class MKanbanCard {
 	}
 	
 	public String getTextColor() {
-		if(textColor == null)
+		if (textColor == null)
 			getPriorityColor();
 		return textColor;
 	}
 	
 	public String getCardColor() {
-		if(cardColor == null)
+		if (cardColor == null)
 			getPriorityColor();
 		return cardColor;
 	}
 
 	public String getKanbanCardText() {
-		if(kanbanCardText==null)
+		if (kanbanCardText == null)
 			translate();
-		
+
 		String parsedText = parse(kanbanCardText);
-		
+
 		if (kanbanBoard.get_ValueAsBoolean("IsHtml"))
 			parsedText = parseHTML(parsedText);
-		
-		return parsedText;	}
+
+		return parsedText;	
+	}
 
 	/**
 	 * 	Translate to BPartner Language
 	 */
-	private void translate()
-	{
+	private void translate() {
 		//	Default if no Translation
 		if(kanbanBoard.getKDB_KanbanCard() != null)
 			kanbanCardText=kanbanBoard.get_Translation(MKanbanBoard.COLUMNNAME_KDB_KanbanCard);
@@ -214,8 +211,7 @@ public class MKanbanCard {
 			kanbanCardText=Integer.toString(recordId);
 	}	//	translate
 
-	private String parse (String text)
-	{
+	private String parse(String text) {
 		if (text.indexOf('@') == -1)
 			return text;
 		//	Parse PO
@@ -225,7 +221,7 @@ public class MKanbanCard {
 	
 	private String parseHTML(String text) {
 
-		if(text == null)
+		if (text == null)
 			return "";
 
 		StringBuilder sb = new StringBuilder();
@@ -242,8 +238,7 @@ public class MKanbanCard {
 	 *	@param po object
 	 *	@return parsed text
 	 */
-	private String parse (String text, PO po)
-	{
+	private String parse (String text, PO po) {
 		if (po == null || text.indexOf('@') == -1)
 			return text;
 
@@ -252,14 +247,12 @@ public class MKanbanCard {
 		StringBuilder outStr = new StringBuilder();
 
 		int i = inStr.indexOf('@');
-		while (i != -1)
-		{
+		while (i != -1) {
 			outStr.append(inStr.substring(0, i));			// up to @
 			inStr = inStr.substring(i+1, inStr.length());	// from first @
 
 			int j = inStr.indexOf('@');						// next @
-			if (j < 0)										// no second tag
-			{
+			if (j < 0) {									// no second tag
 				inStr = "@" + inStr;
 				break;
 			}
@@ -294,13 +287,11 @@ public class MKanbanCard {
 	 *	@param po po
 	 *	@return translated variable or if not found the original tag
 	 */
-	private String parseVariable (String variable, String format,PO po)
-	{
+	private String parseVariable (String variable, String format,PO po) {
 		int index = po.get_ColumnIndex(variable);
 		if (index == -1) {
 			int i = variable.indexOf('.');
-			if(i != -1)
-			{
+			if (i != -1) {
 				StringBuilder outStr = new StringBuilder();
 				outStr.append(variable.substring(0, i));
 				variable = variable.substring(i+1, variable.length());
@@ -310,7 +301,7 @@ public class MKanbanCard {
 
 				Integer subRecordId;
 
-				if (index != -1){
+				if (index != -1) {
 					MColumn column = MColumn.get(Env.getCtx(), po.get_TableName(), po.get_ColumnName(index));
 					MTable table = MTable.get(Env.getCtx(),column.getReferenceTableName());
 
@@ -332,33 +323,34 @@ public class MKanbanCard {
 			value = "********";
 		} else if (col.getAD_Reference_ID() == DisplayType.Date || col.getAD_Reference_ID() == DisplayType.DateTime || col.getAD_Reference_ID() == DisplayType.Time) {
 			SimpleDateFormat sdf;
-			if(format != null && format.length() > 0){
+			if (format != null && format.length() > 0) {
 				sdf = new SimpleDateFormat(format, Env.getLanguage(Env.getCtx()).getLocale());
-			}else{
+			} else {
 				sdf = DisplayType.getDateFormat(col.getAD_Reference_ID());
 			}
-			if(po.get_Value(index)!=null)
+			if (po.get_Value(index) != null)
 				value = sdf.format (po.get_Value(index));	
 		} else if (col.getAD_Reference_ID() == DisplayType.YesNo) {
 			if (po.get_ValueAsBoolean(variable))
 				value = Msg.getMsg(Env.getCtx(), "Yes");
 			else
 				value = Msg.getMsg(Env.getCtx(), "No");
-		}else if (col.getAD_Reference_ID() == DisplayType.Number || col.getAD_Reference_ID() == DisplayType.Amount) {
+		} else if (col.getAD_Reference_ID() == DisplayType.Number || col.getAD_Reference_ID() == DisplayType.Amount) {
 			DecimalFormat df;
-			if(format != null && format.length() > 0){
+			if (format != null && format.length() > 0) {
 				df =  DisplayType.getNumberFormat(col.getAD_Reference_ID(),null,format);
-			}else{
+			} else {
 				df = DisplayType.getNumberFormat(col.getAD_Reference_ID());
 			}
+
 			if(po.get_Value(index)!=null)
 				value = df.format (po.get_Value(index));	
-		}else {
+		} else {
 			value = po.get_Value(index);
 		}
+
 		if (value == null)
 			return "";
 		return value.toString();
 	}	//	parseVariable
-
 }

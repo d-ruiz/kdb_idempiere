@@ -44,7 +44,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 
-public class MKanbanStatus extends X_KDB_KanbanStatus{
+public class MKanbanStatus extends X_KDB_KanbanStatus {
 	/**
 	 * 
 	 */
@@ -155,8 +155,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 	}
 
 	public void orderCards() {
-		if (kanbanBoard.getOrderByClause() == null)
-		{
+		if (kanbanBoard.getOrderByClause() == null) {
 			Collections.sort(records, Collections.reverseOrder(new Comparator<MKanbanCard>() {
 				@Override
 				public int compare(MKanbanCard card1, MKanbanCard card2) {
@@ -211,7 +210,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 	}
 
 	public boolean isExceed() {
-		if(getRecords().size() > getMaxNumCards())
+		if (getRecords().size() > getMaxNumCards())
 			isExceed = true;
 		return isExceed;
 	}
@@ -236,7 +235,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus{
 	}
 
 	public boolean hasMoreQueuedCards() {
-		if(!hasQueue() || queuedCardNumber>queuedRecords.size()-1)
+		if (!hasQueue() || queuedCardNumber > queuedRecords.size()-1)
 			return false;
 		return true;
 	}
