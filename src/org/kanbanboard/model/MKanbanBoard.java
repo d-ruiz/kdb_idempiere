@@ -253,13 +253,13 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
     * if user haven't right to run a process, set kanbanProcess to null 		
     * @param associatedProcesses		
     */		
-	protected void checkProcessRight (List<MKanbanProcess> list) {		
+	protected void checkProcessRight(List<MKanbanProcess> list) {		
 		Iterator<MKanbanProcess> iterator = list.iterator();		
 		while (iterator.hasNext()) {		
 			MKanbanProcess testKanbanProcess = iterator.next();		
 			Boolean access = MRole.getDefault().getProcessAccess(testKanbanProcess.getAD_Process_ID());		
 			if (access == null || !access.booleanValue()) {		
-				list.remove(testKanbanProcess);		
+				iterator.remove();
 			}		
 		}		
 	}//checkProcessRight
