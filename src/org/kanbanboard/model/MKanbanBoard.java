@@ -559,11 +559,18 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	 */
 	private String addWhereClauseValidation(String sqlQuery) {
 		
-		StringBuilder whereClause = new StringBuilder(""); 
+		StringBuilder whereClause = new StringBuilder("");
+		String groupByClause = "";
 		int i = sqlQuery.indexOf("WHERE");
 		if (i > -1) {
-			whereClause.append(sqlQuery.substring(i, sqlQuery.length()) + " AND " );
-			sqlQuery = sqlQuery.substring(0, i);
+			int j = sqlQuery.indexOf("GROUP BY");
+			if (j > -1) {
+				whereClause.append(sqlQuery.substring(i, j) + " AND " );
+				groupByClause = sqlQuery.substring(j, sqlQuery.length());
+			} else {
+				whereClause.append(sqlQuery.substring(i, sqlQuery.length()) + " AND " );
+			}
+			sqlQuery = sqlQuery.substring(0, i); //From SELECT until WHERE
 		}
 		else {
 			whereClause.append(" WHERE ");
@@ -574,9 +581,9 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		whereClause.append(keyColumn);
 		whereClause.append(" IN (");
 		whereClause.append(MKanbanStatus.STATUS_RECORDS_IDS);
-		whereClause.append(")");
+		whereClause.append(") ");
 		
-		sqlQuery = sqlQuery + whereClause.toString();
+		sqlQuery = sqlQuery + whereClause.toString() + groupByClause;
 		
 		return sqlQuery;
 	}//addWhereClauseValidation
