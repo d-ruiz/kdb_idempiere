@@ -23,7 +23,7 @@
 * - Diego Ruiz - Universidad Distrital Francisco Jose de Caldas       *
 **********************************************************************/
 
-package org.idempiere.process;
+package org.kanbanboard.process;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

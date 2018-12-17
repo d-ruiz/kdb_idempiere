@@ -23,7 +23,7 @@
  * - Diego Ruiz - Universidad Distrital Francisco Jose de Caldas       *
  **********************************************************************/
 
-package org.idempiere.webui.apps.form;
+package org.kanbanboard.webui.apps.form;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -61,7 +61,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
-import org.idempiere.apps.form.KanbanStatus;
+import org.kanbanboard.apps.form.KanbanStatus;
 import org.kanbanboard.model.MKanbanStatus;
 import org.zkoss.zk.ui.event.DropEvent;
 import org.zkoss.zk.ui.event.Event;

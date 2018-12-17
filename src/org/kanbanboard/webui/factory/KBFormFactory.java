@@ -23,12 +23,12 @@
 * - Diego Ruiz - Universidad Distrital Francisco Jose de Caldas       *
 **********************************************************************/
 
-package org.idempiere.webui.factory;
+package org.kanbanboard.webui.factory;
 
 import org.adempiere.webui.factory.IFormFactory;
 import org.adempiere.webui.panel.ADForm;
-import org.idempiere.webui.apps.form.WKanbanBoard;
-import org.idempiere.webui.apps.form.WKanbanStatus;
+import org.kanbanboard.webui.apps.form.WKanbanBoard;
+import org.kanbanboard.webui.apps.form.WKanbanStatus;
 
 public class KBFormFactory implements IFormFactory{
 	

@@ -23,7 +23,7 @@
  * - Diego Ruiz - Universidad Distrital Francisco Jose de Caldas       *
  **********************************************************************/
 
-package org.idempiere.apps.form;
+package org.kanbanboard.apps.form;
 
 import org.kanbanboard.model.MKanbanStatus;
 
