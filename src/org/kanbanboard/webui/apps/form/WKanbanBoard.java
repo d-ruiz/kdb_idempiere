@@ -23,7 +23,7 @@
  * - Diego Ruiz - Universidad Distrital Francisco Jose de Caldas       *
  **********************************************************************/
 
-package org.idempiere.webui.apps.form;
+package org.kanbanboard.webui.apps.form;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -61,7 +61,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
-import org.idempiere.apps.form.KanbanBoard;
+import org.kanbanboard.apps.form.KanbanBoard;
 import org.kanbanboard.model.MKanbanCard;
 import org.kanbanboard.model.MKanbanProcess;
 import org.kanbanboard.model.MKanbanStatus;
@@ -520,7 +520,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				menuitem.setId(Integer.toString(process.getKDB_KanbanProcess_ID()));
 				menuitem.setLabel(process.getName());
 				menuitem.setImage(ThemeManager.getThemeResource("images/Process16.png"));
-				menuitem.setAttribute(PROCESS_ID_KEY, new Integer(process.getAD_Process_ID()));
+				menuitem.setAttribute(PROCESS_ID_KEY, Integer.valueOf(process.getAD_Process_ID()));
 				menuitem.setAttribute(PROCESS_TYPE, STATUS_PROCESS);
 				menuitem.addEventListener(Events.ON_CLICK, this);
 				menupopup.appendChild(menuitem);
@@ -564,7 +564,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				menuitem.setId(Integer.toString(process.getKDB_KanbanProcess_ID()));
 				menuitem.setLabel(process.getName());
 				menuitem.setImage(ThemeManager.getThemeResource("images/Process16.png"));
-				menuitem.setAttribute(PROCESS_ID_KEY, new Integer(process.getAD_Process_ID()));
+				menuitem.setAttribute(PROCESS_ID_KEY, Integer.valueOf(process.getAD_Process_ID()));
 				menuitem.setAttribute(PROCESS_TYPE, CARD_PROCESS);
 				menuitem.addEventListener(Events.ON_CLICK, this);
 				cardpopup.appendChild(menuitem);
@@ -587,7 +587,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				b.setId(Integer.toString(process.getKDB_KanbanProcess_ID()));
 				b.setImage(null);
 				b.setLabel(process.getProcess().get_Translation(MProcess.COLUMNNAME_Name));
-				b.setAttribute(PROCESS_ID_KEY, new Integer(process.getAD_Process_ID()));
+				b.setAttribute(PROCESS_ID_KEY, Integer.valueOf(process.getAD_Process_ID()));
 				b.setAttribute(PROCESS_TYPE, BOARD_PROCESS);
 				b.addEventListener(Events.ON_CLICK, this);
 				boardButtonsDiv.appendChild(b);

@@ -23,11 +23,11 @@
 * - Diego Ruiz - Universidad Distrital Francisco Jose de Caldas       *
 **********************************************************************/
 
-package org.idempiere.webui.factory;
+package org.kanbanboard.webui.factory;
 
 import org.adempiere.base.IProcessFactory;
 import org.compiere.process.ProcessCall;
-import org.idempiere.process.CreateStatusProcess;
+import org.kanbanboard.process.CreateStatusProcess;
 
 public class KBProcessFactory implements IProcessFactory{
 
