@@ -47,12 +47,19 @@ import org.adempiere.webui.component.Panel;
 import org.adempiere.webui.component.ProcessInfoDialog;
 import org.adempiere.webui.component.Row;
 import org.adempiere.webui.component.Rows;
+import org.adempiere.webui.editor.WEditor;
+import org.adempiere.webui.editor.WebEditorFactory;
 import org.adempiere.webui.event.DialogEvents;
+import org.adempiere.webui.event.ValueChangeEvent;
+import org.adempiere.webui.event.ValueChangeListener;
 import org.adempiere.webui.panel.ADForm;
 import org.adempiere.webui.panel.CustomForm;
 import org.adempiere.webui.panel.IFormController;
 import org.adempiere.webui.session.SessionManager;
 import org.adempiere.webui.theme.ThemeManager;
+import org.adempiere.webui.util.ZKUpdateUtil;
+import org.compiere.model.GridField;
+import org.compiere.model.GridFieldVO;
 import org.compiere.model.MPInstance;
 import org.compiere.model.MProcess;
 import org.compiere.model.MSysConfig;
@@ -63,9 +70,12 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
 import org.kanbanboard.apps.form.KanbanBoard;
 import org.kanbanboard.model.MKanbanCard;
+import org.kanbanboard.model.MKanbanParameter;
 import org.kanbanboard.model.MKanbanProcess;
 import org.kanbanboard.model.MKanbanStatus;
 import org.zkoss.zk.ui.Component;
+import org.zkoss.zk.ui.HtmlBasedComponent;
+import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.event.DropEvent;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -79,11 +89,13 @@ import org.zkoss.zul.Column;
 import org.zkoss.zul.Columns;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Hbox;
+import org.zkoss.zul.Hlayout;
 import org.zkoss.zul.Html;
 import org.zkoss.zul.Menuitem;
 import org.zkoss.zul.Menuseparator;
 import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.North;
+import org.zkoss.zul.Popup;
 import org.zkoss.zul.South;
 import org.zkoss.zul.Space;
 import org.zkoss.zul.Timer;
@@ -95,7 +107,7 @@ import org.zkoss.zul.Vlayout;
  *
  */
 
-public class WKanbanBoard extends KanbanBoard implements IFormController, EventListener<Event> {
+public class WKanbanBoard extends KanbanBoard implements IFormController, EventListener<Event>, ValueChangeListener {
 
 
 	private static final String KDB_REFRESH_BUTTON_ID = "refreshKdb";
@@ -121,8 +133,15 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	private ArrayList<Integer>	m_results = new ArrayList<Integer>(3);
 	private BusyDialog progressWindow;
 	private int rightClickedCard = 0;
-
-	private int windowNo = 0;
+	
+	//Parameters
+	private Div boardParamsDiv;
+	private Button bFilter = new Button();
+	private Popup filterPopup;
+    private ArrayList<WEditor> m_sEditors = new ArrayList<WEditor>();
+    private ArrayList<WEditor> m_sEditorsTo = new ArrayList<WEditor>();
+	private Map<WEditor, MKanbanParameter> mapEditorParameter = new HashMap<WEditor, MKanbanParameter>();
+	private Map<WEditor, MKanbanParameter> mapEditorToParameter = new HashMap<WEditor, MKanbanParameter>();
 
 	Map<Cell, MKanbanCard> mapCellColumn = new HashMap<Cell, MKanbanCard>();
 	Map<Cell, MKanbanStatus> mapEmptyCellField = new HashMap<Cell, MKanbanStatus>();
@@ -229,6 +248,138 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	}   //  dynList
 	
 	/**
+	 * Load parameters for Kanban Board
+	 */
+	private void initParameters() {
+
+		if (kanbanPanel == null)
+			return;
+		
+		if (boardParamsDiv != null) {
+			northPanelHbox.removeChild(boardParamsDiv);
+			boardParamsDiv = null;
+		}
+		
+		if (filterPopup != null) {
+			kForm.removeChild(filterPopup);
+			bFilter = new Button();
+			filterPopup = null;
+		}
+
+		if (getBoardParameters() != null && getBoardParameters().size() > 0) {
+			
+			fillParameterEditors();
+			boardParamsDiv = new Div();
+			boardParamsDiv.setSclass("padding-left: 5px;");
+			if (m_sEditors.size() > 1) {
+				bFilter.setLabel(Msg.getMsg(Env.getCtx(), "KDB_QuickFilter"));
+				bFilter.setImage(ThemeManager.getThemeResource("images/MoveDown16.png"));
+				bFilter.setDir("reverse");
+				bFilter.setTooltiptext(Msg.getMsg(Env.getCtx(), "filter.by"));
+				filterPopup = getParamPopup();
+				kForm.appendChild(filterPopup);
+				boardParamsDiv.appendChild(bFilter);
+				bFilter.addEventListener(Events.ON_CLICK, e -> {
+					filterPopup.open(bFilter, "after_start");
+				});
+			} else {
+				boardParamsDiv.appendChild(m_sEditors.get(0).getLabel());
+				boardParamsDiv.appendChild(m_sEditors.get(0).getComponent());
+				if (m_sEditorsTo.get(0) != null) {
+					boardParamsDiv.appendChild(new Label(" - "));
+					boardParamsDiv.appendChild(m_sEditorsTo.get(0).getComponent());
+				}
+			}
+
+			northPanelHbox.appendChild(boardParamsDiv);
+		}
+	}
+	
+	private void fillParameterEditors() {
+		for (MKanbanParameter param : getBoardParameters()) {
+			WEditor editor = WebEditorFactory.getEditor(getGridField(param), true);
+			if (param.getValue() != null) {
+				editor.setValue(param.getValue());
+			}
+			editor.setMandatory(false);
+	        editor.setReadWrite(true);
+	        editor.dynamicDisplay();
+	        editor.updateStyle(false);
+	        editor.addValueChangeListener(this);
+
+	        Label label = editor.getLabel();
+	        //Fix miss label of check box
+	        label.setValue(getGridField(param).getHeader());
+
+	        m_sEditors.add(editor);
+			mapEditorParameter.put(editor, param);
+			if (param.isRange()) {
+				GridFieldVO voF2 = GridFieldVO.createParameter(getGridField(param).getVO());
+				GridField mField2 = new GridField(voF2);
+				// The Editor
+				WEditor editor2 = WebEditorFactory.getEditor(mField2, false);
+				// Set Default
+				if (param.getValueTo() != null) {
+					editor2.setValue(param.getValueTo());
+				}
+				
+				editor2.setMandatory(false);
+				editor2.setReadWrite(true);
+				editor2.dynamicDisplay();
+				editor2.updateStyle(false);
+				editor2.addValueChangeListener(this);
+				mapEditorToParameter.put(editor2, param);
+				m_sEditorsTo.add(editor2);
+			} else 
+				m_sEditorsTo.add(null);
+		}
+	}
+	
+	private Popup getParamPopup() {
+        Popup popup = new Popup() {
+        	/**
+			 * 
+			 */
+			private static final long serialVersionUID = -5991248152956632527L;
+
+			@Override
+        	public void onPageAttached(Page newpage, Page oldpage) {
+        		super.onPageAttached(newpage, oldpage);
+        		if (newpage != null) {
+        			if (bFilter.getPopup() != null) {
+        				bFilter.setPopup(this);
+        			}
+        		}
+        	}
+        };
+
+		Vlayout vbox = new Vlayout();
+        Hlayout row;
+        for (int i = 0; i < m_sEditors.size(); i++) {
+        	WEditor editor = m_sEditors.get(i);
+        	row = new Hlayout();
+            row.appendChild(editor.getLabel());
+			row.setHflex("2");
+			editor.getLabel().setHflex("1");
+			editor.getLabel().setStyle("text-align: right;");
+            if (m_sEditorsTo.get(i) != null) {
+            	Hbox toParams = new Hbox();
+            	toParams.appendChild(editor.getComponent());
+            	toParams.appendChild(new Label(" - "));
+            	toParams.appendChild(m_sEditorsTo.get(i).getComponent());
+            	toParams.setWidth("100%");
+            	row.appendChild(toParams);
+			} else {
+				row.appendChild(editor.getComponent());
+				ZKUpdateUtil.setHflex((HtmlBasedComponent) editor.getComponent(), "1");
+			}
+            vbox.appendChild(row);
+        }
+        popup.appendChild(vbox);
+        return popup;
+    }
+	
+	/**
 	 * Load info process for Kanban Board
 	 */
 	private void initKanbanProcess() {
@@ -251,6 +402,10 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		}
 
 		if (getNumberOfProcesses() > 0  && getProcesses() != null) {
+			//Clear them to avoid duplicants when refreshing
+			getStatusProcesses().clear();
+			getBoardProcesses().clear();
+			getCardProcesses().clear();
 			//Fill the lists - (Status,board,card) process
 			for (MKanbanProcess process: getProcesses()) {
 				if (MKanbanProcess.KDB_PROCESSSCOPE_Status.equals(process.getKDB_ProcessScope()))
@@ -274,6 +429,10 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	public void createKanbanBoardPanel() {
 		mapCellColumn.clear();
 		mapEmptyCellField.clear();
+		mapEditorParameter.clear();
+		mapEditorToParameter.clear();
+		m_sEditors.clear();
+		m_sEditorsTo.clear();
 		kanbanPanel = new Grid();
 
 		if (kanbanBoardId != -1) {
@@ -283,6 +442,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			kanbanPanel.setVflex(true);
 			kanbanPanel.setSizedByContent(true);
 			kanbanPanel.setSpan("true");
+			initParameters();
 			initKanbanProcess();
 
 			int numCols=0;
@@ -625,7 +785,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				MKanban = (KeyNamePair)cbProcess.getSelectedItem().toKeyNamePair();	
 				if (MKanban != null)
 					kanbanBoardId = MKanban.getKey();
-				repaintGrid();
+				fullRefresh();
 			}
 		}
 		// Check event ONDoubleCLICK on a cell Navigate into documents
@@ -662,8 +822,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				if (!swapCard(startStatus, endStatus, startField))
 					Messagebox.show(Msg.getMsg(Env.getCtx(), MKanbanCard.KDB_ErrorMessage));
 				else {
-					refreshBoard();
-					repaintGrid();
+					repaintCards();
 				}
 			}
 		}
@@ -673,8 +832,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 			if (clickedButton.getId().equals(KDB_REFRESH_BUTTON_ID)) {
 				if (kanbanBoardId != -1) {
-					refreshBoard();
-					repaintGrid();
+					fullRefresh();
 				}
 			} else {
 				runProcess(clickedButton.getAttribute(PROCESS_ID_KEY), getSaveKeys(BOARD_PROCESS, 0));
@@ -723,14 +881,41 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		} else if (Events.ON_TIMER.equals(e.getName())) {
 			//Auto refresh
 			if (kanbanBoardId != -1) {
-				refreshBoard();
-				repaintGrid();
+				repaintCards();
 			}
 		}
 	}//onEvent
+	
+	@Override
+	public void valueChange(ValueChangeEvent evt) {
+		if (evt != null && evt.getSource() instanceof WEditor) {
+			WEditor changedEditor = (WEditor)evt.getSource();
+			
+			if (mapEditorParameter.containsKey(changedEditor)) {
+				MKanbanParameter changedParam = mapEditorParameter.get(changedEditor);
+				changedParam.setValue(changedEditor.getValue());
+			} else if (mapEditorToParameter.containsKey(changedEditor)) {
+				MKanbanParameter changedParamTo = mapEditorToParameter.get(changedEditor);
+				changedParamTo.setValueTo(changedEditor.getValue());
+			}
+			repaintCards();
+			if (filterPopup != null)
+				filterPopup.open(bFilter, "after_start");
+        }
+	} //valueChange
 
 	private void zoom(int recordId, int ad_table_id) {
 		AEnv.zoom(ad_table_id, recordId);
+	}
+	
+	private void fullRefresh() {
+		refreshBoard();
+		repaintGrid();
+	}
+	
+	private void repaintCards() {
+		refreshCards();
+		repaintGrid();
 	}
 	
 	/**
@@ -772,8 +957,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 					}
 					// enable or disable control button rely selected record status 
 					enableButtons();
-					refreshBoard();
-					repaintGrid();
+					repaintCards();
 					hideBusyDialog();
 				}
 		//HengSin -- end --
@@ -829,6 +1013,14 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		centerVLayout.removeChild(kanbanPanel);
 		if (kanbanPanel.getRows() != null)
 			kanbanPanel.removeChild(kanbanPanel.getRows());
+		if (boardButtonsDiv != null) {
+			northPanelHbox.removeChild(boardButtonsDiv);
+			boardButtonsDiv = null;
+		}
+		if (boardParamsDiv != null) {
+			northPanelHbox.removeChild(boardParamsDiv);
+			boardParamsDiv = null;
+		}
 		createKanbanBoardPanel();
 		centerVLayout.appendChild(kanbanPanel);
 	}

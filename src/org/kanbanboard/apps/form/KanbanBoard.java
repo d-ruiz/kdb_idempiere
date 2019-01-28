@@ -35,6 +35,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 
+import org.adempiere.webui.editor.WEditor;
+import org.compiere.model.GridField;
+import org.compiere.model.GridFieldVO;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.util.CLogger;
@@ -43,6 +46,7 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.kanbanboard.model.MKanbanBoard;
 import org.kanbanboard.model.MKanbanCard;
+import org.kanbanboard.model.MKanbanParameter;
 import org.kanbanboard.model.MKanbanProcess;
 import org.kanbanboard.model.MKanbanStatus;
 
@@ -66,7 +70,13 @@ public class KanbanBoard {
 	private List<MKanbanProcess> statusProcesses  = null;
 	private List<MKanbanProcess> boardProcesses  = null;
 	private List<MKanbanProcess> cardProcesses  = null;
+	
+	//Parameters
+	private List<MKanbanParameter> boardParameters  = null;
+	protected ArrayList<WEditor> m_wParamEditors = new ArrayList<WEditor>();
 
+	protected int windowNo = 0;
+	
 	public int getNumberOfCards() {
 		return kanbanBoard.getNumberOfCards();
 	}
@@ -157,16 +167,23 @@ public class KanbanBoard {
 			statuses = null;
 			processes = null;
 			statusProcesses = null;
+			boardParameters = null;
 			cardProcesses= null;
 			boardProcesses = null;
 			isReadWrite = null;
 			kanbanBoard.setBoardContent();
+			getBoardParameters();
+			kanbanBoard.getKanbanCards();
 			summarySql = null;		
 		}
 	}
 
 	public void refreshBoard() {
 		setKanbanBoard(-1);
+	}
+	
+	protected void refreshCards() {
+		kanbanBoard.refreshCards();
 	}
 
 	public List<MKanbanStatus> getStatuses() {
@@ -176,6 +193,16 @@ public class KanbanBoard {
 		}
 		orderStatuses();
 		return statuses;
+	}
+	
+	public List<MKanbanParameter> getBoardParameters() {
+		if (boardParameters == null) {
+			boardParameters = kanbanBoard.getParameters();
+			
+			for (MKanbanParameter param : boardParameters)
+				getGridField(param);
+		}
+		return boardParameters;
 	}
 	
 	public List<MKanbanProcess> getProcesses() {
@@ -296,5 +323,41 @@ public class KanbanBoard {
 	
 	public boolean isHTML() {
 		return kanbanBoard.get_ValueAsBoolean("IsHtml");
+	}
+	
+	protected GridField getGridField(MKanbanParameter parameter) {
+
+		if (parameter.getGridField() == null) {
+
+			String sql = "SELECT * FROM AD_Field_v WHERE AD_Column_ID=? AND AD_Table_ID=?";
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;
+			try {
+				pstmt = DB.prepareStatement(sql, null);
+				pstmt.setInt(1, parameter.getKDB_ColumnTable_ID());
+				pstmt.setInt(2, kanbanBoard.getAD_Table_ID());
+				rs = pstmt.executeQuery();
+				if (rs.next()) {
+					GridFieldVO voF = GridFieldVO.create(Env.getCtx(), 
+							windowNo, 0, 
+							rs.getInt("ad_window_id"), rs.getInt("ad_tab_id"), 
+							false, rs);
+					GridField gridField = new GridField(voF);
+					parameter.setGridField(gridField);
+				}
+			} catch (Exception e) {
+				CLogger.get().log(Level.SEVERE, "", e);
+			} finally {
+				DB.close(rs, pstmt);
+				rs = null;
+				pstmt = null;
+			}
+		}
+		
+		return parameter.getGridField();
+	}
+	
+	public void refreshQuery() {
+		
 	}
 }
