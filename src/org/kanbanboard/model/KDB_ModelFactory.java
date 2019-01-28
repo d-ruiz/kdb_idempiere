@@ -43,6 +43,8 @@ public class KDB_ModelFactory implements IModelFactory {
 			return MKanbanBoard.class;
 		else if (MKanbanProcess.Table_Name.equals(tableName))
 			return MKanbanProcess.class;
+		else if (MKanbanParameter.Table_Name.equals(tableName))
+			return MKanbanParameter.class;
 		return null;
 	}
 
@@ -56,6 +58,8 @@ public class KDB_ModelFactory implements IModelFactory {
 			return new MKanbanBoard(Env.getCtx(), Record_ID, trxName);
 		else if (MKanbanProcess.Table_Name.equals(tableName))
 			return new MKanbanProcess(Env.getCtx(), Record_ID, trxName);
+		else if (MKanbanParameter.Table_Name.equals(tableName))
+			return new MKanbanParameter(Env.getCtx(), Record_ID, trxName);
 		return null;
 	}
 
@@ -69,6 +73,8 @@ public class KDB_ModelFactory implements IModelFactory {
 			return new MKanbanBoard(Env.getCtx(), rs, trxName);
 		else if (MKanbanProcess.Table_Name.equals(tableName))
 			return new MKanbanProcess(Env.getCtx(), rs, trxName);
+		else if (MKanbanParameter.Table_Name.equals(tableName))
+			return new MKanbanParameter(Env.getCtx(), rs, trxName);
 		return null;
 	}
 

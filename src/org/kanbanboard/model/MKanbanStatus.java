@@ -130,6 +130,15 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 		}
 	}
 	
+	public void clearCards() {
+		records.clear();
+		queuedRecords.clear();
+		isExceed = false;
+		cardNumber = 0;
+		queuedCardNumber = 0;
+		totalCards = 0;
+	}
+	
 	public void addQueuedRecord(MKanbanCard card) {
 		queuedRecords.add(card);
 	}

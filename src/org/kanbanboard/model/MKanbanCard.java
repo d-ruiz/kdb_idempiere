@@ -144,10 +144,11 @@ public class MKanbanCard {
 			}			
 		} else {
 			if (m_po.get_ColumnIndex("DocAction") >= 0) {
-				if (((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Completed)||
+				if ( (((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Completed)||
 						((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Voided)||
 						((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Reversed)||
-						((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Closed)) {
+						((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Closed)) &&
+						!MColumn.get(Env.getCtx(), m_po.get_TableName(), statusColumn).isAlwaysUpdateable()) {
 					KDB_ErrorMessage = "KDB_CompletedCard";
 					return false;
 				}

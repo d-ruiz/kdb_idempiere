@@ -71,6 +71,9 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	private boolean processRead = false;
 	private List<MKanbanProcess> associatedProcesses = new ArrayList<MKanbanProcess>();
 
+	//Kanban Parameters
+	private List<MKanbanParameter> parameters = new ArrayList<MKanbanParameter>();
+	
 	public MKanbanBoard(Properties ctx, int KDB_KanbanBoard_ID, String trxName) {
 		super(ctx, KDB_KanbanBoard_ID, trxName);
 	}
@@ -82,7 +85,6 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	public void setBoardContent() {
 		initTargetAction();
 		getStatuses();
-		getKanbanCards();
 		for (MKanbanStatus status : statuses) {
 			if(status.hasQueue() &&
 					!status.getSQLStatement().equals("C"))
@@ -345,6 +347,10 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 			whereClause.append(getInValues());
 
 			whereClause.append(" AND AD_Client_ID IN (0, ?) AND IsActive='Y' ");
+			
+			String paramWhere = getParamWhere();
+			if (!paramWhere.isEmpty())
+				whereClause.append(" AND ").append(paramWhere);
 
 			sql.append(whereClause.toString());
 			
@@ -588,4 +594,48 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		return sqlQuery;
 	}//addWhereClauseValidation
 
+	public List<MKanbanParameter> getParameters() {
+
+		if (parameters.size() == 0) {
+
+			parameters = new Query(getCtx(), MKanbanParameter.Table_Name, " KDB_KanbanBoard_ID = ? AND AD_Client_ID IN (0, ?) AND IsActive='Y' ", get_TrxName())
+			.setParameters(new Object[]{getKDB_KanbanBoard_ID(),Env.getAD_Client_ID(Env.getCtx())})
+			.setOnlyActiveRecords(true)
+			.setOrderBy("SeqNo")
+ 			.list();
+			
+			for (MKanbanParameter parameter : parameters)
+				parameter.setKanbanBoard(this);
+		}
+		return parameters;
+	} //getParameters
+	
+	private String getParamWhere() {
+		
+		if (parameters.isEmpty())
+			getParameters();
+
+		StringBuilder paramWhereSql = new StringBuilder();
+		
+		for (MKanbanParameter param : parameters) {
+			if (param.getSQLClause() == null || param.getSQLClause().isEmpty())
+				continue;
+
+			if (paramWhereSql.length() > 0)
+				paramWhereSql.append(" AND ");
+
+			paramWhereSql.append(param.getSQLClause());
+			paramWhereSql.append(" ");
+		}
+
+		return paramWhereSql.toString();
+	} //addParamSQL
+	
+	public void refreshCards() {
+		for (MKanbanStatus status : statuses) {
+			status.clearCards();
+		}
+		numberOfCards = 0;
+		getKanbanCards();
+	}
 }
