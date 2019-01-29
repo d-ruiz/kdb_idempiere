@@ -228,7 +228,7 @@ public class MKanbanParameter extends X_KDB_Parameter  {
 			return null;
 		
 		StringBuilder sqlWhere = new StringBuilder();
-		sqlWhere.append(getGridField().getColumnName()).append(" ");
+		sqlWhere.append(getColumnName()).append(" ");
 		
 		Object value = getValue();
 		if (isRange() && getValueTo() != null) {
@@ -269,6 +269,10 @@ public class MKanbanParameter extends X_KDB_Parameter  {
 			return DB.TO_DATE((Timestamp)value);
 		else
 			return value.toString();
+	}
+	
+	public String getColumnName() {
+		return getGridField() != null ? getGridField().getColumnName() : null;
 	}
 
 }
