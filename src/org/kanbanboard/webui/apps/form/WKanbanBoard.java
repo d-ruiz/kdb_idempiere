@@ -832,7 +832,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 			if (clickedButton.getId().equals(KDB_REFRESH_BUTTON_ID)) {
 				if (kanbanBoardId != -1) {
-					fullRefresh();
+					repaintCards();
 				}
 			} else {
 				runProcess(clickedButton.getAttribute(PROCESS_ID_KEY), getSaveKeys(BOARD_PROCESS, 0));
