@@ -937,6 +937,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		final int pInstanceID = instance.getAD_PInstance_ID();
 		// Execute Process
 		m_pi.setAD_PInstance_ID(pInstanceID);
+		setProcessEnvVariables();
 		
 		//HengSin - to let process end with message and requery
 		WProcessCtl.process(windowNo, m_pi, null, new EventListener<Event>() {
@@ -957,12 +958,30 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 					}
 					// enable or disable control button rely selected record status 
 					enableButtons();
+					cleanEnvVariables();
 					repaintCards();
 					hideBusyDialog();
 				}
 		//HengSin -- end --
 			}
 		}); 
+    }
+    
+    /**
+     * Set Env variables for processes
+     * 1 - set Kanban board id to be able to use it in the process to get more info (f.e. where clause)
+     * 2 - Set Kanban parameters and values to use the same filter in the process if needed    
+     * Read it in the process as -> Env.getContext(Env.getCtx(), "#KDB_KanbanBoard_ID"));
+     *  and Env.getContext(Env.getCtx(), "#KDB_Params"));
+     */
+    private void setProcessEnvVariables() {
+    	Env.setContext(Env.getCtx(), "#KDB_KanbanBoard_ID", kanbanBoardId);
+    	Env.setContext(Env.getCtx(), "#KDB_Params", getKanbanBoard().getParamWhere());
+    }
+    
+    private void cleanEnvVariables() {
+    	Env.setContext(Env.getCtx(), "#KDB_KanbanBoard_ID", "");
+    	Env.setContext(Env.getCtx(), "#KDB_Params", "");
     }
     
     /**

@@ -610,7 +610,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		return parameters;
 	} //getParameters
 	
-	private String getParamWhere() {
+	public String getParamWhere() {
 		
 		if (parameters.isEmpty())
 			getParameters();

@@ -35,7 +35,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 
-import org.adempiere.webui.editor.WEditor;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.MTable;
@@ -73,7 +72,6 @@ public class KanbanBoard {
 	
 	//Parameters
 	private List<MKanbanParameter> boardParameters  = null;
-	protected ArrayList<WEditor> m_wParamEditors = new ArrayList<WEditor>();
 
 	protected int windowNo = 0;
 	
@@ -355,9 +353,5 @@ public class KanbanBoard {
 		}
 		
 		return parameter.getGridField();
-	}
-	
-	public void refreshQuery() {
-		
 	}
 }
