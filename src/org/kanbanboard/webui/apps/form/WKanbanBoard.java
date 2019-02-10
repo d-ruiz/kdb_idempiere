@@ -96,6 +96,7 @@ import org.zkoss.zul.Menuseparator;
 import org.zkoss.zul.Messagebox;
 import org.zkoss.zul.North;
 import org.zkoss.zul.Popup;
+import org.zkoss.zul.Separator;
 import org.zkoss.zul.South;
 import org.zkoss.zul.Space;
 import org.zkoss.zul.Timer;
@@ -271,7 +272,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			fillParameterEditors();
 			boardParamsDiv = new Div();
 			boardParamsDiv.setSclass("padding-left: 5px;");
-			if (m_sEditors.size() > 1) {
+			if (m_sEditors.size() > 1 && MSysConfig.getBooleanValue("KDB_GROUP_PARAMETERS", true, Env.getAD_Client_ID(Env.getCtx()))) {
 				bFilter.setLabel(Msg.getMsg(Env.getCtx(), "KDB_QuickFilter"));
 				bFilter.setImage(ThemeManager.getThemeResource("images/MoveDown16.png"));
 				bFilter.setDir("reverse");
@@ -283,12 +284,20 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 					filterPopup.open(bFilter, "after_start");
 				});
 			} else {
-				boardParamsDiv.appendChild(m_sEditors.get(0).getLabel());
-				boardParamsDiv.appendChild(m_sEditors.get(0).getComponent());
-				if (m_sEditorsTo.get(0) != null) {
-					boardParamsDiv.appendChild(new Label(" - "));
-					boardParamsDiv.appendChild(m_sEditorsTo.get(0).getComponent());
-				}
+				for (int i = 0; i < m_sEditors.size(); i++) {
+		        	WEditor editor = m_sEditors.get(i);
+		        	boardParamsDiv.appendChild(new Separator("vertical"));
+		        	boardParamsDiv.appendChild(editor.getLabel());
+		        	editor.getLabel().setStyle("padding-right:3px;");
+		            if (m_sEditorsTo.get(i) != null) {
+		            	boardParamsDiv.appendChild(editor.getComponent());
+		            	boardParamsDiv.appendChild(new Label(" - "));
+		            	boardParamsDiv.appendChild(m_sEditorsTo.get(i).getComponent());
+					} else {
+						boardParamsDiv.appendChild(editor.getComponent());
+					}
+		        }
+				boardParamsDiv.appendChild(new Separator("vertical"));
 			}
 
 			northPanelHbox.appendChild(boardParamsDiv);
