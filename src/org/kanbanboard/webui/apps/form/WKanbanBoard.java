@@ -890,13 +890,16 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	public void valueChange(ValueChangeEvent evt) {
 		if (evt != null && evt.getSource() instanceof WEditor) {
 			WEditor changedEditor = (WEditor)evt.getSource();
-			
+			Object value = evt.getNewValue();
+
 			if (mapEditorParameter.containsKey(changedEditor)) {
 				MKanbanParameter changedParam = mapEditorParameter.get(changedEditor);
-				changedParam.setValue(changedEditor.getValue());
+				changedEditor.setValue(value);
+				changedParam.setValue(value);
 			} else if (mapEditorToParameter.containsKey(changedEditor)) {
 				MKanbanParameter changedParamTo = mapEditorToParameter.get(changedEditor);
-				changedParamTo.setValueTo(changedEditor.getValue());
+				changedParamTo.setValueTo(value);
+				changedParamTo.setValueTo(value);
 			}
 			repaintCards();
 			if (filterPopup != null)
