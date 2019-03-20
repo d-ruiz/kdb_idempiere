@@ -176,15 +176,15 @@ public class MKanbanParameter extends X_KDB_Parameter  {
 					int ii = Integer.parseInt(value);
 					if (ii < 0)
 						return null;
-					return new Integer(ii);
+					return Integer.valueOf(ii);
 				} catch (Exception e) {
 					log.warning("Cannot parse: " + value + " - " + e.getMessage());
 				}
-				return new Integer(0);
+				return Integer.valueOf(0);
 			}
 			//	Integer
 			if (mGridField.getDisplayType() == DisplayType.Integer)
-				return new Integer(value);
+				return Integer.valueOf(value);
 			
 			//	Number
 			if (DisplayType.isNumeric(mGridField.getDisplayType()))
