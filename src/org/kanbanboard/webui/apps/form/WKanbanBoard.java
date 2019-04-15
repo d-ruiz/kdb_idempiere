@@ -63,6 +63,7 @@ import org.compiere.model.GridFieldVO;
 import org.compiere.model.MPInstance;
 import org.compiere.model.MProcess;
 import org.compiere.model.MSysConfig;
+import org.compiere.model.X_AD_Process;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -460,7 +461,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			if (numCols > 0) {
 				// set size in percentage per column leaving a MARGIN on right
 				Columns columns = new Columns();
-				columns.setMenupopup(getBoardMenupopup());
+				columns.setPopup(getBoardMenupopup());
 
 				int equalWidth = 100 ;
 				int stdColumnWidth = getStdColumnWidth();
@@ -680,7 +681,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		if (getStatusProcesses() != null && getStatusProcesses().size() > 0) {
 			menupopup = new Menupopup();
 			menupopup.setId("processMenu");
-			menupopup.addEventListener(Events.ON_OPEN, this);
+			//menupopup.addEventListener(Events.ON_OPEN, this);
 			Menuitem menuitem;
 			
 			//Add the processes
@@ -941,6 +942,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
     protected void runProcess (Object processIdObj, final Collection<KeyNamePair> saveKeys) {
     	final Integer processId = (Integer)processIdObj;
     	final MProcess mProcess = MProcess.get(Env.getCtx(), processId);
+    	mProcess.getShowHelp();
     	final ProcessInfo m_pi = new ProcessInfo(mProcess.getName(), processId);
 		m_pi.setAD_User_ID(Env.getAD_User_ID(Env.getCtx()));
 		m_pi.setAD_Client_ID(Env.getAD_Client_ID(Env.getCtx()));
@@ -963,7 +965,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				} else if (ProcessModalDialog.ON_WINDOW_CLOSE.equals(event.getName())) {  
 					if (processModalDialog.isCancel()) {
 						m_results.clear();
-					} else if (m_pi.isError()) {
+					} else if (m_pi.isError() || X_AD_Process.SHOWHELP_ShowHelp.equals(mProcess.getShowHelp())) {
 						ProcessInfoDialog.showProcessInfo(m_pi, windowNo, kForm, true);
 					} 
 					// enable or disable control button rely selected record status 
