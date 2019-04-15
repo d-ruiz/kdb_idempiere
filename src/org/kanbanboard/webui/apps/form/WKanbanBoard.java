@@ -461,7 +461,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			if (numCols > 0) {
 				// set size in percentage per column leaving a MARGIN on right
 				Columns columns = new Columns();
-				columns.setPopup(getBoardMenupopup());
+				columns.setMenupopup(getBoardMenupopup());
 
 				int equalWidth = 100 ;
 				int stdColumnWidth = getStdColumnWidth();
@@ -681,7 +681,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		if (getStatusProcesses() != null && getStatusProcesses().size() > 0) {
 			menupopup = new Menupopup();
 			menupopup.setId("processMenu");
-			//menupopup.addEventListener(Events.ON_OPEN, this);
+			menupopup.addEventListener(Events.ON_OPEN, this);
 			Menuitem menuitem;
 			
 			//Add the processes
@@ -942,7 +942,6 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
     protected void runProcess (Object processIdObj, final Collection<KeyNamePair> saveKeys) {
     	final Integer processId = (Integer)processIdObj;
     	final MProcess mProcess = MProcess.get(Env.getCtx(), processId);
-    	mProcess.getShowHelp();
     	final ProcessInfo m_pi = new ProcessInfo(mProcess.getName(), processId);
 		m_pi.setAD_User_ID(Env.getAD_User_ID(Env.getCtx()));
 		m_pi.setAD_Client_ID(Env.getAD_Client_ID(Env.getCtx()));
