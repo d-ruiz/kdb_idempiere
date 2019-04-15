@@ -965,9 +965,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 						m_results.clear();
 					} else if (m_pi.isError()) {
 						ProcessInfoDialog.showProcessInfo(m_pi, windowNo, kForm, true);
-					} else if (!m_pi.isError()) {
-						ProcessInfoDialog.showProcessInfo(m_pi, windowNo, kForm, true);	
-					}
+					} 
 					// enable or disable control button rely selected record status 
 					enableButtons();
 					cleanEnvVariables();
