@@ -111,7 +111,7 @@ import org.zkoss.zul.Vlayout;
 
 public class WKanbanBoard extends KanbanBoard implements IFormController, EventListener<Event>, ValueChangeListener {
 
-
+	private static final String KDB_PROCESS_MENUPOPUP = "KDB_ProcessMenu";
 	private static final String KDB_REFRESH_BUTTON_ID = "refreshKdb";
 	protected final static String PROCESS_ID_KEY = "processId";
 
@@ -425,7 +425,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				else if (MKanbanProcess.KDB_PROCESSSCOPE_Card.equals(process.getKDB_ProcessScope()))
 					getCardProcesses().add(process);
 			}
-			setProcessMenupopup();
+			setStatusProcessMenupopup();
 			setCardMenupopup();
 			setBoardProcess();
 		}
@@ -461,7 +461,8 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			if (numCols > 0) {
 				// set size in percentage per column leaving a MARGIN on right
 				Columns columns = new Columns();
-				columns.setMenupopup(getBoardMenupopup());
+				if (menupopup == null)
+					columns.setMenupopup(getBoardMenupopup());
 
 				int equalWidth = 100 ;
 				int stdColumnWidth = getStdColumnWidth();
@@ -489,6 +490,9 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 					}
 					column = new Column();
 					column.setId(Integer.toString(status.get_ID()));
+					if (menupopup != null) {
+						column.setPopup(getBoardMenupopup());
+					}
 					
 					if (stdColumnWidth == 0)
 						column.setWidth(equalWidth + "%");
@@ -676,11 +680,11 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	/**
 	 * Set Process Menupopup if there are status scope processes
 	 */
-	private void setProcessMenupopup() {
+	private void setStatusProcessMenupopup() {
 		
 		if (getStatusProcesses() != null && getStatusProcesses().size() > 0) {
 			menupopup = new Menupopup();
-			menupopup.setId("processMenu");
+			menupopup.setId(KDB_PROCESS_MENUPOPUP);
 			menupopup.addEventListener(Events.ON_OPEN, this);
 			Menuitem menuitem;
 			
@@ -714,7 +718,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			
 			kForm.appendChild(menupopup);
 		}
-	}//setProcessMenupopup
+	} //setStatusProcessMenupopup
 	
 	/**
 	 * Set Card Menupopup if there are card scope processes
@@ -775,7 +779,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	
 		String idMenupopup = "auto";
 		if (menupopup != null) {
-			idMenupopup = "processMenu";
+			idMenupopup = KDB_PROCESS_MENUPOPUP;
 		}
 		return idMenupopup;
 	}//getBoardMenupopup
@@ -883,11 +887,13 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		else if (Events.ON_OPEN.equals(e.getName()) && (e.getTarget() instanceof Menupopup)) {
 
 			OpenEvent openEvt = (OpenEvent) e;
-			Menupopup popup = (Menupopup)openEvt.getTarget();
-			Component referencedComponent = openEvt.getReference();
+			if (openEvt.isOpen()) {
+				Menupopup popup = (Menupopup)openEvt.getTarget();
+				Component referencedComponent = openEvt.getReference();
 
-			// set the referenced object in a hidden reference of the popup
-			popup.setAttribute("columnRef", referencedComponent);
+				// set the referenced object in a hidden reference of the popup
+				popup.setAttribute("columnRef", referencedComponent);				
+			}
 		} else if (Events.ON_TIMER.equals(e.getName())) {
 			//Auto refresh
 			if (kanbanBoardId != -1) {
