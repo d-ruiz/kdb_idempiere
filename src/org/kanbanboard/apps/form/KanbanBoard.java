@@ -326,8 +326,16 @@ public class KanbanBoard {
 	protected GridField getGridField(MKanbanParameter parameter) {
 
 		if (parameter.getGridField() == null) {
+			
+			String sql;
+			if (!Env.isBaseLanguage(Env.getCtx(), kanbanBoard.getTable().getTableName())){
+				sql = "SELECT * FROM AD_Field_vt WHERE AD_Column_ID=? AND AD_Table_ID=?"
+						+ " AND AD_Language='" + Env.getAD_Language(Env.getCtx()) + "'";
+			}
+			else{
+				sql = "SELECT * FROM AD_Field_v WHERE AD_Column_ID=? AND AD_Table_ID=?";
+			}
 
-			String sql = "SELECT * FROM AD_Field_v WHERE AD_Column_ID=? AND AD_Table_ID=?";
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
 			try {
