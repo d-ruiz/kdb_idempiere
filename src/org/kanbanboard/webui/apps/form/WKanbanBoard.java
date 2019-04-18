@@ -173,8 +173,8 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	private void jbInit() throws Exception {
 		kForm.setClosable(true);
 		kForm.setMaximizable(true);
-		kForm.setWidth("95%");
-		kForm.setHeight("95%");
+		kForm.setWidth("100%");
+		kForm.setHeight("100%");
 		kForm.appendChild (mainLayout);
 		LayoutUtils.addSclass("kanban-board-form-content", mainLayout);  // ?? debe definirse en un css, se puede integrar css en el plugin?
 		kForm.setBorder("normal");
@@ -480,6 +480,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 							column.setWidth(stdColumnWidth/2 + "px");
 						columns.appendChild(column);
 						column.setAlign("right");
+						column.setVflex("min");
 						column.setLabel(status.getPrintableName().substring(0, 1)+" Queue");
 						column.setStyle("background-color: yellow;");
 						columns.appendChild(column);
@@ -825,7 +826,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				MKanbanCard endField = mapCellColumn.get(endItem);
 				MKanbanStatus endStatus;
 
-				if (endField == null) {
+				if (endField == null && mapEmptyCellField.get(me.getTarget()) != null) {
 					// check empty cells
 					endStatus= mapEmptyCellField.get(me.getTarget());
 				}

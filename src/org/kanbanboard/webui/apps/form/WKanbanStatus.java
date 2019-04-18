@@ -139,8 +139,8 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 		kForm.setSizable(true);
 		kForm.setClosable(true);
 		kForm.setMaximizable(true);
-		kForm.setWidth("95%");
-		kForm.setHeight("95%");
+		kForm.setWidth("100%");
+		kForm.setHeight("100%");
 		kForm.appendChild (mainLayout);
 		kForm.setBorder("normal");
 
