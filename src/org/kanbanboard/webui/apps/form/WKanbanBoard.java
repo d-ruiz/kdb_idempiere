@@ -685,7 +685,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		
 		if (getStatusProcesses() != null && getStatusProcesses().size() > 0) {
 			menupopup = new Menupopup();
-			menupopup.setId(KDB_PROCESS_MENUPOPUP);
+			menupopup.setId(KDB_PROCESS_MENUPOPUP+windowNo);
 			menupopup.addEventListener(Events.ON_OPEN, this);
 			Menuitem menuitem;
 			
@@ -780,7 +780,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	
 		String idMenupopup = "auto";
 		if (menupopup != null) {
-			idMenupopup = KDB_PROCESS_MENUPOPUP;
+			idMenupopup = KDB_PROCESS_MENUPOPUP+windowNo;
 		}
 		return idMenupopup;
 	}//getBoardMenupopup
