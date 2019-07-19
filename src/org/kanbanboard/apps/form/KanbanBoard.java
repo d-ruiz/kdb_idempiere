@@ -91,19 +91,27 @@ public class KanbanBoard {
 			sql = "SELECT k.KDB_KanbanBoard_ID, k.Name "
 					+ "FROM KDB_KanbanBoard k "
 					+ "WHERE k.AD_Client_ID IN (0, ?) AND k.IsActive='Y' "
-					+ "AND k.KDB_KanbanBoard_ID IN (SELECT KDB_KanbanBoard_ID FROM KDB_KanbanControlAccess WHERE AD_Role_ID=?) "
+					+ "AND k.KDB_KanbanBoard_ID IN (SELECT KDB_KanbanBoard_ID FROM KDB_KanbanControlAccess WHERE (AD_Role_ID = ? " 
+					+ "                                                              OR AD_Role_ID IN (SELECT Included_Role_ID " 
+					+ "                                                                              FROM   AD_Role_Included " 
+					+ "                                                                              WHERE  AD_Role_id = ? " 
+					+ "                                                                              AND IsActive = 'Y'))) "
 					+ "ORDER BY k.Name";
 
-			list = DB.getKeyNamePairs(null, sql, true, Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Role_ID(Env.getCtx()));
+			list = DB.getKeyNamePairs(null, sql, true, Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Role_ID(Env.getCtx()), Env.getAD_Role_ID(Env.getCtx()));
 		} else {
 			sql = "SELECT k.KDB_KanbanBoard_ID, kt.Name "
 					+ "FROM KDB_KanbanBoard k JOIN KDB_KanbanBoard_Trl kt ON (k.KDB_KanbanBoard_ID=kt.KDB_KanbanBoard_ID) "
 					+ "WHERE k.AD_Client_ID IN (0, ?) AND k.IsActive='Y' "
-					+ "AND k.KDB_KanbanBoard_ID IN (SELECT KDB_KanbanBoard_ID FROM KDB_KanbanControlAccess WHERE AD_Role_ID=?) "
+					+ "AND k.KDB_KanbanBoard_ID IN (SELECT KDB_KanbanBoard_ID FROM KDB_KanbanControlAccess WHERE (AD_Role_ID = ? " 
+					+ "                                                              OR AD_Role_ID IN (SELECT Included_Role_ID " 
+					+ "                                                                              FROM   AD_Role_Included " 
+					+ "                                                                              WHERE  AD_Role_id = ? " 
+					+ "                                                                              AND IsActive = 'Y'))) "
 					+ "AND kt.AD_Language=? "
 					+ "ORDER BY kt.Name";
 			
-			list = DB.getKeyNamePairs(null, sql, true, Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Role_ID(Env.getCtx()),Env.getAD_Language(Env.getCtx()));
+			list = DB.getKeyNamePairs(null, sql, true, Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Role_ID(Env.getCtx()), Env.getAD_Role_ID(Env.getCtx()), Env.getAD_Language(Env.getCtx()));
 		}
 		return list;
 	}
@@ -111,7 +119,11 @@ public class KanbanBoard {
 	public boolean isReadWrite() {
 		if (isReadWrite == null) {
 			String sql = "SELECT isreadwrite FROM KDB_KanbanControlAccess " +
-					"WHERE KDB_KanbanBoard_ID = ? AND AD_Role_ID= ? AND IsActive = 'Y'";
+					"WHERE KDB_KanbanBoard_ID = ? AND IsActive = 'Y' AND (AD_Role_ID = ? "
+					+ "                                                OR AD_Role_ID IN (SELECT Included_Role_ID " 
+					+ "                                                                  FROM   AD_Role_Included " 
+					+ "                                                                  WHERE  AD_Role_id = ? " 
+					+ "                                                                  AND IsActive = 'Y'))";
 
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
@@ -120,6 +132,7 @@ public class KanbanBoard {
 				pstmt = DB.prepareStatement(sql, null);
 				pstmt.setInt(1, kanbanBoard.getKDB_KanbanBoard_ID());
 				pstmt.setInt(2, Env.getAD_Role_ID(Env.getCtx()));
+				pstmt.setInt(3, Env.getAD_Role_ID(Env.getCtx()));
 				rs = pstmt.executeQuery();
 				while (rs.next()) {
 					isReadWrite = rs.getString(1);
