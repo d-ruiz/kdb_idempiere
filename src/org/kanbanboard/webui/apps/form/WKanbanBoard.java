@@ -640,6 +640,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			}
 		}
 
+		div.setTooltiptext(card.getTooltiptext());
 		return div;
 	}//CreateCell
 

@@ -23,7 +23,7 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for KDB_KanbanBoard
  *  @author iDempiere (generated) 
- *  @version Release 5.1
+ *  @version Release 6.2
  */
 @SuppressWarnings("all")
 public interface I_KDB_KanbanBoard 
@@ -166,6 +166,19 @@ public interface I_KDB_KanbanBoard
 	public int getKDB_BackgroundColor_ID();
 
 	public org.compiere.model.I_AD_PrintColor getKDB_BackgroundColor() throws RuntimeException;
+
+    /** Column name KDB_CardTooltip */
+    public static final String COLUMNNAME_KDB_CardTooltip = "KDB_CardTooltip";
+
+	/** Set Kanban Card Tooltip.
+	  * Message shown when the user hovers the pointer over a card
+	  */
+	public void setKDB_CardTooltip (String KDB_CardTooltip);
+
+	/** Get Kanban Card Tooltip.
+	  * Message shown when the user hovers the pointer over a card
+	  */
+	public String getKDB_CardTooltip();
 
     /** Column name KDB_ColumnList_ID */
     public static final String COLUMNNAME_KDB_ColumnList_ID = "KDB_ColumnList_ID";
