@@ -37,6 +37,7 @@ import org.compiere.process.DocAction;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.compiere.util.Util;
 
 
 
@@ -193,12 +194,16 @@ public class MKanbanCard {
 		if (kanbanCardText == null)
 			translate();
 
-		String parsedText = parse(kanbanCardText);
+		String parsedText = parse(kanbanCardText, !kanbanBoard.isHtml());
 
 		if (kanbanBoard.get_ValueAsBoolean("IsHtml"))
 			parsedText = parseHTML(parsedText);
 
 		return parsedText;	
+	}
+	
+	public String getTooltiptext() {
+		return parse(translateTooltip(), true);
 	}
 
 	/**
@@ -211,12 +216,23 @@ public class MKanbanCard {
 		else
 			kanbanCardText=Integer.toString(recordId);
 	}	//	translate
+	
+	private String translateTooltip() {
+		//	Default if no Translation
+		if (kanbanBoard.getKDB_CardTooltip() != null)
+			return kanbanBoard.get_Translation(MKanbanBoard.COLUMNNAME_KDB_CardTooltip);
+		
+		return "";		
+	}	//	translate
 
-	private String parse(String text) {
+	private String parse(String text, boolean breakLine) {
+		if (Util.isEmpty(text))
+				return "";
+
 		if (text.indexOf('@') == -1)
 			return text;
 		//	Parse PO
-		text = parse (text, m_po);
+		text = parse(text, m_po, breakLine);
 		return text;
 	}	//	parse
 	
@@ -239,7 +255,7 @@ public class MKanbanCard {
 	 *	@param po object
 	 *	@return parsed text
 	 */
-	private String parse (String text, PO po) {
+	private String parse (String text, PO po, boolean breakLine) {
 		if (po == null || text.indexOf('@') == -1)
 			return text;
 
@@ -274,7 +290,7 @@ public class MKanbanCard {
 			i = inStr.indexOf('@');
 
 			//if not HTML behave as usual - break line per field
-			if (!kanbanBoard.get_ValueAsBoolean("IsHtml"))
+			if (breakLine)
 				outStr.append(System.getProperty("line.separator"));
 		}
 

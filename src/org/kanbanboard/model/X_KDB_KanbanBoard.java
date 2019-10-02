@@ -24,14 +24,14 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Model for KDB_KanbanBoard
  *  @author iDempiere (generated) 
- *  @version Release 5.1 - $Id$ */
+ *  @version Release 6.2 - $Id$ */
 public class X_KDB_KanbanBoard extends PO implements I_KDB_KanbanBoard, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20171114L;
+	private static final long serialVersionUID = 20191002L;
 
     /** Standard Constructor */
     public X_KDB_KanbanBoard (Properties ctx, int KDB_KanbanBoard_ID, String trxName)
@@ -198,6 +198,23 @@ public class X_KDB_KanbanBoard extends PO implements I_KDB_KanbanBoard, I_Persis
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Kanban Card Tooltip.
+		@param KDB_CardTooltip 
+		Message shown when the user hovers the pointer over a card
+	  */
+	public void setKDB_CardTooltip (String KDB_CardTooltip)
+	{
+		set_Value (COLUMNNAME_KDB_CardTooltip, KDB_CardTooltip);
+	}
+
+	/** Get Kanban Card Tooltip.
+		@return Message shown when the user hovers the pointer over a card
+	  */
+	public String getKDB_CardTooltip () 
+	{
+		return (String)get_Value(COLUMNNAME_KDB_CardTooltip);
 	}
 
 	public org.compiere.model.I_AD_Column getKDB_ColumnList() throws RuntimeException
