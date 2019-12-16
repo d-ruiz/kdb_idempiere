@@ -20,4 +20,4 @@ Documentation
 
 Questions or feedback
 -------------
-- Feel free to ask and comment in the [group](https://groups.google.com/forum/#!forum/idempiere)
+- Feel free to ask and comment in the iDempiere [forum](https://groups.google.com/forum/#!forum/idempiere)
