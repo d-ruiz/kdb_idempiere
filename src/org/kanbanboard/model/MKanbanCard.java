@@ -37,6 +37,7 @@ import org.compiere.process.DocAction;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.compiere.util.Trx;
 import org.compiere.util.Util;
 
 
@@ -122,6 +123,7 @@ public class MKanbanCard {
 
 		if (statusColumn.equals(MKanbanBoard.STATUSCOLUMN_DocStatus)) {
 			if (m_po instanceof DocAction && m_po.get_ColumnIndex("DocAction") >= 0) {
+				Trx trx = Trx.get(Trx.createTrxName("DCK"), true);
 				try {
 					String p_docAction = kanbanBoard.getDocAction(newStatusValue);
 					//No valid action
@@ -129,18 +131,24 @@ public class MKanbanCard {
 						throw new IllegalStateException();
 
 					m_po.set_ValueOfColumn("DocAction", p_docAction);
+					m_po.set_TrxName(trx.getTrxName());
 					if (!((DocAction) m_po).processIt(p_docAction)) {
 						throw new IllegalStateException();
 					} else
 						m_po.saveEx();
 
+					trx.commit();
 				} catch (IllegalStateException e) {
 					KDB_ErrorMessage = "KDB_InvalidTransition";
+					trx.rollback();
 					return false;
 				} catch (Exception e) {
 					e.printStackTrace();
 					KDB_ErrorMessage = e.getLocalizedMessage();
+					trx.rollback();
 					return false;
+				} finally {
+					trx.close();
 				}
 			}			
 		} else {
