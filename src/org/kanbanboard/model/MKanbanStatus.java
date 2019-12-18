@@ -40,6 +40,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
+import org.adempiere.exceptions.DBException;
+import org.compiere.model.MColumn;
+import org.compiere.model.MTable;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -49,6 +52,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 	 * 
 	 */
 	private static final long serialVersionUID = 3464371316345451989L;
+	public static final String QUEUE_CARDS_BY_NUMBER = "C";
 	public static final String STATUS_RECORDS_IDS = "@STATUSRECORDS_ID@";
 
 	private MKanbanBoard      kanbanBoard;
@@ -350,5 +354,53 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 
 		return ids;
 	}
+	
+	public void setSQLQueuedCards() {
+		if (hasQueue() && !QUEUE_CARDS_BY_NUMBER.equals(getSQLStatement())) {
+			StringBuilder sql = new StringBuilder();
+			sql.append("SELECT ");
+
+			MTable table = kanbanBoard.getTable();
+			MColumn column = kanbanBoard.getStatusColumn();
+			
+			String keys[] = table.getKeyColumns();
+			sql.append(keys[0]); 
+			sql.append(" FROM " + table.getTableName());
+
+			StringBuilder whereClause = new StringBuilder();
+			whereClause.append(" WHERE ");
+
+			if (kanbanBoard.getWhereClause() != null)
+				whereClause.append(kanbanBoard.getWhereClause() + " AND ");
+
+			whereClause.append(column.getColumnName() + " = ");
+			
+			if (kanbanBoard.isRefList())
+				whereClause.append("'" + getStatusValue() + "'");
+			else
+				whereClause.append(getStatusValue());
+
+			whereClause.append(" AND AD_Client_ID IN (0, ?) AND IsActive='Y'");
+			whereClause.append(" AND " + getSQLStatement());
+			
+			sql.append(whereClause.toString());
+			log.info("Queue SQL" + sql.toString());
+
+			try {
+				String sqlparsed = Env.parseContext(getCtx(), 0, sql.toString(), false);
+				int[] ids = DB.getIDsEx(get_TrxName(), sqlparsed, Env.getAD_Client_ID(Env.getCtx()));
+				for (int id : ids) {
+					MKanbanCard card = getCard(id);
+					if (card != null) {
+						removeRecord(card);
+						addQueuedRecord(card);
+						card.setQueued(true);
+					}
+				}
+			} catch (DBException e) {
+				log.log(Level.SEVERE, sql.toString(), e);
+			}
+		}
+	} // setSQLQueuedCards
 
 }

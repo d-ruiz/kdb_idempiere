@@ -185,6 +185,7 @@ public class KanbanBoard {
 			kanbanBoard.setBoardContent();
 			getBoardParameters();
 			kanbanBoard.getKanbanCards();
+			kanbanBoard.setKanbanQueuedCards();
 			summarySql = null;		
 		}
 	}

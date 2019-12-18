@@ -81,15 +81,10 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	public MKanbanBoard(Properties ctx, ResultSet rs, String trxName) {
 		super(ctx, rs, trxName);
 	}
-
+	
 	public void setBoardContent() {
-		initTargetAction();
-		getStatuses();
-		for (MKanbanStatus status : statuses) {
-			if(status.hasQueue() &&
-					!status.getSQLStatement().equals("C"))
-				getKanbanQueuedCards(status);
-		}
+ 		initTargetAction();
+ 		getStatuses();
 	}
 	
 	/**
@@ -148,11 +143,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 			columnId = getKDB_ColumnList_ID();
 		else
 			columnId = getKDB_ColumnTable_ID();
-
-		MColumn column = new MColumn(Env.getCtx(), columnId, get_TrxName());
-
-		return column;
-
+		return MColumn.get(Env.getCtx(), columnId, get_TrxName());
 	}
 
 	public void setPrintableNames() {
@@ -374,7 +365,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 					id = rs.getInt(1);
 					correspondingColumn = rs.getString(2);
 					MKanbanStatus status = getStatus(correspondingColumn);
-					if (status.hasQueue() && status.getSQLStatement().equals("C")    //Queued Records
+					if (status.hasQueue() && status.getSQLStatement().equals(MKanbanStatus.QUEUE_CARDS_BY_NUMBER)    //Queued Records
 							&& status.getMaxNumCards() <= status.getRecords().size()) {
 						MKanbanCard card = new MKanbanCard(id,status);
 						if (hasPriorityOrder()) {
@@ -412,66 +403,12 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		}
 	}//getKanbanCards
 	
-	/**
-	 *Get every card from the board
-	 *and assign them to its respective status
-	 */
-	public void getKanbanQueuedCards(MKanbanStatus status) {
-
-		StringBuilder sql = new StringBuilder();
-		sql.append("SELECT ");
-
-		MTable table = getTable();
-		MColumn column = getStatusColumn();
-		String llaves[] = table.getKeyColumns();
-
-		sql.append(llaves[0]); 
-		
-		sql.append(" FROM "+table.getTableName());
-
-		StringBuilder whereClause = new StringBuilder();
-		whereClause.append(" WHERE ");
-
-		if (getWhereClause() != null)
-			whereClause.append(getWhereClause()+" AND ");
-
-		whereClause.append(column.getColumnName()+ " IN ");
-
-		whereClause.append(getInValues());
-
-		whereClause.append(" AND AD_Client_ID IN (0, ?) AND IsActive='Y'");
-		whereClause.append(" AND "+status.getSQLStatement());
-		
-		sql.append(whereClause.toString());
-
-		log.info("Queue SQL"+sql.toString());
-
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try {
-			String sqlparsed = Env.parseContext(getCtx(), 0, sql.toString(), false);
-			pstmt = DB.prepareStatement(sqlparsed, get_TrxName());
-			pstmt.setInt(1, Env.getAD_Client_ID(Env.getCtx()));
-			rs = pstmt.executeQuery();
-			int id = -1;
-			while (rs.next()) {
-				id = rs.getInt(1);
-				MKanbanCard card = status.getCard(id);
-				if (card != null) {
-					status.removeRecord(card);
-					status.addQueuedRecord(card);
-					card.setQueued(true);	
-				}
-			}
-		} catch (SQLException e) {
-			log.log(Level.SEVERE, sql.toString(), e);
-		} finally {
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
+	public void setKanbanQueuedCards() {
+		for (MKanbanStatus status : getStatuses()) {
+			status.setSQLQueuedCards();
 		}
-	}//getKanbanQueuedCards
-
+	}
+	
 	private String getInValues() {
 
 		StringBuilder values = new StringBuilder();
