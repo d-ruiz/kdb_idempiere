@@ -160,7 +160,8 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 				int posList=0;
 				boolean match = false;
 				while (posList < list.length && !match) {
-					if (statuses.get(posStatus).getKDB_StatusListValue().equals(list[posList].getValue())) {
+					if (statuses.get(posStatus).getKDB_StatusListValue() != null &&
+							statuses.get(posStatus).getKDB_StatusListValue().equals(list[posList].getValue())) {
 						statuses.get(posStatus).setPrintableName(list[posList].toString());
 						match=true;
 					}
