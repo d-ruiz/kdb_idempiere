@@ -478,6 +478,18 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 			}
 		}
 		
+		// Can't change status related data unless no status child 
+		if (!newRecord && (is_ValueChanged(COLUMNNAME_AD_Table_ID) || 
+				is_ValueChanged(COLUMNNAME_KDB_ColumnList_ID) || 
+						is_ValueChanged(COLUMNNAME_KDB_ColumnTable_ID))) {
+			String sql = "SELECT COUNT(*) FROM KDB_KanbanStatus WHERE KDB_KanbanBoard_ID=?";
+			int noStatus = DB.getSQLValue(get_TrxName(), sql, getKDB_KanbanBoard_ID());
+			if (noStatus > 0) {
+				log.saveError("Error", Msg.getMsg(getCtx(), "KDB_SaveErrorStatuses"));
+				return false;
+			}
+		}
+		
 		return super.beforeSave(newRecord);
 	}
 
