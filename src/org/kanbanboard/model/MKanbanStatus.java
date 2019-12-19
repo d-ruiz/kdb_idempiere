@@ -380,7 +380,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 			else
 				whereClause.append(getStatusValue());
 
-			whereClause.append(" AND AD_Client_ID IN (0, ?) AND IsActive='Y'");
+			whereClause.append(" AND AD_Client_ID IN (0, ?)");
 			whereClause.append(" AND " + getSQLStatement());
 			
 			sql.append(whereClause.toString());

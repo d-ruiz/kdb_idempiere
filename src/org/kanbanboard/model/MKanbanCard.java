@@ -37,6 +37,7 @@ import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.print.MPrintColor;
 import org.compiere.process.DocAction;
+import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -48,6 +49,8 @@ import org.compiere.util.Util;
 
 public class MKanbanCard {
 
+	/**	Logger							*/
+	protected transient CLogger	log = CLogger.getCLogger (getClass());
 
 	public static String KDB_ErrorMessage = "KDB_InvalidTransition";
 
@@ -282,10 +285,15 @@ public class MKanbanCard {
 			inStr = inStr.substring(i+1, inStr.length());	// from first @
 			
 			//devCoffee - 5377 - Check if is sql
-			if (inStr.substring(0, 5).equals("SQL=(")) {
-				sql = inStr.substring(5, inStr.indexOf(')'));
+			//Changed () to ENDSQL to support sub queries and be more robust
+			if (inStr.substring(0, 4).equals("SQL=")) {
+				if (inStr.indexOf("ENDSQL") == -1) {
+					log.severe("SQL statement not properly closed");
+					return "";
+				}
+				sql = inStr.substring(4, inStr.indexOf("ENDSQL"));
 				outStr.append(getTextByQuery(parse(sql, false)));
-				inStr = inStr.substring(inStr.indexOf(')') + 1, inStr.length());	// from second @
+				inStr = inStr.substring(inStr.indexOf("ENDSQL") + 6, inStr.length());	// after query
 				i = inStr.indexOf('@');
 				continue;
 			}
@@ -399,7 +407,7 @@ public class MKanbanCard {
 		try {
 			ps = DB.prepareStatement(sql, null);
 			ResultSet rs = ps.executeQuery();
-			String result = "";
+			String result = null;
 			if (rs.next()) {
 				switch (rs.getMetaData().getColumnType(1)) {
 				case java.sql.Types.BINARY:
@@ -410,9 +418,10 @@ public class MKanbanCard {
 					result = rs.getString(1);
 					break;
 				}
-				return result;
+				return result != null ? result : "";
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			return "";
 		} finally {
 			DB.close(ps);

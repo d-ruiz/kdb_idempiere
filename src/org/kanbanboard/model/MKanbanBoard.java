@@ -467,7 +467,17 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 				return false;
 			}
 		}
-
+		
+		// Allow only advanced users to display SQL results in the Kanban Board
+		String kanbanCardContent = getKDB_KanbanCard();
+		if (kanbanCardContent != null && kanbanCardContent.contains("@SQL=")) {
+			MRole role = MRole.getDefault();
+			if (!role.isAccessAdvanced()) {
+				log.saveError("Error", Msg.getMsg(getCtx(), "ActionNotAllowedHere"));
+				return false;
+			}
+		}
+		
 		return super.beforeSave(newRecord);
 	}
 
