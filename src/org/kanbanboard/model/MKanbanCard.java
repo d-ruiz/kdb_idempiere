@@ -26,14 +26,18 @@
 package org.kanbanboard.model;
 
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.print.MPrintColor;
 import org.compiere.process.DocAction;
+import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -269,12 +273,22 @@ public class MKanbanCard {
 
 		String inStr = text;
 		String token;
+		String sql; //devCoffee - 5377
 		StringBuilder outStr = new StringBuilder();
 
 		int i = inStr.indexOf('@');
 		while (i != -1) {
 			outStr.append(inStr.substring(0, i));			// up to @
 			inStr = inStr.substring(i+1, inStr.length());	// from first @
+			
+			//devCoffee - 5377 - Check if is sql
+			if (inStr.substring(0, 5).equals("SQL=(")) {
+				sql = inStr.substring(5, inStr.indexOf(')'));
+				outStr.append(getTextByQuery(parse(sql, false)));
+				inStr = inStr.substring(inStr.indexOf(')') + 1, inStr.length());	// from second @
+				i = inStr.indexOf('@');
+				continue;
+			}
 
 			int j = inStr.indexOf('@');						// next @
 			if (j < 0) {									// no second tag
@@ -378,4 +392,34 @@ public class MKanbanCard {
 			return "";
 		return value.toString();
 	}	//	parseVariable
+	
+	// devCoffee - 5377
+	private String getTextByQuery(String sql) {
+		PreparedStatement ps = null;
+		try {
+			ps = DB.prepareStatement(sql, null);
+			ResultSet rs = ps.executeQuery();
+			String result = "";
+			if (rs.next()) {
+				switch (rs.getMetaData().getColumnType(1)) {
+				case java.sql.Types.BINARY:
+					result = Base64.getEncoder().encodeToString(rs.getBytes(1));
+					break;
+
+				default:
+					result = rs.getString(1);
+					break;
+				}
+				return result;
+			}
+		} catch (Exception e) {
+			return "";
+		} finally {
+			DB.close(ps);
+			ps = null;
+		}
+
+		return "";
+	}
+
 }
