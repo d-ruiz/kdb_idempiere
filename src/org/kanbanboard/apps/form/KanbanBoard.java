@@ -43,6 +43,7 @@ import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.compiere.util.Util;
 import org.kanbanboard.model.MKanbanBoard;
 import org.kanbanboard.model.MKanbanCard;
 import org.kanbanboard.model.MKanbanParameter;
@@ -147,7 +148,7 @@ public class KanbanBoard {
 				pstmt = null;
 			}
 		}
-		if (isReadWrite.equals("Y"))
+		if (!Util.isEmpty(isReadWrite) && isReadWrite.equals("Y"))
 			return true;
 		else 
 			return false;
