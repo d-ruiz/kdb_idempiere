@@ -69,6 +69,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
+import org.compiere.util.Util;
 import org.kanbanboard.apps.form.KanbanBoard;
 import org.kanbanboard.model.MKanbanCard;
 import org.kanbanboard.model.MKanbanParameter;
@@ -242,11 +243,17 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	 */
 	private void dynList() {
 		//	Fill Process
-		for (KeyNamePair process : getProcessList())
+		String userPreferenceKanban = Env.getContext(Env.getCtx(), "P|KDB_KanbanBoard_ID");
+		for (KeyNamePair process : getProcessList()) {
 			cbProcess.addItem(process);
+			if (!Util.isEmpty(userPreferenceKanban)
+					&& process.getKey() == Integer.parseInt(userPreferenceKanban)) {
+				kanbanBoardId = Integer.parseInt(userPreferenceKanban);
+				cbProcess.setSelectedKeyNamePair(process);
+			}
+		}
 
 		cbProcess.addEventListener(Events.ON_SELECT, this);
-
 	}   //  dynList
 	
 	/**
