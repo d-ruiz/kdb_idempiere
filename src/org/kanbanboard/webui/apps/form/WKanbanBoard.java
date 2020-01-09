@@ -123,7 +123,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	private Panel panel = new Panel();
 	private Grid gridLayout = GridFactory.newGridLayout();
 	private Label lProcess = new Label();
-	private Listbox cbProcess = ListboxFactory.newDropdownListbox();
+	private Listbox kanbanListbox = ListboxFactory.newDropdownListbox();
 	private int kanbanBoardId = -1;
 	private Button bRefresh = new Button();
 	private Timer timer;
@@ -192,7 +192,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 		northPanelHbox = new Hbox();
 		northPanelHbox.appendChild(lProcess.rightAlign());
-		northPanelHbox.appendChild(cbProcess);
+		northPanelHbox.appendChild(kanbanListbox);
 		northPanelHbox.appendChild(bRefresh);
 		Cell cell = new Cell();
 		cell.setColspan(3);
@@ -245,15 +245,15 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		//	Fill Process
 		String userPreferenceKanban = Env.getContext(Env.getCtx(), "P|KDB_KanbanBoard_ID");
 		for (KeyNamePair process : getProcessList()) {
-			cbProcess.addItem(process);
+			kanbanListbox.addItem(process);
 			if (!Util.isEmpty(userPreferenceKanban)
 					&& process.getKey() == Integer.parseInt(userPreferenceKanban)) {
 				kanbanBoardId = Integer.parseInt(userPreferenceKanban);
-				cbProcess.setSelectedKeyNamePair(process);
+				kanbanListbox.setSelectedKeyNamePair(process);
 			}
 		}
 
-		cbProcess.addEventListener(Events.ON_SELECT, this);
+		kanbanListbox.addEventListener(Events.ON_SELECT, this);
 	}   //  dynList
 	
 	/**
@@ -801,13 +801,13 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 		// select an item within the list -- set it active and show the properties
 		if (Events.ON_SELECT.equals(e.getName()) && e.getTarget() instanceof Listbox) {
-			if (cbProcess.getSelectedIndex() != -1) {
+			if (kanbanListbox.getSelectedIndex() != -1) {
 
-				KeyNamePair MKanban = null;
+				KeyNamePair kanbanKeyNamePair = null;
 				kanbanBoardId = -1;
-				MKanban = (KeyNamePair)cbProcess.getSelectedItem().toKeyNamePair();	
-				if (MKanban != null)
-					kanbanBoardId = MKanban.getKey();
+				kanbanKeyNamePair = (KeyNamePair)kanbanListbox.getSelectedItem().toKeyNamePair();	
+				if (kanbanKeyNamePair != null)
+					kanbanBoardId = kanbanKeyNamePair.getKey();
 				fullRefresh();
 			}
 		}
@@ -815,8 +815,8 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		else if (Events.ON_DOUBLE_CLICK.equals(e.getName()) && (e.getTarget() instanceof Cell)) {
 			MKanbanCard card = mapCellColumn.get(e.getTarget());
 			int recordId = card.getRecordID();
-			int ad_table_id = getAd_Table_id();
-			zoom(recordId,ad_table_id);
+			int AD_Table_ID = getAd_Table_id();
+			zoom(recordId,AD_Table_ID);
 		} else if (e instanceof DropEvent ) {
 			DropEvent me = (DropEvent) e;
 			Cell startItem = null;
