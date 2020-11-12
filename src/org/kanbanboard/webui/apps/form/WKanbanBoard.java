@@ -956,7 +956,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
      */
     protected void runProcess (Object processIdObj, final Collection<KeyNamePair> saveKeys) {
     	final Integer processId = (Integer)processIdObj;
-    	final MProcess mProcess = MProcess.get(Env.getCtx(), processId);
+    	final MProcess mProcess = MProcess.get(processId);
     	final ProcessInfo m_pi = new ProcessInfo(mProcess.getName(), processId);
 		m_pi.setAD_User_ID(Env.getAD_User_ID(Env.getCtx()));
 		m_pi.setAD_Client_ID(Env.getAD_Client_ID(Env.getCtx()));

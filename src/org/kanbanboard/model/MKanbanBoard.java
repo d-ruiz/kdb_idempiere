@@ -57,7 +57,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	/** Special column DocStatus = DocStatus */
 	public static final String STATUSCOLUMN_DocStatus = "DocStatus";
 
-	private MTable table = MTable.get(Env.getCtx(), getAD_Table_ID());
+	private MTable table = MTable.get(getAD_Table_ID());
 	private String keyColumn;
 	private List<MKanbanStatus> statuses = new ArrayList<MKanbanStatus>();
 	private List<MKanbanPriority> priorityRules = new ArrayList<MKanbanPriority>();
@@ -143,7 +143,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 			columnId = getKDB_ColumnList_ID();
 		else
 			columnId = getKDB_ColumnTable_ID();
-		return MColumn.get(Env.getCtx(), columnId, get_TrxName());
+		return MColumn.get(columnId);
 	}
 
 	public void setPrintableNames() {
