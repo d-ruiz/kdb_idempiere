@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: KanbanBoard
 Bundle-SymbolicName: kanbanBoard;singleton:=true
-Bundle-Version: 7.1.0.qualifier
+Bundle-Version: 8.1.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Activator: org.adempiere.plugin.utils.Incremental2PackActivator
 Service-Component: OSGI-INF/KBModelFactory.xml, OSGI-INF/KBFormFactory.xml, OSGI-INF/KBProcessFactory.xml
