@@ -163,7 +163,6 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			windowNo = SessionManager.getAppDesktop().registerWindow(this);
 			dynList();
 			jbInit();
-			LayoutUtils.sendDeferLayoutEvent(mainLayout, 100);
 		} catch (Exception ex){}
 	}
 

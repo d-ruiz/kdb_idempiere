@@ -29,7 +29,6 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.compiere.model.MProcess;
-import org.compiere.util.Env;
 
 public class MKanbanProcess extends X_KDB_KanbanProcess{
 

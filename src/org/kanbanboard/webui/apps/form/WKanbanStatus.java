@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 
-import org.adempiere.webui.LayoutUtils;
 import org.adempiere.webui.component.Button;
 import org.adempiere.webui.component.Column;
 import org.adempiere.webui.component.ConfirmPanel;
@@ -125,7 +124,6 @@ public class WKanbanStatus extends KanbanStatus implements IFormController, Even
 		try {
 			dynList();
 			jbInit();
-			LayoutUtils.sendDeferLayoutEvent(mainLayout, 100);
 		} catch (Exception ex) {
 			log.log(Level.SEVERE, "init", ex);
 		}
