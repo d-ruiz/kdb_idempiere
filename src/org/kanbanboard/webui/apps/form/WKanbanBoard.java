@@ -184,7 +184,10 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		lProcess.setText(Msg.translate(Env.getCtx(), "Process"));
 		Rows rows = gridLayout.newRows();
 		Row row = rows.newRow();
-		bRefresh.setImage(ThemeManager.getThemeResource("images/Refresh16.png"));
+		if (ThemeManager.isUseFontIconForImage())
+			bRefresh.setIconSclass("z-icon-Refresh");
+		else
+			bRefresh.setImage(ThemeManager.getThemeResource("images/Refresh16.png"));
 		bRefresh.setId(KDB_REFRESH_BUTTON_ID);
 		bRefresh.setTooltiptext(Msg.getMsg(Env.getCtx(), "Refresh"));
 		bRefresh.addEventListener(Events.ON_CLICK, this);
@@ -281,7 +284,10 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			boardParamsDiv.setSclass("padding-left: 5px;");
 			if (m_sEditors.size() > 1 && MSysConfig.getBooleanValue("KDB_GROUP_PARAMETERS", true, Env.getAD_Client_ID(Env.getCtx()))) {
 				bFilter.setLabel(Msg.getMsg(Env.getCtx(), "KDB_QuickFilter"));
-				bFilter.setImage(ThemeManager.getThemeResource("images/MoveDown16.png"));
+				if (ThemeManager.isUseFontIconForImage())
+					bFilter.setIconSclass("z-icon-MoveDown");
+				else
+					bFilter.setImage(ThemeManager.getThemeResource("images/MoveDown16.png"));
 				bFilter.setDir("reverse");
 				bFilter.setTooltiptext(Msg.getMsg(Env.getCtx(), "filter.by"));
 				filterPopup = getParamPopup();
@@ -701,7 +707,10 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				menuitem = new Menuitem();
 				menuitem.setId(Integer.toString(process.getKDB_KanbanProcess_ID()));
 				menuitem.setLabel(process.getName());
-				menuitem.setImage(ThemeManager.getThemeResource("images/Process16.png"));
+				if (ThemeManager.isUseFontIconForImage())
+					menuitem.setIconSclass("z-icon-Process");
+				else
+					menuitem.setImage(ThemeManager.getThemeResource("images/Process16.png"));
 				menuitem.setAttribute(PROCESS_ID_KEY, Integer.valueOf(process.getAD_Process_ID()));
 				menuitem.setAttribute(PROCESS_TYPE, STATUS_PROCESS);
 				menuitem.addEventListener(Events.ON_CLICK, this);
@@ -745,7 +754,10 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				menuitem = new Menuitem();
 				menuitem.setId(Integer.toString(process.getKDB_KanbanProcess_ID()));
 				menuitem.setLabel(process.getName());
-				menuitem.setImage(ThemeManager.getThemeResource("images/Process16.png"));
+				if (ThemeManager.isUseFontIconForImage())
+					menuitem.setIconSclass("z-icon-Process");
+				else
+					menuitem.setImage(ThemeManager.getThemeResource("images/Process16.png"));
 				menuitem.setAttribute(PROCESS_ID_KEY, Integer.valueOf(process.getAD_Process_ID()));
 				menuitem.setAttribute(PROCESS_TYPE, CARD_PROCESS);
 				menuitem.addEventListener(Events.ON_CLICK, this);
