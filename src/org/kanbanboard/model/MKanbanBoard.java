@@ -335,13 +335,11 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 					id = rs.getInt(idColumnIndex);
 					correspondingColumn = rs.getString(statusColumnIndex);
 					MKanbanStatus status = getStatus(correspondingColumn);
+					BigDecimal priorityValue = hasPriorityOrder() ? rs.getBigDecimal(priorityColumnIndex) : BigDecimal.ZERO;
 
 					if (status.isPutCardOnQueue()) {
 						MKanbanCard card = new MKanbanCard(id,status);
-						if (hasPriorityOrder()) {
-							BigDecimal priorityValue = rs.getBigDecimal(priorityColumnIndex);
-							card.setPriorityValue(priorityValue);
-						}
+						card.setPriorityValue(priorityValue);
 						status.addQueuedRecord(card);
 						numberOfCards++;
 						card.setQueued(true);
@@ -350,10 +348,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 						continue;
 					} else if (status.isPutCardOnStatus()) {
 						MKanbanCard card = new MKanbanCard(id,status);
-						if (hasPriorityOrder()) {
-							BigDecimal priorityValue = rs.getBigDecimal(priorityColumnIndex);
-							card.setPriorityValue(priorityValue);
-						}
+						card.setPriorityValue(priorityValue);
 						status.addRecord(card);
 						numberOfCards++;
 					} else if (!status.isShowOver()) {
