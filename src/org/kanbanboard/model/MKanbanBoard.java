@@ -67,6 +67,11 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	private String summarySql;
 	private HashMap<String, String> targetAction;
 	
+	private int lastColumnIndex = 1;
+	private int idColumnIndex = lastColumnIndex++; 
+	private int statusColumnIndex = lastColumnIndex++;
+	private int priorityColumnIndex = 0;
+	
 	//Associated Processes
 	private boolean processRead = false;
 	private List<MKanbanProcess> associatedProcesses = new ArrayList<MKanbanProcess>();
@@ -327,14 +332,15 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 				int id = -1;
 				String correspondingColumn= null;
 				while (rs.next()) {
-					id = rs.getInt(1);
-					correspondingColumn = rs.getString(2);
+					id = rs.getInt(idColumnIndex);
+					correspondingColumn = rs.getString(statusColumnIndex);
 					MKanbanStatus status = getStatus(correspondingColumn);
+
 					if (status.hasQueue() && status.getSQLStatement().equals(MKanbanStatus.QUEUE_CARDS_BY_NUMBER)    //Queued Records
 							&& status.getMaxNumCards() <= status.getRecords().size()) {
 						MKanbanCard card = new MKanbanCard(id,status);
 						if (hasPriorityOrder()) {
-							BigDecimal priorityValue = rs.getBigDecimal(3);
+							BigDecimal priorityValue = rs.getBigDecimal(priorityColumnIndex);
 							card.setPriorityValue(priorityValue);
 						}
 						status.addQueuedRecord(card);
@@ -347,7 +353,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 					} else if (status.isShowOver() || status.getMaxNumCards() > status.getRecords().size()) {
 						MKanbanCard card = new MKanbanCard(id,status);
 						if (hasPriorityOrder()) {
-							BigDecimal priorityValue = rs.getBigDecimal(3);
+							BigDecimal priorityValue = rs.getBigDecimal(priorityColumnIndex);
 							card.setPriorityValue(priorityValue);
 						}
 						status.addRecord(card);
@@ -379,8 +385,10 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		sqlSelect.append(",");
 		sqlSelect.append(getColumnSQLQuery(getStatusColumn()));
 
-		if (hasPriorityOrder())
-			sqlSelect.append(", "+getKDB_PrioritySQL());
+		if (hasPriorityOrder()) {
+			sqlSelect.append(", " + getKDB_PrioritySQL());
+			priorityColumnIndex = lastColumnIndex++;
+		}
 		
 		return sqlSelect.toString();
 	}
