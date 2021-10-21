@@ -123,6 +123,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 
 	public void addRecord(MKanbanCard card) {
 		records.add(card);
+		increaseTotalCardsByOne();
 	}
 
 	public void removeRecord(MKanbanCard card) {
@@ -145,6 +146,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 	
 	public void addQueuedRecord(MKanbanCard card) {
 		queuedRecords.add(card);
+		increaseTotalCardsByOne();
 	}
 
 	public void removeQueuedRecord(MKanbanCard card) {
@@ -410,6 +412,10 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 	
 	public boolean isPutCardOnStatus() {
 		return isShowOver() || getMaxNumCards() > getRecords().size();
+	}
+	
+	public void increaseTotalCardsByOne() {
+		setTotalCards(getTotalCards()+1);
 	}
 
 }

@@ -344,10 +344,9 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 						}
 						status.addQueuedRecord(card);
 						numberOfCards++;
-						status.setTotalCards(status.getTotalCards()+1);
 						card.setQueued(true);
 					} else if (status.getMaxNumCards() == 0 && !status.isShowOver()) {
-						status.setTotalCards(status.getTotalCards()+1);
+						status.increaseTotalCardsByOne();
 						continue;
 					} else if (status.isPutCardOnStatus()) {
 						MKanbanCard card = new MKanbanCard(id,status);
@@ -357,9 +356,8 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 						}
 						status.addRecord(card);
 						numberOfCards++;
-						status.setTotalCards(status.getTotalCards()+1);
 					} else if (!status.isShowOver()) {
-						status.setTotalCards(status.getTotalCards()+1);
+						status.increaseTotalCardsByOne();
 						status.setExceed(true);	
 					}
 				}
