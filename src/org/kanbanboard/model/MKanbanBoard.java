@@ -336,8 +336,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 					correspondingColumn = rs.getString(statusColumnIndex);
 					MKanbanStatus status = getStatus(correspondingColumn);
 
-					if (status.hasQueue() && status.getSQLStatement().equals(MKanbanStatus.QUEUE_CARDS_BY_NUMBER)    //Queued Records
-							&& status.getMaxNumCards() <= status.getRecords().size()) {
+					if (status.isPutCardOnQueue()) {
 						MKanbanCard card = new MKanbanCard(id,status);
 						if (hasPriorityOrder()) {
 							BigDecimal priorityValue = rs.getBigDecimal(priorityColumnIndex);
@@ -350,7 +349,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 					} else if (status.getMaxNumCards() == 0 && !status.isShowOver()) {
 						status.setTotalCards(status.getTotalCards()+1);
 						continue;
-					} else if (status.isShowOver() || status.getMaxNumCards() > status.getRecords().size()) {
+					} else if (status.isPutCardOnStatus()) {
 						MKanbanCard card = new MKanbanCard(id,status);
 						if (hasPriorityOrder()) {
 							BigDecimal priorityValue = rs.getBigDecimal(priorityColumnIndex);

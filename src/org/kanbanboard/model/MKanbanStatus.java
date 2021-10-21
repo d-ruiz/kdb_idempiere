@@ -402,5 +402,14 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 			}
 		}
 	} // setSQLQueuedCards
+	
+	public boolean isPutCardOnQueue() {
+		return hasQueue() && getSQLStatement().equals(MKanbanStatus.QUEUE_CARDS_BY_NUMBER)    //Queued Records
+				&& getMaxNumCards() <= getRecords().size();
+	}
+	
+	public boolean isPutCardOnStatus() {
+		return isShowOver() || getMaxNumCards() > getRecords().size();
+	}
 
 }
