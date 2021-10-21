@@ -303,24 +303,10 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 
 		if (numberOfCards <= 0) {
 			StringBuilder sql = new StringBuilder();
-			sql.append("SELECT ");
-
 
 			MTable table = getTable();
-			MColumn column = getStatusColumn();
-			String llaves[] = table.getKeyColumns();
-			keyColumn = llaves[0]; 
-			
-			sql.append(keyColumn); 
-			sql.append(",");
-			if (column.isVirtualColumn()) {
-				sql.append("(").append(column.getColumnSQL()).append(") AS ");
-			}
-			sql.append(column.getColumnName());
-
-			if (hasPriorityOrder())
-				sql.append(", "+getKDB_PrioritySQL());
-
+		
+			sql.append(getSelectClause());
 			sql.append(" FROM "+table.getTableName());
 			sql.append(getFullWhereClause());
 			
@@ -381,6 +367,33 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 			}
 		}
 	}//getKanbanCards
+	
+	private String getSelectClause() {
+		StringBuilder sqlSelect = new StringBuilder("SELECT ");
+		
+		MTable table = getTable();
+		String keyColumns[] = table.getKeyColumns();
+		keyColumn = keyColumns[0]; 
+		
+		sqlSelect.append(keyColumn);
+		sqlSelect.append(",");
+		sqlSelect.append(getColumnSQLQuery(getStatusColumn()));
+
+		if (hasPriorityOrder())
+			sqlSelect.append(", "+getKDB_PrioritySQL());
+		
+		return sqlSelect.toString();
+	}
+	
+	private String getColumnSQLQuery(MColumn column) {
+		StringBuilder columnQuery = new StringBuilder();
+		if (column.isVirtualColumn()) {
+			columnQuery.append("(").append(column.getColumnSQL()).append(") AS ");
+		}
+		columnQuery.append(column.getColumnName());
+		
+		return columnQuery.toString();
+	}
 	
 	private String getFullWhereClause() {
 		StringBuilder whereClause = new StringBuilder();
