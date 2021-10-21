@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
 import org.compiere.model.GridField;
@@ -49,6 +50,7 @@ import org.kanbanboard.model.MKanbanCard;
 import org.kanbanboard.model.MKanbanParameter;
 import org.kanbanboard.model.MKanbanProcess;
 import org.kanbanboard.model.MKanbanStatus;
+import org.kanbanboard.model.MKanbanSwimlane;
 
 public class KanbanBoard {
 
@@ -376,5 +378,13 @@ public class KanbanBoard {
 		}
 		
 		return parameter.getGridField();
+	}
+	
+	protected Set<MKanbanSwimlane> getSwimlanes() {
+		return kanbanBoard.getSwimlanes();
+	}
+	
+	protected boolean boardUsesSwimlanes() {
+		return kanbanBoard.usesSwimlanes();
 	}
 }

@@ -36,8 +36,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 
 import org.adempiere.exceptions.DBException;
@@ -57,6 +61,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 
 	private MKanbanBoard      kanbanBoard;
 	private String            printableName;
+	private Map<MKanbanSwimlane, List<MKanbanCard>> swimlaneCards = new HashMap<MKanbanSwimlane, List<MKanbanCard>>();
 	private List<MKanbanCard> records          = new ArrayList<MKanbanCard>();
 	private List<MKanbanCard> queuedRecords    = new ArrayList<MKanbanCard>();
 	private boolean           isExceed         = false;
@@ -123,6 +128,15 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 
 	public void addRecord(MKanbanCard card) {
 		records.add(card);
+		//TODO: Order properly
+		if (kanbanBoard.usesSwimlanes()) {
+			Collections.sort(records, new Comparator<MKanbanCard>() {
+				@Override
+				public int compare(MKanbanCard card1, MKanbanCard card2) {
+					return Integer.valueOf(card1.getSwimlane()).compareTo(Integer.valueOf(card2.getSwimlane()));
+				}
+			});
+		}
 	}
 
 	public void removeRecord(MKanbanCard card) {
@@ -166,6 +180,12 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 			return false;
 		return true;
 	}
+	
+	public boolean hasMoreCards(MKanbanSwimlane swimlane) {
+		if (swimlaneCards.get(swimlane) != null && swimlaneCards.get(swimlane).size() <= 0)
+			return false;
+		return true;
+	}
 
 	public void orderCards() {
 		if (kanbanBoard.getOrderByClause() == null) {
@@ -191,6 +211,16 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 			}
 		}
 		return null;
+	}
+	
+	public MKanbanCard getCard(MKanbanSwimlane swimlane) {
+		Iterator<MKanbanCard> iter = swimlaneCards.get(swimlane).iterator();
+	    while (iter.hasNext()) {
+	    	MKanbanCard c = iter.next();
+            iter.remove();
+            return c; 
+	    }
+	    return null;
 	}
 
 	public boolean hasCards() {
@@ -402,5 +432,18 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 			}
 		}
 	} // setSQLQueuedCards
-
+	
+	public void configureSwimlanes(Set<MKanbanSwimlane> swimlanes) {
+		for (MKanbanSwimlane swimlane : swimlanes) {
+			if (swimlaneCards.get(swimlane) == null) {
+				swimlaneCards.put(swimlane, new ArrayList<MKanbanCard>());
+			}
+			for (MKanbanCard card : records) {
+				if (card.getSwimlane().equals(swimlane.getDatabaseValue())) {
+					swimlaneCards.get(swimlane).add(card);
+					swimlane.addOneCard();
+				}
+			}
+		}
+	}
 }

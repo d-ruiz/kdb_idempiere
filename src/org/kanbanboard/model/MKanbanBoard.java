@@ -31,9 +31,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 
 import org.compiere.model.MColumn;
@@ -61,6 +63,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	private String keyColumn;
 	private List<MKanbanStatus> statuses = new ArrayList<MKanbanStatus>();
 	private List<MKanbanPriority> priorityRules = new ArrayList<MKanbanPriority>();
+	private Set<MKanbanSwimlane> swimlanesArray = new HashSet<MKanbanSwimlane>();
 	private int numberOfCards = 0;
 	private boolean isRefList = true;
 	private boolean statusProcessed = false;
@@ -304,7 +307,12 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		if (numberOfCards <= 0) {
 			StringBuilder sql = new StringBuilder();
 			sql.append("SELECT ");
-
+			
+			int lastColumnIndex = 1;
+			int idColumnIndex = lastColumnIndex++; 
+			int statusColumnIndex = lastColumnIndex++;
+			int priorityColumnIndex = 0;
+			int swimlanesColumnIndex = 0;
 
 			MTable table = getTable();
 			MColumn column = getStatusColumn();
@@ -317,34 +325,20 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 				sql.append("(").append(column.getColumnSQL()).append(") AS ");
 			}
 			sql.append(column.getColumnName());
-
-			if (hasPriorityOrder())
+						
+			if (hasPriorityOrder()) {
 				sql.append(", "+getKDB_PrioritySQL());
+				priorityColumnIndex = lastColumnIndex++;
+			}
+			
+			if (usesSwimlanes()) {
+				sql.append(", " + getSwimlaneColumnQuery());
+				swimlanesColumnIndex = lastColumnIndex++;
+			}
 
 			sql.append(" FROM "+table.getTableName());
 
-			StringBuilder whereClause = new StringBuilder();
-			whereClause.append(" WHERE ");
-
-			if (getWhereClause() != null)
-				whereClause.append(getWhereClause()+" AND ");
-
-			if (column.isVirtualColumn()) {
-				whereClause.append("(").append(column.getColumnSQL()).append(")");
-			} else {
-				whereClause.append(column.getColumnName());
-			}
-			whereClause.append(" IN ");
-
-			whereClause.append(getInValues());
-
-			whereClause.append(" AND AD_Client_ID IN (0, ?) AND IsActive='Y' ");
-			
-			String paramWhere = getParamWhere();
-			if (!paramWhere.isEmpty())
-				whereClause.append(" AND ").append(paramWhere);
-
-			sql.append(whereClause.toString());
+			sql.append(getFullWhereClause());
 			
 			if (getOrderByClause() != null) {
 				sql.append(" ORDER BY "+getOrderByClause());
@@ -363,14 +357,14 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 				int id = -1;
 				String correspondingColumn= null;
 				while (rs.next()) {
-					id = rs.getInt(1);
-					correspondingColumn = rs.getString(2);
+					id = rs.getInt(idColumnIndex);
+					correspondingColumn = rs.getString(statusColumnIndex);
 					MKanbanStatus status = getStatus(correspondingColumn);
 					if (status.hasQueue() && status.getSQLStatement().equals(MKanbanStatus.QUEUE_CARDS_BY_NUMBER)    //Queued Records
 							&& status.getMaxNumCards() <= status.getRecords().size()) {
 						MKanbanCard card = new MKanbanCard(id,status);
 						if (hasPriorityOrder()) {
-							BigDecimal priorityValue = rs.getBigDecimal(3);
+							BigDecimal priorityValue = rs.getBigDecimal(priorityColumnIndex);
 							card.setPriorityValue(priorityValue);
 						}
 						status.addQueuedRecord(card);
@@ -383,8 +377,11 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 					} else if (status.isShowOver() || status.getMaxNumCards() > status.getRecords().size()) {
 						MKanbanCard card = new MKanbanCard(id,status);
 						if (hasPriorityOrder()) {
-							BigDecimal priorityValue = rs.getBigDecimal(3);
+							BigDecimal priorityValue = rs.getBigDecimal(priorityColumnIndex);
 							card.setPriorityValue(priorityValue);
+						}
+						if (usesSwimlanes()) { 
+							card.setSwimlane(rs.getObject(swimlanesColumnIndex));
 						}
 						status.addRecord(card);
 						numberOfCards++;
@@ -393,7 +390,13 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 						status.setTotalCards(status.getTotalCards()+1);
 						status.setExceed(true);	
 					}
+					
+					if (usesSwimlanes()) {
+						MKanbanSwimlane swimlane = getOrCreateSwimlane(rs.getString(swimlanesColumnIndex));
+						swimlanesArray.add(swimlane);
+					}
 				}
+				setSwimlanesProperties();
 			} catch (SQLException e) {
 				log.log(Level.SEVERE, sql.toString(), e);
 			} finally {
@@ -403,6 +406,94 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 			}
 		}
 	}//getKanbanCards
+	
+	private String getFullWhereClause() {
+		StringBuilder whereClause = new StringBuilder();
+		MColumn column = getStatusColumn();
+
+		whereClause.append(" WHERE ");
+
+		if (getWhereClause() != null)
+			whereClause.append(getWhereClause()+" AND ");
+
+		if (column.isVirtualColumn()) {
+			whereClause.append("(").append(column.getColumnSQL()).append(")");
+		} else {
+			whereClause.append(column.getColumnName());
+		}
+		whereClause.append(" IN ");
+
+		whereClause.append(getInValues());
+
+		whereClause.append(" AND AD_Client_ID IN (0, ?) AND IsActive='Y' ");
+		
+		String paramWhere = getParamWhere();
+		if (!paramWhere.isEmpty())
+			whereClause.append(" AND ").append(paramWhere);
+		
+		return whereClause.toString();
+	}
+	
+	public boolean usesSwimlanes() {
+		return isKDB_IsUseSwimlanes() && (getKDB_SLColumnList_ID() != 0 || getKDB_SLColumnTable_ID() != 0);
+	}
+	
+	private String getSwimlaneColumnQuery() {
+		if (!usesSwimlanes())
+			return "";
+
+		StringBuilder columnQuery = new StringBuilder();
+		MColumn swimlaneColumn = getSwimlaneColumn();
+		
+		if (swimlaneColumn.isVirtualColumn()) {
+			columnQuery.append("(").append(swimlaneColumn.getColumnSQL()).append(") AS ");
+		}
+		columnQuery.append(swimlaneColumn.getColumnName());
+		
+		return columnQuery.toString();
+	}
+	
+	private MColumn getSwimlaneColumn() {
+		int columnId = getKDB_SLColumnList_ID() != 0 ? getKDB_SLColumnList_ID() : getKDB_SLColumnTable_ID();
+		return MColumn.get(columnId);
+	}
+	
+	private void setSwimlanesProperties() {
+		if (!usesSwimlanes())
+			return;
+
+		MColumn column = getSwimlaneColumn();
+		ValueNamePair list[] = MRefList.getList(getCtx(), column.getAD_Reference_Value_ID(), false);
+		for (MKanbanSwimlane swimlane : swimlanesArray) {
+			if (column.getAD_Reference_Value_ID() != 0 && list.length > 0) {
+				int posList=0;
+				boolean match = false;
+				while (posList < list.length && !match) {
+					if (swimlane.getDatabaseValue().equals(list[posList].getValue())) {
+						swimlane.setName(list[posList].toString());
+						match=true;
+					}
+					posList++;
+				}
+			} else {
+				//TODO: Get FK values
+				swimlane.setName(swimlane.getDatabaseValue());
+			}
+		}
+		
+		for (MKanbanStatus status : statuses) {
+			status.configureSwimlanes(swimlanesArray);
+		}
+	}
+	
+	private MKanbanSwimlane getOrCreateSwimlane(String databaseValue) {
+		MKanbanSwimlane swimlane  = swimlanesArray.stream()
+				  .filter(sl -> databaseValue.equals(sl.getDatabaseValue()))
+				  .findAny()
+				  .orElse(null);
+		
+		return swimlane != null ? swimlane : new MKanbanSwimlane(databaseValue);
+	}
 	
 	public void setKanbanQueuedCards() {
 		for (MKanbanStatus status : getStatuses()) {
@@ -597,5 +688,10 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		}
 		numberOfCards = 0;
 		getKanbanCards();
+	}
+	
+	public Set<MKanbanSwimlane> getSwimlanes() {
+		return swimlanesArray;
+		
 	}
 }

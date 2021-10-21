@@ -75,6 +75,7 @@ import org.kanbanboard.model.MKanbanCard;
 import org.kanbanboard.model.MKanbanParameter;
 import org.kanbanboard.model.MKanbanProcess;
 import org.kanbanboard.model.MKanbanStatus;
+import org.kanbanboard.model.MKanbanSwimlane;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.HtmlBasedComponent;
 import org.zkoss.zk.ui.Page;
@@ -554,44 +555,76 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		resetStatusProperties();
 		int numberOfCards = getNumberOfCards();
 		while (numberOfCards > 0) {
-			for (MKanbanStatus status : getStatuses()) {
-				// [matica1] use background style instead of background-color and set transparent if no colors are set
-				if (getBackgroundColor() != null && !getBackgroundColor().equals("")) {
-					row.setStyle("background:" + getBackgroundColor() + ";");
-				} else {
-					row.setStyle("background: transparent;");
-				}
-				
-				if (!status.hasMoreCards()) {
-					if (status.hasQueue()) {
-						createEmptyCell(row,status);
+			if (boardUsesSwimlanes()) {
+				for (MKanbanSwimlane o : getSwimlanes()) {
+					if (!o.isPrinted()) {
+						createSwinlane(row, o.getName() + o.getDatabaseValue());
+						row.setStyle("border: 1px solid;");
+						o.setPrinted(true);
+						rows.appendChild(row);
+						row = new Row();
 					}
-					createEmptyCell(row,status);
-				} else {
-					if (status.hasQueue()) {
-						if (!status.hasMoreQueuedCards()) {
+					while (o.getTotalNumberOfCards() > 0) {
+						for (MKanbanStatus status : getStatuses()) {
+							// [matica1] use background style instead of background-color and set transparent if no colors are set
+							if (getBackgroundColor() != null && !getBackgroundColor().equals("")) {
+								row.setStyle("background:" + getBackgroundColor() + ";");
+							} else {
+								row.setStyle("background: transparent;");
+							}
+
+							if (!status.hasMoreCards(o)) {
+								createEmptyCell(row,status);
+							} else {
+								createCardCell(row,status.getCard(o));
+								o.removeOneCard();
+								numberOfCards--;
+							}
+						}						
+						rows.appendChild(row);
+						row = new Row();
+					}
+				}
+			} else {
+				for (MKanbanStatus status : getStatuses()) {
+					// [matica1] use background style instead of background-color and set transparent if no colors are set
+					if (getBackgroundColor() != null && !getBackgroundColor().equals("")) {
+						row.setStyle("background:" + getBackgroundColor() + ";");
+					} else {
+						row.setStyle("background: transparent;");
+					}
+					
+					if (!status.hasMoreCards()) {
+						if (status.hasQueue()) {
 							createEmptyCell(row,status);
-							createCardCell(row,status);
-							numberOfCards--;
-						} else {
-							MKanbanCard queuedCard = status.getQueuedCard();
-							Vlayout l = createCell(queuedCard);
-							row.appendCellChild(l);
-							if (!isReadWrite())
-								setOnlyReadCellProps(row.getLastCell(), queuedCard);
-							else
-								setQueuedCellProps(row.getLastCell(), queuedCard);
-							numberOfCards--;
-							if (status.hasMoreStatusCards()) {
+						}
+						createEmptyCell(row,status);
+					} else {
+						if (status.hasQueue()) {
+							if (!status.hasMoreQueuedCards()) {
+								createEmptyCell(row,status);
 								createCardCell(row,status);
 								numberOfCards--;
 							} else {
-								createEmptyCell(row,status);
+								MKanbanCard queuedCard = status.getQueuedCard();
+								Vlayout l = createCell(queuedCard);
+								row.appendCellChild(l);
+								if (!isReadWrite())
+									setOnlyReadCellProps(row.getLastCell(), queuedCard);
+								else
+									setQueuedCellProps(row.getLastCell(), queuedCard);
+								numberOfCards--;
+								if (status.hasMoreStatusCards()) {
+									createCardCell(row,status);
+									numberOfCards--;
+								} else {
+									createEmptyCell(row,status);
+								}
 							}
+						} else {
+							createCardCell(row,status);
+							numberOfCards--;	
 						}
-					} else {
-						createCardCell(row,status);
-						numberOfCards--;	
 					}
 				}
 			}
@@ -599,6 +632,15 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			row=new Row();
 		}
 	}//createRows
+	
+	private void createSwinlane(Row row, String label) {
+		Cell cell = new Cell();
+		Label testLabel = new Label(label);
+		cell.setParent(row);
+		cell.appendChild(testLabel);
+		cell.setColspan(getNumberOfStatuses());
+		row.appendChild(cell);
+	}
 
 	private void createEmptyCell(Row row, MKanbanStatus status) {
 		row.appendCellChild(createSpacer());
@@ -607,6 +649,15 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 	private void createCardCell(Row row, MKanbanStatus status) {
 		MKanbanCard card = status.getCard();
+		Vlayout l = createCell(card);
+		row.appendCellChild(l);
+		if (isReadWrite())
+			setCellProps(row.getLastCell(), card);
+		else
+			setOnlyReadCellProps(row.getLastCell(), card);
+	}
+	
+	private void createCardCell(Row row, MKanbanCard card) {
 		Vlayout l = createCell(card);
 		row.appendCellChild(l);
 		if (isReadWrite())

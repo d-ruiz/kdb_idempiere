@@ -24,14 +24,14 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Model for KDB_KanbanBoard
  *  @author iDempiere (generated) 
- *  @version Release 6.2 - $Id$ */
+ *  @version Release 8.2 - $Id$ */
 public class X_KDB_KanbanBoard extends PO implements I_KDB_KanbanBoard, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20191002L;
+	private static final long serialVersionUID = 20211020L;
 
     /** Standard Constructor */
     public X_KDB_KanbanBoard (Properties ctx, int KDB_KanbanBoard_ID, String trxName)
@@ -70,8 +70,8 @@ public class X_KDB_KanbanBoard extends PO implements I_KDB_KanbanBoard, I_Persis
 
     public String toString()
     {
-      StringBuffer sb = new StringBuffer ("X_KDB_KanbanBoard[")
-        .append(get_ID()).append("]");
+      StringBuilder sb = new StringBuilder ("X_KDB_KanbanBoard[")
+        .append(get_ID()).append(",Name=").append(getName()).append("]");
       return sb.toString();
     }
 
@@ -267,6 +267,30 @@ public class X_KDB_KanbanBoard extends PO implements I_KDB_KanbanBoard, I_Persis
 		return ii.intValue();
 	}
 
+	/** Set Use Swimlanes.
+		@param KDB_IsUseSwimlanes 
+		Kanban swimlanes are horizontal lines that split a Kanban board into sections.
+	  */
+	public void setKDB_IsUseSwimlanes (boolean KDB_IsUseSwimlanes)
+	{
+		set_Value (COLUMNNAME_KDB_IsUseSwimlanes, Boolean.valueOf(KDB_IsUseSwimlanes));
+	}
+
+	/** Get Use Swimlanes.
+		@return Kanban swimlanes are horizontal lines that split a Kanban board into sections.
+	  */
+	public boolean isKDB_IsUseSwimlanes () 
+	{
+		Object oo = get_Value(COLUMNNAME_KDB_IsUseSwimlanes);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Kanban Board.
 		@param KDB_KanbanBoard_ID Kanban Board	  */
 	public void setKDB_KanbanBoard_ID (int KDB_KanbanBoard_ID)
@@ -327,6 +351,56 @@ public class X_KDB_KanbanBoard extends PO implements I_KDB_KanbanBoard, I_Persis
 	public String getKDB_PrioritySQL () 
 	{
 		return (String)get_Value(COLUMNNAME_KDB_PrioritySQL);
+	}
+
+	public org.compiere.model.I_AD_Column getKDB_SLColumnList() throws RuntimeException
+    {
+		return (org.compiere.model.I_AD_Column)MTable.get(getCtx(), org.compiere.model.I_AD_Column.Table_Name)
+			.getPO(getKDB_SLColumnList_ID(), get_TrxName());	}
+
+	/** Set Swimlane Column List.
+		@param KDB_SLColumnList_ID Swimlane Column List	  */
+	public void setKDB_SLColumnList_ID (int KDB_SLColumnList_ID)
+	{
+		if (KDB_SLColumnList_ID < 1) 
+			set_Value (COLUMNNAME_KDB_SLColumnList_ID, null);
+		else 
+			set_Value (COLUMNNAME_KDB_SLColumnList_ID, Integer.valueOf(KDB_SLColumnList_ID));
+	}
+
+	/** Get Swimlane Column List.
+		@return Swimlane Column List	  */
+	public int getKDB_SLColumnList_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_KDB_SLColumnList_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public org.compiere.model.I_AD_Column getKDB_SLColumnTable() throws RuntimeException
+    {
+		return (org.compiere.model.I_AD_Column)MTable.get(getCtx(), org.compiere.model.I_AD_Column.Table_Name)
+			.getPO(getKDB_SLColumnTable_ID(), get_TrxName());	}
+
+	/** Set Swimlane Column Table.
+		@param KDB_SLColumnTable_ID Swimlane Column Table	  */
+	public void setKDB_SLColumnTable_ID (int KDB_SLColumnTable_ID)
+	{
+		if (KDB_SLColumnTable_ID < 1) 
+			set_Value (COLUMNNAME_KDB_SLColumnTable_ID, null);
+		else 
+			set_Value (COLUMNNAME_KDB_SLColumnTable_ID, Integer.valueOf(KDB_SLColumnTable_ID));
+	}
+
+	/** Get Swimlane Column Table.
+		@return Swimlane Column Table	  */
+	public int getKDB_SLColumnTable_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_KDB_SLColumnTable_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Standard Card Height.

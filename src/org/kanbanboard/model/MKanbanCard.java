@@ -57,6 +57,7 @@ public class MKanbanCard {
 	private int 		  recordId;
 	private MKanbanBoard  kanbanBoard;
 	private MKanbanStatus belongingStatus;
+	private Object 		  swimlane;
 	private BigDecimal 	  priorityValue;
 
 	private PO			  m_po           = null;
@@ -92,6 +93,14 @@ public class MKanbanCard {
 
 	public void setBelongingStatus(MKanbanStatus belongingStatus) {
 		this.belongingStatus = belongingStatus;
+	}
+	
+	public String getSwimlane() {
+		return swimlane.toString();
+	}
+
+	public void setSwimlane(Object swimlane) {
+		this.swimlane = swimlane;
 	}
 
 	public int getRecordID() {

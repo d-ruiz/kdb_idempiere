@@ -23,7 +23,7 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for KDB_KanbanBoard
  *  @author iDempiere (generated) 
- *  @version Release 6.2
+ *  @version Release 8.2
  */
 @SuppressWarnings("all")
 public interface I_KDB_KanbanBoard 
@@ -32,7 +32,7 @@ public interface I_KDB_KanbanBoard
     /** TableName=KDB_KanbanBoard */
     public static final String Table_Name = "KDB_KanbanBoard";
 
-    /** AD_Table_ID=1000015 */
+    /** AD_Table_ID=1000000 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -202,6 +202,19 @@ public interface I_KDB_KanbanBoard
 
 	public org.compiere.model.I_AD_Column getKDB_ColumnTable() throws RuntimeException;
 
+    /** Column name KDB_IsUseSwimlanes */
+    public static final String COLUMNNAME_KDB_IsUseSwimlanes = "KDB_IsUseSwimlanes";
+
+	/** Set Use Swimlanes.
+	  * Kanban swimlanes are horizontal lines that split a Kanban board into sections.
+	  */
+	public void setKDB_IsUseSwimlanes (boolean KDB_IsUseSwimlanes);
+
+	/** Get Use Swimlanes.
+	  * Kanban swimlanes are horizontal lines that split a Kanban board into sections.
+	  */
+	public boolean isKDB_IsUseSwimlanes();
+
     /** Column name KDB_KanbanBoard_ID */
     public static final String COLUMNNAME_KDB_KanbanBoard_ID = "KDB_KanbanBoard_ID";
 
@@ -237,6 +250,28 @@ public interface I_KDB_KanbanBoard
 
 	/** Get Priority SQL	  */
 	public String getKDB_PrioritySQL();
+
+    /** Column name KDB_SLColumnList_ID */
+    public static final String COLUMNNAME_KDB_SLColumnList_ID = "KDB_SLColumnList_ID";
+
+	/** Set Swimlane Column List	  */
+	public void setKDB_SLColumnList_ID (int KDB_SLColumnList_ID);
+
+	/** Get Swimlane Column List	  */
+	public int getKDB_SLColumnList_ID();
+
+	public org.compiere.model.I_AD_Column getKDB_SLColumnList() throws RuntimeException;
+
+    /** Column name KDB_SLColumnTable_ID */
+    public static final String COLUMNNAME_KDB_SLColumnTable_ID = "KDB_SLColumnTable_ID";
+
+	/** Set Swimlane Column Table	  */
+	public void setKDB_SLColumnTable_ID (int KDB_SLColumnTable_ID);
+
+	/** Get Swimlane Column Table	  */
+	public int getKDB_SLColumnTable_ID();
+
+	public org.compiere.model.I_AD_Column getKDB_SLColumnTable() throws RuntimeException;
 
     /** Column name KDB_StdCardHeight */
     public static final String COLUMNNAME_KDB_StdCardHeight = "KDB_StdCardHeight";
