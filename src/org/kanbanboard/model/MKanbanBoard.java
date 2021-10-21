@@ -307,25 +307,15 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	public void getKanbanCards() {
 
 		if (numberOfCards <= 0) {
-			StringBuilder sql = new StringBuilder();
-
-			MTable table = getTable();
-		
-			sql.append(getSelectClause());
-			sql.append(" FROM "+table.getTableName());
-			sql.append(getFullWhereClause());
 			
-			if (getOrderByClause() != null) {
-				sql.append(" ORDER BY "+getOrderByClause());
-			} else if(hasPriorityOrder())
-				sql.append(" ORDER BY "+getKDB_PrioritySQL()+" DESC");
-
-			log.info(sql.toString());
+			String sql = getCardsSQLStatement();
+			if (log.isLoggable(Level.INFO)) 
+				log.info(sql.toString());
 
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
 			try {
-				String sqlparsed = Env.parseContext(getCtx(), 0, sql.toString(), false);
+				String sqlparsed = Env.parseContext(getCtx(), 0, sql, false);
 				pstmt = DB.prepareStatement(sqlparsed, get_TrxName());
 				pstmt.setInt(1, Env.getAD_Client_ID(Env.getCtx()));
 				rs = pstmt.executeQuery();
@@ -365,6 +355,16 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 			}
 		}
 	}//getKanbanCards
+	
+	private String getCardsSQLStatement() {
+		StringBuilder sql = new StringBuilder();
+		sql.append(getSelectClause());
+		sql.append(" FROM " + getTable().getTableName());
+		sql.append(getFullWhereClause());
+		sql.append(getOrderBySQLClause());
+		
+		return sql.toString();
+	}
 	
 	private String getSelectClause() {
 		StringBuilder sqlSelect = new StringBuilder("SELECT ");
@@ -420,6 +420,18 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 			whereClause.append(" AND ").append(paramWhere);
 
 		return whereClause.toString();
+	}
+	
+	private String getOrderBySQLClause() {
+		StringBuilder sql = new StringBuilder();
+
+		if (getOrderByClause() != null) {
+			sql.append(" ORDER BY " + getOrderByClause());
+		} else if(hasPriorityOrder()) {
+			sql.append(" ORDER BY " + getKDB_PrioritySQL() + " DESC");
+		}
+
+		return sql.toString();
 	}
 	
 	public void setKanbanQueuedCards() {
