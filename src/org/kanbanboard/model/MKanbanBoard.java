@@ -322,29 +322,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 				sql.append(", "+getKDB_PrioritySQL());
 
 			sql.append(" FROM "+table.getTableName());
-
-			StringBuilder whereClause = new StringBuilder();
-			whereClause.append(" WHERE ");
-
-			if (getWhereClause() != null)
-				whereClause.append(getWhereClause()+" AND ");
-
-			if (column.isVirtualColumn()) {
-				whereClause.append("(").append(column.getColumnSQL()).append(")");
-			} else {
-				whereClause.append(column.getColumnName());
-			}
-			whereClause.append(" IN ");
-
-			whereClause.append(getInValues());
-
-			whereClause.append(" AND AD_Client_ID IN (0, ?) AND IsActive='Y' ");
-			
-			String paramWhere = getParamWhere();
-			if (!paramWhere.isEmpty())
-				whereClause.append(" AND ").append(paramWhere);
-
-			sql.append(whereClause.toString());
+			sql.append(getFullWhereClause());
 			
 			if (getOrderByClause() != null) {
 				sql.append(" ORDER BY "+getOrderByClause());
@@ -403,6 +381,33 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 			}
 		}
 	}//getKanbanCards
+	
+	private String getFullWhereClause() {
+		StringBuilder whereClause = new StringBuilder();
+		MColumn column = getStatusColumn();
+
+		whereClause.append(" WHERE ");
+
+		if (getWhereClause() != null)
+			whereClause.append(getWhereClause()+" AND ");
+
+		if (column.isVirtualColumn()) {
+			whereClause.append("(").append(column.getColumnSQL()).append(")");
+		} else {
+			whereClause.append(column.getColumnName());
+		}
+		whereClause.append(" IN ");
+
+		whereClause.append(getInValues());
+
+		whereClause.append(" AND AD_Client_ID IN (0, ?) AND IsActive='Y' ");
+
+		String paramWhere = getParamWhere();
+		if (!paramWhere.isEmpty())
+			whereClause.append(" AND ").append(paramWhere);
+
+		return whereClause.toString();
+	}
 	
 	public void setKanbanQueuedCards() {
 		for (MKanbanStatus status : getStatuses()) {
