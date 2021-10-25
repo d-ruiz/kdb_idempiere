@@ -45,6 +45,8 @@ public class KDB_ModelFactory implements IModelFactory {
 			return MKanbanProcess.class;
 		else if (MKanbanParameter.Table_Name.equals(tableName))
 			return MKanbanParameter.class;
+		else if (MKanbanSwimlane.Table_Name.equals(tableName))
+			return MKanbanSwimlane.class;
 		return null;
 	}
 
@@ -60,6 +62,8 @@ public class KDB_ModelFactory implements IModelFactory {
 			return new MKanbanProcess(Env.getCtx(), Record_ID, trxName);
 		else if (MKanbanParameter.Table_Name.equals(tableName))
 			return new MKanbanParameter(Env.getCtx(), Record_ID, trxName);
+		else if (MKanbanSwimlane.Table_Name.equals(tableName))
+			return new MKanbanSwimlane(Env.getCtx(), Record_ID, trxName);
 		return null;
 	}
 
@@ -75,6 +79,8 @@ public class KDB_ModelFactory implements IModelFactory {
 			return new MKanbanProcess(Env.getCtx(), rs, trxName);
 		else if (MKanbanParameter.Table_Name.equals(tableName))
 			return new MKanbanParameter(Env.getCtx(), rs, trxName);
+		else if (MKanbanSwimlane.Table_Name.equals(tableName))
+			return new MKanbanSwimlane(Env.getCtx(), rs, trxName);
 		return null;
 	}
 
