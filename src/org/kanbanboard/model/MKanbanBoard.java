@@ -61,6 +61,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	private String keyColumn;
 	private List<MKanbanStatus> statuses = new ArrayList<MKanbanStatus>();
 	private List<MKanbanPriority> priorityRules = new ArrayList<MKanbanPriority>();
+	private List<MKanbanSwimlane> swimlanes;
 	private int numberOfCards = 0;
 	private boolean isRefList = true;
 	private boolean statusProcessed = false;
@@ -227,6 +228,22 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 
 		return statuses;
 	}//getStatuses
+	
+	public List<MKanbanSwimlane> getSwimlanes() {
+		if (swimlanes == null) {
+			swimlanes = new Query(getCtx(), MKanbanSwimlane.Table_Name, " KDB_KanbanBoard_ID = ? ", get_TrxName())
+			.setParameters(getKDB_KanbanBoard_ID())
+			.setOnlyActiveRecords(true)
+			.setOrderBy("Name")
+ 			.list();
+		}
+
+		return swimlanes;
+	}
+	
+	public boolean usesSwimlane() {
+		return getSwimlanes().size() > 0;
+	}
 	
 	/**		
 	 * Fills the associatedProcesses List with all the process associated to the board		

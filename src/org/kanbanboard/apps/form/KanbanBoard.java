@@ -49,6 +49,7 @@ import org.kanbanboard.model.MKanbanCard;
 import org.kanbanboard.model.MKanbanParameter;
 import org.kanbanboard.model.MKanbanProcess;
 import org.kanbanboard.model.MKanbanStatus;
+import org.kanbanboard.model.MKanbanSwimlane;
 
 public class KanbanBoard {
 
@@ -206,6 +207,14 @@ public class KanbanBoard {
 		}
 		orderStatuses();
 		return statuses;
+	}
+	
+	public List<MKanbanSwimlane> getSwimlanes() {
+		return kanbanBoard.getSwimlanes();
+	}
+	
+	public boolean currentboardUsesSwimlane() {
+		return kanbanBoard.usesSwimlane();
 	}
 	
 	public List<MKanbanParameter> getBoardParameters() {

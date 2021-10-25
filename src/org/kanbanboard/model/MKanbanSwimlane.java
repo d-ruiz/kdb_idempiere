@@ -17,5 +17,9 @@ public class MKanbanSwimlane extends X_KDB_KanbanSwimlanes {
 	public MKanbanSwimlane(Properties ctx, int KDB_KanbanSwimlanes_ID, String trxName) {
 		super(ctx, KDB_KanbanSwimlanes_ID, trxName);
 	}
+	
+	public int getValue() {
+		return getKDB_Column_ID();
+	}
 
 }

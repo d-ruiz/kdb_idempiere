@@ -29,6 +29,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.adempiere.webui.LayoutUtils;
@@ -38,7 +39,6 @@ import org.adempiere.webui.apps.ProcessModalDialog;
 import org.adempiere.webui.apps.WProcessCtl;
 import org.adempiere.webui.component.Button;
 import org.adempiere.webui.component.Grid;
-import org.adempiere.webui.component.GridFactory;
 import org.adempiere.webui.component.Label;
 import org.adempiere.webui.component.Listbox;
 import org.adempiere.webui.component.ListboxFactory;
@@ -75,6 +75,7 @@ import org.kanbanboard.model.MKanbanCard;
 import org.kanbanboard.model.MKanbanParameter;
 import org.kanbanboard.model.MKanbanProcess;
 import org.kanbanboard.model.MKanbanStatus;
+import org.kanbanboard.model.MKanbanSwimlane;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.HtmlBasedComponent;
 import org.zkoss.zk.ui.Page;
@@ -121,7 +122,6 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	private Borderlayout	mainLayout	= new Borderlayout();
 
 	private Panel panel = new Panel();
-	private Grid gridLayout = GridFactory.newGridLayout();
 	private Label lProcess = new Label();
 	private Listbox kanbanListbox = ListboxFactory.newDropdownListbox();
 	private int kanbanBoardId = -1;
@@ -180,10 +180,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		kForm.setBorder("normal");
 
 		//North Panel
-		panel.appendChild(gridLayout);
 		lProcess.setText(Msg.translate(Env.getCtx(), "Process"));
-		Rows rows = gridLayout.newRows();
-		Row row = rows.newRow();
 		if (ThemeManager.isUseFontIconForImage())
 			bRefresh.setIconSclass("z-icon-Refresh");
 		else
@@ -193,15 +190,10 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		bRefresh.addEventListener(Events.ON_CLICK, this);
 
 		northPanelHbox = new Hbox();
-		northPanelHbox.appendChild(lProcess.rightAlign());
+		northPanelHbox.appendChild(lProcess);
 		northPanelHbox.appendChild(kanbanListbox);
 		northPanelHbox.appendChild(bRefresh);
-		Cell cell = new Cell();
-		cell.setColspan(3);
-		cell.setRowspan(1);
-		cell.setAlign("left");
-		cell.appendChild(northPanelHbox);
-		row.appendChild(cell);
+		panel.appendChild(northPanelHbox);
 
 		North north = new North();
 		north.setSize("5%");
@@ -466,6 +458,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			kanbanPanel.setSpan("true");
 			initParameters();
 			initKanbanProcess();
+			initSwimlanes();
 
 			int numCols=0;
 			numCols = getNumberOfStatuses();
@@ -545,6 +538,22 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			}
 		}
 	}//createKanbanBoardPanel
+	
+	private void initSwimlanes() {
+		if (currentboardUsesSwimlane()) {
+			Listbox swimlaneListbox = ListboxFactory.newDropdownListbox();
+			
+			swimlaneListbox.appendItem("", -1);
+			for (MKanbanSwimlane swimlane : getSwimlanes()) {
+				swimlaneListbox.appendItem(swimlane.getName(), swimlane.getValue());
+			}
+			
+			Div swimlaneDiv = new Div();
+			swimlaneDiv.appendChild(new Label(Msg.getCleanMsg(Env.getCtx(), "GroupedBy")));
+			swimlaneDiv.appendChild(swimlaneListbox);
+			northPanelHbox.appendChild(swimlaneDiv);
+		}
+	}
 
 	public void createRows() {
 		mapCellColumn.clear();
@@ -1069,17 +1078,21 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		centerVLayout.removeChild(kanbanPanel);
 		if (kanbanPanel.getRows() != null)
 			kanbanPanel.removeChild(kanbanPanel.getRows());
-		if (boardButtonsDiv != null) {
-			northPanelHbox.removeChild(boardButtonsDiv);
-			boardButtonsDiv = null;
-		}
-		if (boardParamsDiv != null) {
-			northPanelHbox.removeChild(boardParamsDiv);
-			boardParamsDiv = null;
-		}
+		cleanNorthPanel();
 		createKanbanBoardPanel();
 		centerVLayout.appendChild(kanbanPanel);
 	}
-
+	
+	private void cleanNorthPanel() {
+		List<Component> childsToRemove = new ArrayList<Component>();
+		for (Component component : northPanelHbox.getChildren()) {
+			if (!component.equals(lProcess) 
+					&& !component.equals(kanbanListbox) 
+					&& !component.equals(bRefresh))
+				childsToRemove.add(component);
+		}
+		for (Component component : childsToRemove)
+			northPanelHbox.removeChild(component);
+	}
 }
 
