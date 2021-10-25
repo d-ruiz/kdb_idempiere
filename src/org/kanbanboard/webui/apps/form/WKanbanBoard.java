@@ -124,6 +124,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	private Panel panel = new Panel();
 	private Label lProcess = new Label();
 	private Listbox kanbanListbox = ListboxFactory.newDropdownListbox();
+	private Listbox swimlaneListbox = null;
 	private int kanbanBoardId = -1;
 	private Button bRefresh = new Button();
 	private Timer timer;
@@ -541,12 +542,13 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	
 	private void initSwimlanes() {
 		if (currentboardUsesSwimlane()) {
-			Listbox swimlaneListbox = ListboxFactory.newDropdownListbox();
+			swimlaneListbox = ListboxFactory.newDropdownListbox();
 			
 			swimlaneListbox.appendItem("", -1);
 			for (MKanbanSwimlane swimlane : getSwimlanes()) {
 				swimlaneListbox.appendItem(swimlane.getName(), swimlane.getValue());
 			}
+			swimlaneListbox.addEventListener(Events.ON_SELECT, this);
 			
 			Div swimlaneDiv = new Div();
 			swimlaneDiv.appendChild(new Label(Msg.getCleanMsg(Env.getCtx(), "GroupedBy")));
@@ -821,14 +823,10 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 		// select an item within the list -- set it active and show the properties
 		if (Events.ON_SELECT.equals(e.getName()) && e.getTarget() instanceof Listbox) {
-			if (kanbanListbox.getSelectedIndex() != -1) {
-
-				KeyNamePair kanbanKeyNamePair = null;
-				kanbanBoardId = -1;
-				kanbanKeyNamePair = (KeyNamePair)kanbanListbox.getSelectedItem().toKeyNamePair();	
-				if (kanbanKeyNamePair != null)
-					kanbanBoardId = kanbanKeyNamePair.getKey();
-				fullRefresh();
+			if (e.getTarget().equals(kanbanListbox)) {
+				selectKanbanBoard();
+			} else if (e.getTarget().equals(swimlaneListbox)) {
+				selectSwimlane();
 			}
 		}
 		// Check event ONDoubleCLICK on a cell Navigate into documents
@@ -930,6 +928,24 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			}
 		}
 	}//onEvent
+	
+	private void selectKanbanBoard() {
+		if (kanbanListbox.getSelectedIndex() != -1) {
+
+			KeyNamePair kanbanKeyNamePair = null;
+			kanbanBoardId = -1;
+			kanbanKeyNamePair = (KeyNamePair) kanbanListbox.getSelectedItem().toKeyNamePair();	
+			if (kanbanKeyNamePair != null)
+				kanbanBoardId = kanbanKeyNamePair.getKey();
+			fullRefresh();
+		}
+	}
+	
+	private void selectSwimlane() {
+		if (swimlaneListbox.getSelectedIndex() != -1) {
+			selectSwimlane(swimlaneListbox.getValue());
+		}
+	}
 	
 	@Override
 	public void valueChange(ValueChangeEvent evt) {

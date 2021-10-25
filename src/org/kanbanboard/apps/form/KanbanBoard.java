@@ -386,4 +386,8 @@ public class KanbanBoard {
 		
 		return parameter.getGridField();
 	}
+	
+	protected void selectSwimlane(Object value) {
+		kanbanBoard.setActiveSwimlane(value);
+	}
 }

@@ -67,6 +67,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	private boolean statusProcessed = false;
 	private String summarySql;
 	private HashMap<String, String> targetAction;
+	private MKanbanSwimlane activeSwimlane;
 	
 	private int lastColumnIndex = 1;
 	private int idColumnIndex = lastColumnIndex++; 
@@ -644,5 +645,13 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		}
 		numberOfCards = 0;
 		getKanbanCards();
+	}
+
+	public void setActiveSwimlane(Object value) {
+		Integer columnID = (Integer) value;
+		activeSwimlane = swimlanes.stream()
+				  .filter(swimlane -> columnID == swimlane.getValue())
+				  .findAny()
+				  .orElse(null);
 	}
 }
