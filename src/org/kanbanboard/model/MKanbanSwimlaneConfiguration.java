@@ -74,14 +74,6 @@ public class MKanbanSwimlaneConfiguration extends X_KDB_KanbanSwimlanes {
 					swimlane = new KanbanSwimlane(listItem.getName(), listItem.getValue());
 					swimlanes.add(swimlane);
 				}
-				if (getOrderByClause() != null) {
-					Collections.sort(swimlanes, Collections.reverseOrder(new Comparator<KanbanSwimlane>() {
-						@Override
-						public int compare(KanbanSwimlane card1, KanbanSwimlane card2) {
-							return card1.getValue().compareTo(card2.getValue()); //TODO Order?
-						}
-					}));
-				}
 			} else {
 				MTable table =  MTable.get(getCtx(), column.getReferenceTableName());
 				StringBuilder sqlSelect = new StringBuilder();

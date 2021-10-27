@@ -138,12 +138,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	}
 
 	public boolean isRefList() {
-		if (getKDB_ColumnList_ID() != 0) {
-			isRefList=true;
-		} else if (getKDB_ColumnTable_ID() != 0) {
-			isRefList=false;
-		}
-		return isRefList;
+		return getKDB_ColumnList_ID() != 0;
 	}
 
 	public MColumn getStatusColumn() {
