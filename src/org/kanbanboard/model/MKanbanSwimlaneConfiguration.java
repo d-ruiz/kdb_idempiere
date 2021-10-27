@@ -28,17 +28,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
 import org.compiere.model.MColumn;
-import org.compiere.model.MRefList;
-import org.compiere.model.MTable;
 import org.compiere.util.DB;
-import org.compiere.util.ValueNamePair;
+import org.compiere.util.DisplayType;
+import org.kanbanboard.utils.KanbanSQLUtils;
 
 public class MKanbanSwimlaneConfiguration extends X_KDB_KanbanSwimlanes {
 
@@ -67,50 +64,28 @@ public class MKanbanSwimlaneConfiguration extends X_KDB_KanbanSwimlanes {
 	public List<KanbanSwimlane> getSwimlanes() {
 		if (swimlanes.isEmpty()) {
 			MColumn column = MColumn.get(getValue());
-			ValueNamePair refList[] = MRefList.getList(getCtx(), column.getAD_Reference_Value_ID(), false);
-			if (column.getAD_Reference_Value_ID() != 0 && refList.length > 0) {
-				KanbanSwimlane swimlane;
-				for (ValueNamePair listItem : refList) {
-					swimlane = new KanbanSwimlane(listItem.getName(), listItem.getValue());
+			String sqlStatement = KanbanSQLUtils.getColumnSQLStatement(column, getWhereClause(), getOrderByClause());
+			int parameter = column.getAD_Reference_ID() == DisplayType.List ? column.getAD_Reference_Value_ID() 
+					: getAD_Client_ID();
+			
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;
+			try {
+				pstmt = KanbanSQLUtils.getKanbanPreparedStatement(sqlStatement, get_TrxName(), parameter);
+				rs = pstmt.executeQuery();
+				while (rs.next()) {
+					String statusName = rs.getString(1);
+					String reference = rs.getString(2);
+
+					KanbanSwimlane swimlane = new KanbanSwimlane(statusName, reference);
 					swimlanes.add(swimlane);
 				}
-			} else {
-				MTable table =  MTable.get(getCtx(), column.getReferenceTableName());
-				StringBuilder sqlSelect = new StringBuilder();
-				String llaves[] = table.getKeyColumns();
-				String iden[]=table.getIdentifierColumns();
-
-				sqlSelect.append("SELECT DISTINCT ").append(iden[0]).append(", ").append(llaves[0])
-				.append(" FROM ").append(table.getTableName())
-				.append(" WHERE ")
-				.append(getWhereClause() + " AND ")
-				.append(" AD_Client_ID IN (0, ?) AND")
-				.append(" IsActive = 'Y'")
-				.append(" ORDER BY " + getOrderByClause());
-
-				//Access
-				if (table != null) {
-					PreparedStatement pstmt = null;
-					ResultSet rs = null;
-					try {
-						pstmt = DB.prepareStatement(sqlSelect.toString(), get_TrxName());
-						pstmt.setInt(1, getAD_Client_ID());
-						rs = pstmt.executeQuery();
-						while (rs.next()) {
-							String statusName = rs.getString(1);
-							String reference = rs.getString(2);
-
-							KanbanSwimlane swimlane = new KanbanSwimlane(statusName, reference);
-							swimlanes.add(swimlane);
-						}
-					} catch (SQLException e) {
-						log.log(Level.SEVERE, sqlSelect.toString(), e);
-					} finally {
-						DB.close(rs, pstmt);
-						rs = null;
-						pstmt = null;
-					}
-				}
+			} catch (SQLException e) {
+				log.log(Level.SEVERE, sqlStatement, e);
+			} finally {
+				DB.close(rs, pstmt);
+				rs = null;
+				pstmt = null;
 			}
 		}
 		return swimlanes;

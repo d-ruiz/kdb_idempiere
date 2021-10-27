@@ -569,7 +569,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		resetStatusProperties();
 		int numberOfCards = getNumberOfCards();
 		while (numberOfCards > 0) {
-			if (currentboardUsesSwimlane() && getActiveSwimlane() != null) {
+			if (currentboardUsesSwimlane() && getActiveSwimlane() != null && !getSwimlanes().isEmpty()) {
 				for (KanbanSwimlane swimlane : getSwimlanes()) {
 					if (!swimlane.isPrinted()) {
 						createSwinlane(row, swimlane.getLabel() + Msg.getMsg(Env.getCtx(), "KDB_SwimlaneSummary", new Object[]{swimlane.getTotalNumberOfCards()}));
