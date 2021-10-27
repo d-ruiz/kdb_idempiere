@@ -670,6 +670,13 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		}
 		numberOfCards = 0;
 		getKanbanCards();
+		refreshSwimlanes();
+	}
+	
+	private void refreshSwimlanes() {
+		if (activeSwimlaneRecord != null) {
+			activeSwimlaneRecord.refreshSwimlanes();
+		}
 	}
 
 	public void setActiveSwimlaneRecord(Object value) {

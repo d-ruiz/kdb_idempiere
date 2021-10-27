@@ -123,4 +123,8 @@ public class MKanbanSwimlaneConfiguration extends X_KDB_KanbanSwimlanes {
 		}
 		return swimlanes;
 	}
+	
+	public void refreshSwimlanes() {
+		swimlanes.forEach(swimlane -> swimlane.setPrinted(false));
+	}
 }
