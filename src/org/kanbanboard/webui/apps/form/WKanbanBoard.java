@@ -570,15 +570,15 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		int numberOfCards = getNumberOfCards();
 		while (numberOfCards > 0) {
 			if (currentboardUsesSwimlane() && getActiveSwimlane() != null) {
-				for (KanbanSwimlane o : getSwimlanes()) {
-					if (!o.isPrinted()) {
-						createSwinlane(row, o.getLabel());
-						row.setStyle("border: 1px solid; background: gray;");
-						o.setPrinted(true);
+				for (KanbanSwimlane swimlane : getSwimlanes()) {
+					if (!swimlane.isPrinted()) {
+						createSwinlane(row, swimlane.getLabel());
+						row.setStyle(getActiveSwimlane().getInlineStyle());
+						swimlane.setPrinted(true);
 						rows.appendChild(row);
 						row = new Row();
 					}
-					while (o.getTotalNumberOfCards() > 0) {
+					while (swimlane.getTotalNumberOfCards() > 0) {
 						for (MKanbanStatus status : getStatuses()) {
 							// [matica1] use background style instead of background-color and set transparent if no colors are set
 							if (getBackgroundColor() != null && !getBackgroundColor().equals("")) {
@@ -587,11 +587,11 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 								row.setStyle("background: transparent;");
 							}
 
-							if (!status.hasMoreCards(o)) {
+							if (!status.hasMoreCards(swimlane)) {
 								createEmptyCell(row,status);
 							} else {
-								createCardCell(row,status.getCard(o));
-								o.removeOneCard();
+								createCardCell(row,status.getCard(swimlane));
+								swimlane.removeOneCard();
 								numberOfCards--;
 							}
 						}
