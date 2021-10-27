@@ -44,12 +44,13 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
+import org.kanbanboard.model.KanbanSwimlane;
 import org.kanbanboard.model.MKanbanBoard;
 import org.kanbanboard.model.MKanbanCard;
 import org.kanbanboard.model.MKanbanParameter;
 import org.kanbanboard.model.MKanbanProcess;
 import org.kanbanboard.model.MKanbanStatus;
-import org.kanbanboard.model.MKanbanSwimlane;
+import org.kanbanboard.model.MKanbanSwimlaneConfiguration;
 
 public class KanbanBoard {
 
@@ -209,8 +210,8 @@ public class KanbanBoard {
 		return statuses;
 	}
 	
-	public List<MKanbanSwimlane> getSwimlanes() {
-		return kanbanBoard.getSwimlanes();
+	public List<MKanbanSwimlaneConfiguration> getSwimlaneConfigurationRecords() {
+		return kanbanBoard.getSwimlaneConfigurationRecords();
 	}
 	
 	public boolean currentboardUsesSwimlane() {
@@ -388,6 +389,14 @@ public class KanbanBoard {
 	}
 	
 	protected void selectSwimlane(Object value) {
-		kanbanBoard.setActiveSwimlane(value);
+		kanbanBoard.setActiveSwimlaneRecord(value);
+	}
+	
+	protected MKanbanSwimlaneConfiguration getActiveSwimlane() {
+		return kanbanBoard.getActiveSwimlaneRecord();
+	}
+	
+	protected List<KanbanSwimlane> getSwimlanes() {
+		return kanbanBoard.getSwimlanes();
 	}
 }

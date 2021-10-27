@@ -36,7 +36,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -59,6 +62,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 	private String            printableName;
 	private List<MKanbanCard> records          = new ArrayList<MKanbanCard>();
 	private List<MKanbanCard> queuedRecords    = new ArrayList<MKanbanCard>();
+	private Map<KanbanSwimlane, List<MKanbanCard>> swimlaneCards = new HashMap<KanbanSwimlane, List<MKanbanCard>>();
 	private boolean           isExceed         = false;
 	private int               maxNumCards      = 100;
 	private int               cardNumber       = 0;
@@ -416,6 +420,37 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 	
 	public void increaseTotalCardsByOne() {
 		setTotalCards(getTotalCards()+1);
+	}
+	
+	public void configureSwimlanes(List<KanbanSwimlane> swimlanes) {
+		for (KanbanSwimlane swimlane : swimlanes) {
+			if (swimlaneCards.get(swimlane) == null) {
+				swimlaneCards.put(swimlane, new ArrayList<MKanbanCard>());
+			}
+
+			for (MKanbanCard card : records) {
+				if (card.getSwimlaneValue().equals(swimlane.getValue())) {
+					swimlaneCards.get(swimlane).add(card);
+					swimlane.addOneCard();
+				}
+			}
+		}
+	}
+	
+	public boolean hasMoreCards(KanbanSwimlane swimlane) {
+		if (swimlaneCards.get(swimlane) != null && swimlaneCards.get(swimlane).size() <= 0)
+			return false;
+		return true;
+	}
+	
+	public MKanbanCard getCard(KanbanSwimlane swimlane) {
+		Iterator<MKanbanCard> iter = swimlaneCards.get(swimlane).iterator();
+	    while (iter.hasNext()) {
+	    	MKanbanCard c = iter.next();
+            iter.remove();
+            return c; 
+	    }
+	    return null;
 	}
 
 }

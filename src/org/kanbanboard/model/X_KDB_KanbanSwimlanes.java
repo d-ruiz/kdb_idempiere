@@ -31,7 +31,7 @@ public class X_KDB_KanbanSwimlanes extends PO implements I_KDB_KanbanSwimlanes, 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20211025L;
+	private static final long serialVersionUID = 20211026L;
 
     /** Standard Constructor */
     public X_KDB_KanbanSwimlanes (Properties ctx, int KDB_KanbanSwimlanes_ID, String trxName)
@@ -242,6 +242,23 @@ public class X_KDB_KanbanSwimlanes extends PO implements I_KDB_KanbanSwimlanes, 
     {
         return new KeyNamePair(get_ID(), getName());
     }
+
+	/** Set Sql ORDER BY.
+		@param OrderByClause 
+		Fully qualified ORDER BY clause
+	  */
+	public void setOrderByClause (String OrderByClause)
+	{
+		set_Value (COLUMNNAME_OrderByClause, OrderByClause);
+	}
+
+	/** Get Sql ORDER BY.
+		@return Fully qualified ORDER BY clause
+	  */
+	public String getOrderByClause () 
+	{
+		return (String)get_Value(COLUMNNAME_OrderByClause);
+	}
 
 	/** Set Sql WHERE.
 		@param WhereClause 

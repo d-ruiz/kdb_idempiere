@@ -57,6 +57,7 @@ public class MKanbanCard {
 	private int 		  recordId;
 	private MKanbanBoard  kanbanBoard;
 	private MKanbanStatus belongingStatus;
+	private String        swimlaneValue;
 	private BigDecimal 	  priorityValue;
 
 	private PO			  m_po           = null;
@@ -431,4 +432,11 @@ public class MKanbanCard {
 		return "";
 	}
 
+	public String getSwimlaneValue() {
+		return swimlaneValue;
+	}
+
+	public void setSwimlaneValue(String swimlaneValue) {
+		this.swimlaneValue = swimlaneValue;
+	}
 }
