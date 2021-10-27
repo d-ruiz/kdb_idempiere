@@ -572,7 +572,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			if (currentboardUsesSwimlane() && getActiveSwimlane() != null) {
 				for (KanbanSwimlane swimlane : getSwimlanes()) {
 					if (!swimlane.isPrinted()) {
-						createSwinlane(row, swimlane.getLabel());
+						createSwinlane(row, swimlane.getLabel() + Msg.getMsg(Env.getCtx(), "KDB_SwimlaneSummary", new Object[]{swimlane.getTotalNumberOfCards()}));
 						row.setStyle(getActiveSwimlane().getInlineStyle());
 						swimlane.setPrinted(true);
 						rows.appendChild(row);
@@ -681,6 +681,19 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			setOnlyReadCellProps(row.getLastCell(), card);
 	}
 
+	private void setCellProps(Cell cell, MKanbanCard card) {
+		cell.setDraggable("true");
+		cell.setDroppable("true");
+		cell.addEventListener(Events.ON_DROP, this);
+		cell.addEventListener(Events.ON_CLICK, this);
+		cell.addEventListener(Events.ON_DOUBLE_CLICK, this);
+		cell.addEventListener(Events.ON_RIGHT_CLICK, this);
+		cell.setStyle("text-align: left;");
+		cell.setStyle("border-style: outset; ");
+		cell.setContext(cardpopup);
+		mapCellColumn.put(cell, card);
+	}
+
 	private Vlayout createCell(MKanbanCard card) {
 		Vlayout div = new Vlayout();		
 		StringBuilder divStyle = new StringBuilder();
@@ -721,19 +734,6 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		div.setTooltiptext(card.getTooltiptext());
 		return div;
 	}//CreateCell
-
-	private void setCellProps(Cell cell, MKanbanCard card) {
-		cell.setDraggable("true");
-		cell.setDroppable("true");
-		cell.addEventListener(Events.ON_DROP, this);
-		cell.addEventListener(Events.ON_CLICK, this);
-		cell.addEventListener(Events.ON_DOUBLE_CLICK, this);
-		cell.addEventListener(Events.ON_RIGHT_CLICK, this);
-		cell.setStyle("text-align: left;");
-		cell.setStyle("border-style: outset; ");
-		cell.setContext(cardpopup);
-		mapCellColumn.put(cell, card);
-	}
 
 	private void setQueuedCellProps(Cell cell, MKanbanCard card) {
 		cell.addEventListener(Events.ON_DOUBLE_CLICK, this);
