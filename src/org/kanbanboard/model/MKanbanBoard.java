@@ -61,16 +61,20 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	private String keyColumn;
 	private List<MKanbanStatus> statuses = new ArrayList<MKanbanStatus>();
 	private List<MKanbanPriority> priorityRules = new ArrayList<MKanbanPriority>();
+	private List<MKanbanSwimlaneConfiguration> swimlaneConfigurationRecords;
+	private List<KanbanSwimlane> swimlanesArray = new ArrayList<KanbanSwimlane>();
 	private int numberOfCards = 0;
 	private boolean isRefList = true;
 	private boolean statusProcessed = false;
 	private String summarySql;
 	private HashMap<String, String> targetAction;
+	private MKanbanSwimlaneConfiguration activeSwimlaneRecord;
 	
-	private int lastColumnIndex = 1;
-	private int idColumnIndex = lastColumnIndex++; 
-	private int statusColumnIndex = lastColumnIndex++;
-	private int priorityColumnIndex = 0;
+	private int lastColumnIndex;
+	private int idColumnIndex; 
+	private int statusColumnIndex;
+	private int priorityColumnIndex;
+	private int swimlaneColumnIndex;
 	
 	//Associated Processes
 	private boolean processRead = false;
@@ -90,6 +94,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	public void setBoardContent() {
  		initTargetAction();
  		getStatuses();
+ 		setDefaultSwimlane();
 	}
 	
 	/**
@@ -134,12 +139,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	}
 
 	public boolean isRefList() {
-		if (getKDB_ColumnList_ID() != 0) {
-			isRefList=true;
-		} else if (getKDB_ColumnTable_ID() != 0) {
-			isRefList=false;
-		}
-		return isRefList;
+		return getKDB_ColumnList_ID() != 0;
 	}
 
 	public MColumn getStatusColumn() {
@@ -228,6 +228,22 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		return statuses;
 	}//getStatuses
 	
+	public List<MKanbanSwimlaneConfiguration> getSwimlaneConfigurationRecords() {
+		if (swimlaneConfigurationRecords == null) {
+			swimlaneConfigurationRecords = new Query(getCtx(), MKanbanSwimlaneConfiguration.Table_Name, " KDB_KanbanBoard_ID = ? ", get_TrxName())
+			.setParameters(getKDB_KanbanBoard_ID())
+			.setOnlyActiveRecords(true)
+			.setOrderBy("Name")
+ 			.list();
+		}
+
+		return swimlaneConfigurationRecords;
+	}
+	
+	public boolean usesSwimlane() {
+		return getSwimlaneConfigurationRecords().size() > 0;
+	}
+	
 	/**		
 	 * Fills the associatedProcesses List with all the process associated to the board		
 	 * @return		
@@ -308,6 +324,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 
 		if (numberOfCards <= 0) {
 			
+			initIndexes();
 			String sql = getCardsSQLStatement();
 			if (log.isLoggable(Level.INFO)) 
 				log.info(sql.toString());
@@ -326,10 +343,12 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 					correspondingColumn = rs.getString(statusColumnIndex);
 					MKanbanStatus status = getStatus(correspondingColumn);
 					BigDecimal priorityValue = hasPriorityOrder() ? rs.getBigDecimal(priorityColumnIndex) : BigDecimal.ZERO;
+					String swimlaneValue = isSwimlaneSelected() ? rs.getString(swimlaneColumnIndex) : "";
 
 					if (status.isPutCardOnQueue()) {
 						MKanbanCard card = new MKanbanCard(id,status);
 						card.setPriorityValue(priorityValue);
+						card.setSwimlaneValue(swimlaneValue);
 						status.addQueuedRecord(card);
 						numberOfCards++;
 						card.setQueued(true);
@@ -338,6 +357,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 						continue;
 					} else if (status.isPutCardOnStatus()) {
 						MKanbanCard card = new MKanbanCard(id,status);
+						card.setSwimlaneValue(swimlaneValue);
 						card.setPriorityValue(priorityValue);
 						status.addRecord(card);
 						numberOfCards++;
@@ -353,8 +373,22 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 				rs = null;
 				pstmt = null;
 			}
+			
+			if (isSwimlaneSelected()) {
+				for (MKanbanStatus status : statuses) {
+					status.configureSwimlanes(swimlanesArray);
+				}
+			}
 		}
 	}//getKanbanCards
+	
+	private void initIndexes() {
+		lastColumnIndex = 1;
+		idColumnIndex = lastColumnIndex++; 
+		statusColumnIndex = lastColumnIndex++;
+		priorityColumnIndex = 0;
+		swimlaneColumnIndex = 0;
+	}
 	
 	private String getCardsSQLStatement() {
 		StringBuilder sql = new StringBuilder();
@@ -380,6 +414,11 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		if (hasPriorityOrder()) {
 			sqlSelect.append(", " + getKDB_PrioritySQL());
 			priorityColumnIndex = lastColumnIndex++;
+		}
+		
+		if (isSwimlaneSelected()) {
+			sqlSelect.append(", " + activeSwimlaneRecord.getColumnName());
+			swimlaneColumnIndex = lastColumnIndex++;
 		}
 		
 		return sqlSelect.toString();
@@ -627,5 +666,55 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		}
 		numberOfCards = 0;
 		getKanbanCards();
+		refreshSwimlanes();
+	}
+	
+	private void refreshSwimlanes() {
+		if (activeSwimlaneRecord != null) {
+			activeSwimlaneRecord.refreshSwimlanes();
+		}
+	}
+
+	public void setActiveSwimlaneRecord(Object value) {
+		Integer columnID = (Integer) value;
+		activeSwimlaneRecord = swimlaneConfigurationRecords.stream()
+				  .filter(swimlane -> columnID == swimlane.getValue())
+				  .findAny()
+				  .orElse(null);
+		
+		if (activeSwimlaneRecord != null) {
+			swimlanesArray = activeSwimlaneRecord.getSwimlanes();
+		}
+
+	}
+	
+	public MKanbanSwimlaneConfiguration getActiveSwimlaneRecord() {
+		return activeSwimlaneRecord;
+	}
+	
+	private void setDefaultSwimlane() {
+		if (usesSwimlane()) {
+			for (MKanbanSwimlaneConfiguration swimConfig : getSwimlaneConfigurationRecords()) {
+				if (swimConfig.isDefault()) {
+					setActiveSwimlaneRecord(swimConfig.getValue());
+				}
+			}
+		}
+	}
+	
+	private boolean isSwimlaneSelected() {
+		return usesSwimlane() && activeSwimlaneRecord != null;
+	}
+	
+	public List<KanbanSwimlane> getSwimlanes() {
+		return swimlanesArray;
+	}
+	
+	public KanbanSwimlane getSwimlane(String value) {
+		for (KanbanSwimlane swimlane : getSwimlanes()) {
+			if (swimlane.getValue().equals(value))
+				return swimlane;
+		}
+		return null;
 	}
 }

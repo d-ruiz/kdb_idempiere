@@ -44,11 +44,13 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
+import org.kanbanboard.model.KanbanSwimlane;
 import org.kanbanboard.model.MKanbanBoard;
 import org.kanbanboard.model.MKanbanCard;
 import org.kanbanboard.model.MKanbanParameter;
 import org.kanbanboard.model.MKanbanProcess;
 import org.kanbanboard.model.MKanbanStatus;
+import org.kanbanboard.model.MKanbanSwimlaneConfiguration;
 
 public class KanbanBoard {
 
@@ -58,6 +60,8 @@ public class KanbanBoard {
 	protected final static String CARD_PROCESS = "cardProcess";
 	protected final static String STATUS_PROCESS = "statusProcess";
 	protected final static String BOARD_PROCESS = "boardProcess";
+	
+	private final static String DEFAULT_SWIMLANE_CSS = "border: 1px solid;";
 
 	private MKanbanBoard        kanbanBoard = null;
 	private List<MKanbanStatus> statuses    = null;
@@ -208,6 +212,18 @@ public class KanbanBoard {
 		return statuses;
 	}
 	
+	public List<MKanbanSwimlaneConfiguration> getSwimlaneConfigurationRecords() {
+		return kanbanBoard.getSwimlaneConfigurationRecords();
+	}
+	
+	protected boolean currentboardUsesSwimlane() {
+		return kanbanBoard.usesSwimlane();
+	}
+	
+	protected boolean paintSwimlanes() {
+		return currentboardUsesSwimlane() && getActiveSwimlane() != null && !getSwimlanes().isEmpty();
+	}
+	
 	public List<MKanbanParameter> getBoardParameters() {
 		if (boardParameters == null) {
 			boardParameters = kanbanBoard.getParameters();
@@ -266,6 +282,14 @@ public class KanbanBoard {
 			card.setBelongingStatus(endStatus);
 		}
 		return statusChanged;
+	}
+	
+	protected boolean swapSwimlanes(MKanbanCard card, String newSwimlaneValue) {
+		boolean success = card.changeStatus(getActiveSwimlane().getColumnName(), newSwimlaneValue);
+		if (success) {
+			card.setSwimlaneValue(newSwimlaneValue);
+		}
+		return success;
 	}
 
 	public int getAd_Table_id() {
@@ -376,5 +400,22 @@ public class KanbanBoard {
 		}
 		
 		return parameter.getGridField();
+	}
+	
+	protected void selectSwimlane(Object value) {
+		kanbanBoard.setActiveSwimlaneRecord(value);
+	}
+	
+	protected MKanbanSwimlaneConfiguration getActiveSwimlane() {
+		return kanbanBoard.getActiveSwimlaneRecord();
+	}
+	
+	protected List<KanbanSwimlane> getSwimlanes() {
+		return kanbanBoard.getSwimlanes();
+	}
+	
+	protected String getSwimlaneCSS() {
+		String cssStyle = getActiveSwimlane().getInlineStyle() != null ? getActiveSwimlane().getInlineStyle() : DEFAULT_SWIMLANE_CSS;
+		return cssStyle + "cursor: pointer;";
 	}
 }

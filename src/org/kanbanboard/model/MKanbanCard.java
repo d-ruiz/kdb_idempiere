@@ -33,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.Base64;
 
 import org.compiere.model.MColumn;
+import org.compiere.model.MRefList;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.print.MPrintColor;
@@ -57,6 +58,7 @@ public class MKanbanCard {
 	private int 		  recordId;
 	private MKanbanBoard  kanbanBoard;
 	private MKanbanStatus belongingStatus;
+	private String        swimlaneValue;
 	private BigDecimal 	  priorityValue;
 
 	private PO			  m_po           = null;
@@ -392,6 +394,9 @@ public class MKanbanCard {
 
 			if(po.get_Value(index)!=null)
 				value = df.format (po.get_Value(index));	
+		} else if (col.getAD_Reference_ID() == DisplayType.List) {
+			int refID = col.getAD_Reference_Value_ID();
+			value = MRefList.getListName(Env.getCtx(), refID, (String) po.get_Value(index));
 		} else {
 			value = po.get_Value(index);
 		}
@@ -431,4 +436,11 @@ public class MKanbanCard {
 		return "";
 	}
 
+	public String getSwimlaneValue() {
+		return swimlaneValue;
+	}
+
+	public void setSwimlaneValue(String swimlaneValue) {
+		this.swimlaneValue = swimlaneValue;
+	}
 }
