@@ -33,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.Base64;
 
 import org.compiere.model.MColumn;
+import org.compiere.model.MRefList;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.print.MPrintColor;
@@ -393,6 +394,9 @@ public class MKanbanCard {
 
 			if(po.get_Value(index)!=null)
 				value = df.format (po.get_Value(index));	
+		} else if (col.getAD_Reference_ID() == DisplayType.List) {
+			int refID = col.getAD_Reference_Value_ID();
+			value = MRefList.getListName(Env.getCtx(), refID, (String) po.get_Value(index));
 		} else {
 			value = po.get_Value(index);
 		}
