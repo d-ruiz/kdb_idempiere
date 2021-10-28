@@ -415,6 +415,7 @@ public class KanbanBoard {
 	}
 	
 	protected String getSwimlaneCSS() {
-		return getActiveSwimlane().getInlineStyle() != null ? getActiveSwimlane().getInlineStyle() : DEFAULT_SWIMLANE_CSS;
+		String cssStyle = getActiveSwimlane().getInlineStyle() != null ? getActiveSwimlane().getInlineStyle() : DEFAULT_SWIMLANE_CSS;
+		return cssStyle + "cursor: pointer;";
 	}
 }
