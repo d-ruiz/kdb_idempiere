@@ -937,16 +937,14 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				if (endField == null && mapEmptyCellField.get(me.getTarget()) != null) {
 					// check empty cells
 					endStatus= mapEmptyCellField.get(me.getTarget());
-				}
-
-				else
+				} else {
 					endStatus = endField.getBelongingStatus();
+				}
 
 				if (!swapCard(startStatus, endStatus, startField))
 					Messagebox.show(Msg.getMsg(Env.getCtx(), MKanbanCard.KDB_ErrorMessage));
-				else {
+				else 
 					repaintCards();
-				}
 			}
 		}
 		//Check Event on click for processes
