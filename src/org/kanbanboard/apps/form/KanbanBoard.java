@@ -418,4 +418,15 @@ public class KanbanBoard {
 		String cssStyle = getActiveSwimlane().getInlineStyle() != null ? getActiveSwimlane().getInlineStyle() : DEFAULT_SWIMLANE_CSS;
 		return cssStyle + "cursor: pointer;";
 	}
+	
+	protected String getCardColorCSS(String color) {
+		return "background: linear-gradient(to right, transparent 5%, transparent 90%, " + color + " 5%);";
+	}
+	
+	protected String getCellCSSStyle(MKanbanCard card) {
+		String colorCSS = card.getCardColor() != null ? getCardColorCSS(card.getCardColor()) : "";
+		return "text-align: left;" + "border-style: outset; " + colorCSS;
+	}
+	
+	
 }

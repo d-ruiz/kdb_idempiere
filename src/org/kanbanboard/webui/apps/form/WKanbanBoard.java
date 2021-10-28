@@ -740,8 +740,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		cell.addEventListener(Events.ON_CLICK, this);
 		cell.addEventListener(Events.ON_DOUBLE_CLICK, this);
 		cell.addEventListener(Events.ON_RIGHT_CLICK, this);
-		cell.setStyle("text-align: left;");
-		cell.setStyle("border-style: outset; ");
+		cell.setStyle(getCellCSSStyle(card));
 		cell.setContext(cardpopup);
 		mapCellColumn.put(cell, card);
 	}
@@ -751,7 +750,6 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		StringBuilder divStyle = new StringBuilder();
 		
 		divStyle.append("text-align: left; ");
-		divStyle.append("background-color:" + card.getCardColor() + "; ");
 		
 		if (!card.isQueued())
 			divStyle.append("cursor:hand; cursor:pointer; ");
@@ -789,16 +787,14 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 	private void setQueuedCellProps(Cell cell, MKanbanCard card) {
 		cell.addEventListener(Events.ON_DOUBLE_CLICK, this);
-		cell.setStyle("text-align: left;");
-		cell.setStyle("border-style: outset; ");
+		cell.setStyle(getCellCSSStyle(card));
 		mapCellColumn.put(cell, card);
 	}
 
 	private void setOnlyReadCellProps(Cell cell, MKanbanCard card) {
 		cell.addEventListener(Events.ON_CLICK, this);
 		cell.addEventListener(Events.ON_DOUBLE_CLICK, this);
-		cell.setStyle("text-align: left;");
-		cell.setStyle("border-style: outset; ");
+		cell.setStyle(getCellCSSStyle(card));
 		mapCellColumn.put(cell, card);
 	}
 
