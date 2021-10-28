@@ -94,6 +94,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	public void setBoardContent() {
  		initTargetAction();
  		getStatuses();
+ 		setDefaultSwimlane();
 	}
 	
 	/**
@@ -689,6 +690,16 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	
 	public MKanbanSwimlaneConfiguration getActiveSwimlaneRecord() {
 		return activeSwimlaneRecord;
+	}
+	
+	private void setDefaultSwimlane() {
+		if (usesSwimlane()) {
+			for (MKanbanSwimlaneConfiguration swimConfig : getSwimlaneConfigurationRecords()) {
+				if (swimConfig.isDefault()) {
+					setActiveSwimlaneRecord(swimConfig.getValue());
+				}
+			}
+		}
 	}
 	
 	private boolean isSwimlaneSelected() {
