@@ -24,6 +24,9 @@
  **********************************************************************/
 package org.kanbanboard.model;
 
+import org.compiere.util.Env;
+import org.compiere.util.Msg;
+
 public class KanbanSwimlane {
 	
 	private int totalNumberOfCards = 0;
@@ -38,6 +41,10 @@ public class KanbanSwimlane {
 	
 	public String getLabel() {
 		return label;
+	}
+	
+	public String getComponentLabel() {
+		return getLabel() + Msg.getMsg(Env.getCtx(), "KDB_SwimlaneSummary", new Object[]{getTotalNumberOfCards()});
 	}
 	
 	public void setLabel(String label) {

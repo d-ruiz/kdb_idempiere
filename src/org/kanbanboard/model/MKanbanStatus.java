@@ -63,6 +63,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 	private List<MKanbanCard> records          = new ArrayList<MKanbanCard>();
 	private List<MKanbanCard> queuedRecords    = new ArrayList<MKanbanCard>();
 	private Map<KanbanSwimlane, List<MKanbanCard>> swimlaneCards = new HashMap<KanbanSwimlane, List<MKanbanCard>>();
+	private Map<KanbanSwimlane, List<MKanbanCard>> queuedSwimlaneCards = new HashMap<KanbanSwimlane, List<MKanbanCard>>();
 	private boolean           isExceed         = false;
 	private int               maxNumCards      = 100;
 	private int               cardNumber       = 0;
@@ -239,10 +240,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 	}
 
 	public boolean hasQueue() {
-		if(getSQLStatement() != null)
-			return true;
-		else
-			return false;
+		return getSQLStatement() != null;
 	}
 
 	public int getTotalCards() {
@@ -424,27 +422,62 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 	
 	public void configureSwimlanes(List<KanbanSwimlane> swimlanes) {
 		for (KanbanSwimlane swimlane : swimlanes) {
-			if (swimlaneCards.get(swimlane) == null) {
-				swimlaneCards.put(swimlane, new ArrayList<MKanbanCard>());
+			fillSwimlaneCards(swimlane);
+			fillSwimlaneQueuedCards(swimlane);
+		}
+	}
+	
+	private void fillSwimlaneCards(KanbanSwimlane swimlane) {
+		if (swimlaneCards.get(swimlane) == null) {
+			swimlaneCards.put(swimlane, new ArrayList<MKanbanCard>());
+		}
+		for (MKanbanCard card : records) {
+			if (card.getSwimlaneValue().equals(swimlane.getValue())) {
+				swimlaneCards.get(swimlane).add(card);
+				swimlane.addOneCard();
 			}
+		}
+	}
+	
+	private void fillSwimlaneQueuedCards(KanbanSwimlane swimlane) {
+		if (!hasQueue())
+			return;
 
-			for (MKanbanCard card : records) {
-				if (card.getSwimlaneValue().equals(swimlane.getValue())) {
-					swimlaneCards.get(swimlane).add(card);
-					swimlane.addOneCard();
-				}
+		if (queuedSwimlaneCards.get(swimlane) == null) {
+			queuedSwimlaneCards.put(swimlane, new ArrayList<MKanbanCard>());
+		}
+		for (MKanbanCard card : queuedRecords) {
+			if (card.getSwimlaneValue().equals(swimlane.getValue())) {
+				queuedSwimlaneCards.get(swimlane).add(card);
+				swimlane.addOneCard();
 			}
 		}
 	}
 	
 	public boolean hasMoreCards(KanbanSwimlane swimlane) {
-		if (swimlaneCards.get(swimlane) != null && swimlaneCards.get(swimlane).size() <= 0)
-			return false;
-		return true;
+		return hasMoreStatusCards(swimlane) || hasMoreQueuedCards(swimlane);
+	}
+	
+	public boolean hasMoreStatusCards(KanbanSwimlane swimlane) {
+		return swimlaneCards.get(swimlane) != null && !swimlaneCards.get(swimlane).isEmpty();
+	}
+	
+	public boolean hasMoreQueuedCards(KanbanSwimlane swimlane) {
+		return queuedSwimlaneCards.get(swimlane) != null && !queuedSwimlaneCards.get(swimlane).isEmpty();
 	}
 	
 	public MKanbanCard getCard(KanbanSwimlane swimlane) {
 		Iterator<MKanbanCard> iter = swimlaneCards.get(swimlane).iterator();
+	    while (iter.hasNext()) {
+	    	MKanbanCard c = iter.next();
+            iter.remove();
+            return c; 
+	    }
+	    return null;
+	}
+	
+	public MKanbanCard getQueuedCard(KanbanSwimlane swimlane) {
+		Iterator<MKanbanCard> iter = queuedSwimlaneCards.get(swimlane).iterator();
 	    while (iter.hasNext()) {
 	    	MKanbanCard c = iter.next();
             iter.remove();

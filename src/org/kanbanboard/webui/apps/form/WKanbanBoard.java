@@ -154,6 +154,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 	Grid kanbanPanel;
 	Vlayout centerVLayout;
+	private int totalNumberOfColumns = 0;
 
 	public WKanbanBoard() {
 		super();
@@ -463,10 +464,9 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			initKanbanProcess();
 			initSwimlanes();
 
-			int numCols=0;
-			numCols = getNumberOfStatuses();
+			totalNumberOfColumns = getNumberOfStatuses();
 
-			if (numCols > 0) {
+			if (totalNumberOfColumns > 0) {
 				// set size in percentage per column leaving a MARGIN on right
 				Columns columns = new Columns();
 				if (menupopup == null)
@@ -496,6 +496,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 							auxheader = new Auxheader();
 							auxhead.appendChild(auxheader);
 						}
+						totalNumberOfColumns++;
 					}
 					column = new Column();
 					column.setId(Integer.toString(status.get_ID()));
@@ -534,9 +535,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				createRows();	
 				kanbanPanel.appendChild(columns);
 				kanbanPanel.appendChild(auxhead);
-			}
-
-			if (numCols <= 0) {
+			} else {
 				Messagebox.show(Msg.getMsg(Env.getCtx(), "KDB_NoStatuses"));
 			}
 		}
@@ -565,95 +564,124 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		mapCellColumn.clear();
 		mapEmptyCellField.clear();
 		Rows rows = kanbanPanel.newRows();
-		Row row = new Row();
 		resetStatusProperties();
-		int numberOfCards = getNumberOfCards();
-		while (numberOfCards > 0) {
-			if (currentboardUsesSwimlane() && getActiveSwimlane() != null && !getSwimlanes().isEmpty()) {
-				for (KanbanSwimlane swimlane : getSwimlanes()) {
-					if (!swimlane.isPrinted()) {
-						createSwinlane(row, swimlane.getLabel() + Msg.getMsg(Env.getCtx(), "KDB_SwimlaneSummary", new Object[]{swimlane.getTotalNumberOfCards()}));
-						row.setStyle(getActiveSwimlane().getInlineStyle());
-						swimlane.setPrinted(true);
-						rows.appendChild(row);
-						row = new Row();
-					}
-					while (swimlane.getTotalNumberOfCards() > 0) {
-						for (MKanbanStatus status : getStatuses()) {
-							// [matica1] use background style instead of background-color and set transparent if no colors are set
-							if (getBackgroundColor() != null && !getBackgroundColor().equals("")) {
-								row.setStyle("background:" + getBackgroundColor() + ";");
-							} else {
-								row.setStyle("background: transparent;");
-							}
+		if (paintSwimlanes()) {
+			createRowsWithSwimlanes(rows);
+		} else {
+			createRegularRows(rows);
+		}
+	}//createRows
+	
+	private void createRowsWithSwimlanes(Rows rows) {
+		Row row = new Row();
 
-							if (!status.hasMoreCards(swimlane)) {
-								createEmptyCell(row,status);
-							} else {
-								createCardCell(row,status.getCard(swimlane));
-								swimlane.removeOneCard();
-								numberOfCards--;
-							}
-						}
-						rows.appendChild(row);
-						row = new Row();
-					}
-				}
-			} else {
-				
+		for (KanbanSwimlane swimlane : getSwimlanes()) {
+			if (!swimlane.isPrinted()) {
+				Row swimlaneRow = createSwimlaneRow(swimlane);
+				rows.appendChild(swimlaneRow);
+			}
+			while (swimlane.getTotalNumberOfCards() > 0) {
 				for (MKanbanStatus status : getStatuses()) {
-					// [matica1] use background style instead of background-color and set transparent if no colors are set
-					if (getBackgroundColor() != null && !getBackgroundColor().equals("")) {
-						row.setStyle("background:" + getBackgroundColor() + ";");
-					} else {
-						row.setStyle("background: transparent;");
-					}
-					
-					if (!status.hasMoreCards()) {
-						if (status.hasQueue()) {
-							createEmptyCell(row,status);
-						}
-						createEmptyCell(row,status);
+					setRowStyle(row);
+					if (!status.hasMoreCards(swimlane)) {
+						createStatusCellWithNoCards(row, status);
 					} else {
 						if (status.hasQueue()) {
-							if (!status.hasMoreQueuedCards()) {
-								createEmptyCell(row,status);
-								createCardCell(row,status);
-								numberOfCards--;
+							if (!status.hasMoreQueuedCards(swimlane)) {
+								createEmptyCell(row, status);
+								createCardCell(row, status.getCard(swimlane));
+								swimlane.removeOneCard();
 							} else {
-								MKanbanCard queuedCard = status.getQueuedCard();
-								Vlayout l = createCell(queuedCard);
-								row.appendCellChild(l);
-								if (!isReadWrite())
-									setOnlyReadCellProps(row.getLastCell(), queuedCard);
-								else
-									setQueuedCellProps(row.getLastCell(), queuedCard);
-								numberOfCards--;
-								if (status.hasMoreStatusCards()) {
-									createCardCell(row,status);
-									numberOfCards--;
+								createQueuedCardCell(row, status.getQueuedCard(swimlane));
+								swimlane.removeOneCard();
+								if (status.hasMoreStatusCards(swimlane)) {
+									createCardCell(row, status.getCard(swimlane));
+									swimlane.removeOneCard();
 								} else {
 									createEmptyCell(row,status);
 								}
 							}
 						} else {
-							createCardCell(row,status);
-							numberOfCards--;	
+							createCardCell(row, status.getCard(swimlane));
+							swimlane.removeOneCard();
 						}
 					}
 				}
 				rows.appendChild(row);
-				row=new Row();
+				row = new Row();
 			}
+		}
+	}
+	
+	private Row createSwimlaneRow(KanbanSwimlane swimlane) {
+		Row row = new Row();
+		createSwinlane(row, swimlane.getComponentLabel());
+		row.setStyle(getSwimlaneCSS());
+		swimlane.setPrinted(true);
+		return row;
+	}
+	
+	private void setRowStyle(Row row) {
+		// [matica1] use background style instead of background-color and set transparent if no colors are set
+		if (!Util.isEmpty(getBackgroundColor())) {
+			row.setStyle("background:" + getBackgroundColor() + ";");
+		} else {
+			row.setStyle("background: transparent;");
+		}
+	}
+	
+	private void createRegularRows(Rows rows) {
+		int numberOfCards = getNumberOfCards();
+		Row row = new Row();
+		
+		while (numberOfCards > 0) {
+
+			for (MKanbanStatus status : getStatuses()) {
+				setRowStyle(row);
+
+				if (!status.hasMoreCards()) {
+					createStatusCellWithNoCards(row, status);
+				} else {
+					if (status.hasQueue()) {
+						if (!status.hasMoreQueuedCards()) {
+							createEmptyCell(row,status);
+							createCardCell(row,status.getCard());
+							numberOfCards--;
+						} else {
+							createQueuedCardCell(row, status.getQueuedCard());
+							numberOfCards--;
+
+							if (status.hasMoreStatusCards()) {
+								createCardCell(row,status.getCard());
+								numberOfCards--;
+							} else {
+								createEmptyCell(row,status);
+							}
+						}
+					} else {
+						createCardCell(row, status.getCard());
+						numberOfCards--;
+					}
+				}
 			}
-	}//createRows
+			rows.appendChild(row);
+			row=new Row();
+		}
+	}
+	
+	private void createStatusCellWithNoCards(Row row, MKanbanStatus status) {
+		if (status.hasQueue()) {
+			createEmptyCell(row, status);
+		}
+		createEmptyCell(row, status);
+	}
 	
 	private void createSwinlane(Row row, String label) {
 		Cell cell = new Cell();
 		Label testLabel = new Label(label);
 		cell.setParent(row);
 		cell.appendChild(testLabel);
-		cell.setColspan(getNumberOfStatuses());
+		cell.setColspan(totalNumberOfColumns);
 		row.appendChild(cell);
 	}
 
@@ -663,20 +691,19 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	}
 	
 	private void createCardCell(Row row, MKanbanCard card) {
-		Vlayout l = createCell(card);
-		row.appendCellChild(l);
+		Vlayout cardCell = createCell(card);
+		row.appendCellChild(cardCell);
 		if (isReadWrite())
 			setCellProps(row.getLastCell(), card);
 		else
 			setOnlyReadCellProps(row.getLastCell(), card);
 	}
-
-	private void createCardCell(Row row, MKanbanStatus status) {
-		MKanbanCard card = status.getCard();
-		Vlayout l = createCell(card);
-		row.appendCellChild(l);
+	
+	private void createQueuedCardCell(Row row, MKanbanCard card) {
+		Vlayout cardCell = createCell(card);
+		row.appendCellChild(cardCell);
 		if (isReadWrite())
-			setCellProps(row.getLastCell(), card);
+			setQueuedCellProps(row.getLastCell(), card);
 		else
 			setOnlyReadCellProps(row.getLastCell(), card);
 	}

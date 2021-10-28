@@ -60,6 +60,8 @@ public class KanbanBoard {
 	protected final static String CARD_PROCESS = "cardProcess";
 	protected final static String STATUS_PROCESS = "statusProcess";
 	protected final static String BOARD_PROCESS = "boardProcess";
+	
+	private final static String DEFAULT_SWIMLANE_CSS = "border: 1px solid;";
 
 	private MKanbanBoard        kanbanBoard = null;
 	private List<MKanbanStatus> statuses    = null;
@@ -214,8 +216,12 @@ public class KanbanBoard {
 		return kanbanBoard.getSwimlaneConfigurationRecords();
 	}
 	
-	public boolean currentboardUsesSwimlane() {
+	protected boolean currentboardUsesSwimlane() {
 		return kanbanBoard.usesSwimlane();
+	}
+	
+	protected boolean paintSwimlanes() {
+		return currentboardUsesSwimlane() && getActiveSwimlane() != null && !getSwimlanes().isEmpty();
 	}
 	
 	public List<MKanbanParameter> getBoardParameters() {
@@ -398,5 +404,9 @@ public class KanbanBoard {
 	
 	protected List<KanbanSwimlane> getSwimlanes() {
 		return kanbanBoard.getSwimlanes();
+	}
+	
+	protected String getSwimlaneCSS() {
+		return getActiveSwimlane().getInlineStyle() != null ? getActiveSwimlane().getInlineStyle() : DEFAULT_SWIMLANE_CSS;
 	}
 }
