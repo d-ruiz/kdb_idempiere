@@ -698,4 +698,12 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	public List<KanbanSwimlane> getSwimlanes() {
 		return swimlanesArray;
 	}
+	
+	public KanbanSwimlane getSwimlane(String value) {
+		for (KanbanSwimlane swimlane : getSwimlanes()) {
+			if (swimlane.getValue().equals(value))
+				return swimlane;
+		}
+		return null;
+	}
 }

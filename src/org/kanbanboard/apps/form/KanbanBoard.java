@@ -283,6 +283,14 @@ public class KanbanBoard {
 		}
 		return statusChanged;
 	}
+	
+	protected boolean swapSwimlanes(MKanbanCard card, String newSwimlaneValue) {
+		boolean success = card.changeStatus(getActiveSwimlane().getColumnName(), newSwimlaneValue);
+		if (success) {
+			card.setSwimlaneValue(newSwimlaneValue);
+		}
+		return success;
+	}
 
 	public int getAd_Table_id() {
 		return kanbanBoard.getAD_Table_ID();

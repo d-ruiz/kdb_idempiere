@@ -117,6 +117,8 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 	private static final String KDB_PROCESS_MENUPOPUP = "KDB_ProcessMenu";
 	private static final String KDB_REFRESH_BUTTON_ID = "refreshKdb";
+	private static final String KDB_SWIMLANE_ATTRIBUTE = "KDB_SwimlaneValue";
+
 	protected final static String PROCESS_ID_KEY = "processId";
 
 	private CustomForm kForm = new CustomForm();;	
@@ -149,11 +151,12 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	private Map<WEditor, MKanbanParameter> mapEditorParameter = new HashMap<WEditor, MKanbanParameter>();
 	private Map<WEditor, MKanbanParameter> mapEditorToParameter = new HashMap<WEditor, MKanbanParameter>();
 
-	Map<Cell, MKanbanCard> mapCellColumn = new HashMap<Cell, MKanbanCard>();
-	Map<Cell, MKanbanStatus> mapEmptyCellField = new HashMap<Cell, MKanbanStatus>();
+	private Map<Cell, MKanbanCard> mapCellColumn = new HashMap<Cell, MKanbanCard>();
+	private Map<Cell, MKanbanStatus> mapEmptyCellField = new HashMap<Cell, MKanbanStatus>();
+	private Map<String, List<Row>> swimlaneRowsMap = new HashMap<String, List<Row>>();
 
-	Grid kanbanPanel;
-	Vlayout centerVLayout;
+	private Grid kanbanPanel;
+	private Vlayout centerVLayout;
 	private int totalNumberOfColumns = 0;
 
 	public WKanbanBoard() {
@@ -573,7 +576,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	}//createRows
 	
 	private void createRowsWithSwimlanes(Rows rows) {
-		Row row = new Row();
+		Row row;
 
 		for (KanbanSwimlane swimlane : getSwimlanes()) {
 			if (!swimlane.isPrinted()) {
@@ -581,6 +584,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				rows.appendChild(swimlaneRow);
 			}
 			while (swimlane.getTotalNumberOfCards() > 0) {
+				row = new Row();
 				for (MKanbanStatus status : getStatuses()) {
 					setRowStyle(row);
 					if (!status.hasMoreCards(swimlane)) {
@@ -608,7 +612,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 					}
 				}
 				rows.appendChild(row);
-				row = new Row();
+				swimlaneRowsMap.get(swimlane.getValue()).add(row);
 			}
 		}
 	}
@@ -618,7 +622,16 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		createSwinlane(row, swimlane.getComponentLabel());
 		row.setStyle(getSwimlaneCSS());
 		swimlane.setPrinted(true);
+		setCollapsibleProperties(row, swimlane.getValue());
 		return row;
+	}
+	
+	private void setCollapsibleProperties(Row row, String value) {
+		row.setDroppable("true");
+		row.addEventListener(Events.ON_DROP, this);
+		row.addEventListener(Events.ON_CLICK, this);
+		row.setAttribute(KDB_SWIMLANE_ATTRIBUTE, value);
+		swimlaneRowsMap.put(value, new ArrayList<Row>());
 	}
 	
 	private void setRowStyle(Row row) {
@@ -917,7 +930,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			int recordId = card.getRecordID();
 			int AD_Table_ID = getAd_Table_id();
 			zoom(recordId,AD_Table_ID);
-		} else if (e instanceof DropEvent ) {
+		} else if (e instanceof DropEvent) {
 			DropEvent me = (DropEvent) e;
 			Cell startItem = null;
 
@@ -925,9 +938,8 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				startItem = (Cell) me.getDragged();
 			} 
 
-			Cell endItem = null;
 			if (me.getTarget() instanceof Cell) {
-				endItem = (Cell) me.getTarget();
+				Cell endItem = (Cell) me.getTarget();
 
 				MKanbanCard startField = mapCellColumn.get(startItem);
 				MKanbanStatus startStatus = startField.getBelongingStatus(); 
@@ -942,6 +954,13 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				}
 
 				if (!swapCard(startStatus, endStatus, startField))
+					Messagebox.show(Msg.getMsg(Env.getCtx(), MKanbanCard.KDB_ErrorMessage));
+				else 
+					repaintCards();
+			} else if (me.getTarget() instanceof Row) { //Swim lane Header
+				Row endSwimlane = (Row) me.getTarget();
+				MKanbanCard draggedCard = mapCellColumn.get(startItem);
+				if (!swapSwimlanes(draggedCard, endSwimlane))
 					Messagebox.show(Msg.getMsg(Env.getCtx(), MKanbanCard.KDB_ErrorMessage));
 				else 
 					repaintCards();
@@ -983,6 +1002,8 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				}
 				runProcess(selectedItem.getAttribute(PROCESS_ID_KEY), getSaveKeys((String) selectedItem.getAttribute(PROCESS_TYPE),referenceID));
 			}
+		} else if (Events.ON_CLICK.equals(e.getName()) && e.getTarget() instanceof Row) {
+			collapseSwimlane((Row) e.getTarget());
 		}
 		//Right click on cards for associated process
 		else if (Events.ON_RIGHT_CLICK.equals(e.getName()) && (e.getTarget() instanceof Cell)) {
@@ -1008,6 +1029,18 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			}
 		}
 	}//onEvent
+	
+	private void collapseSwimlane(Row selectedRow) {
+		String value = (String) selectedRow.getAttribute(KDB_SWIMLANE_ATTRIBUTE);
+		
+		for (Row row : swimlaneRowsMap.get(value))
+			row.setVisible(!row.isVisible());
+	}
+	
+	private boolean swapSwimlanes(MKanbanCard draggedCard, Row endSwimlane) {
+		String swimlaneValue = (String) endSwimlane.getAttribute(KDB_SWIMLANE_ATTRIBUTE); 
+		return swapSwimlanes(draggedCard, swimlaneValue);
+	}
 	
 	private void selectKanbanBoard() {
 		if (kanbanListbox.getSelectedIndex() != -1) {
