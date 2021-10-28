@@ -194,12 +194,17 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			bRefresh.setImage(ThemeManager.getThemeResource("images/Refresh16.png"));
 		bRefresh.setId(KDB_REFRESH_BUTTON_ID);
 		bRefresh.setTooltiptext(Msg.getMsg(Env.getCtx(), "Refresh"));
+		bRefresh.setHeight("70%");
 		bRefresh.addEventListener(Events.ON_CLICK, this);
 
 		northPanelHbox = new Hbox();
+		northPanelHbox.setAlign("center");
 		northPanelHbox.appendChild(lProcess);
+		kanbanListbox.setHeight("70%");
 		northPanelHbox.appendChild(kanbanListbox);
 		northPanelHbox.appendChild(bRefresh);
+		panel.setHeight("100%");
+		northPanelHbox.setHeight("100%");
 		panel.appendChild(northPanelHbox);
 
 		North north = new North();
@@ -280,7 +285,8 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			
 			fillParameterEditors();
 			boardParamsDiv = new Div();
-			boardParamsDiv.setSclass("padding-left: 5px;");
+			boardParamsDiv.setHeight("100%");
+			boardParamsDiv.setStyle("padding-left: 5px; display: table-cell; vertical-align: middle;");
 			if (m_sEditors.size() > 1 && MSysConfig.getBooleanValue("KDB_GROUP_PARAMETERS", true, Env.getAD_Client_ID(Env.getCtx()))) {
 				bFilter.setLabel(Msg.getMsg(Env.getCtx(), "KDB_QuickFilter"));
 				if (ThemeManager.isUseFontIconForImage())
@@ -292,6 +298,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				filterPopup = getParamPopup();
 				kForm.appendChild(filterPopup);
 				boardParamsDiv.appendChild(bFilter);
+				bFilter.setHeight("70%");
 				bFilter.addEventListener(Events.ON_CLICK, e -> {
 					filterPopup.open(bFilter, "after_start");
 				});
@@ -557,7 +564,12 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			swimlaneListbox.addEventListener(Events.ON_SELECT, this);
 			
 			Div swimlaneDiv = new Div();
-			swimlaneDiv.appendChild(new Label(Msg.getCleanMsg(Env.getCtx(), "GroupedBy")));
+			swimlaneDiv.setStyle("display: table-cell; vertical-align: middle;");
+			swimlaneDiv.setHeight("100%");
+			Label label = new Label(Msg.getCleanMsg(Env.getCtx(), "GroupedBy"));
+			label.setStyle("padding:3px;");
+			swimlaneDiv.appendChild(label);
+			swimlaneListbox.setHeight("70%");
 			swimlaneDiv.appendChild(swimlaneListbox);
 			northPanelHbox.appendChild(swimlaneDiv);
 		}
@@ -691,9 +703,9 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	
 	private void createSwinlane(Row row, String label) {
 		Cell cell = new Cell();
-		Label testLabel = new Label(label);
+		Label swimlaneLabel = new Label(label);
 		cell.setParent(row);
-		cell.appendChild(testLabel);
+		cell.appendChild(swimlaneLabel);
 		cell.setColspan(totalNumberOfColumns);
 		row.appendChild(cell);
 	}
@@ -881,6 +893,8 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 		if (getBoardProcesses() != null && getBoardProcesses().size() > 0) {
 			boardButtonsDiv = new Div();
+			boardButtonsDiv.setHeight("100%");
+			boardButtonsDiv.setStyle("display: table-cell; vertical-align: middle;");
 			Button b;
 			for (MKanbanProcess process : getBoardProcesses()) {
 				b = new Button();
@@ -890,6 +904,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				b.setAttribute(PROCESS_ID_KEY, Integer.valueOf(process.getAD_Process_ID()));
 				b.setAttribute(PROCESS_TYPE, BOARD_PROCESS);
 				b.addEventListener(Events.ON_CLICK, this);
+				b.setHeight("70%");
 				boardButtonsDiv.appendChild(b);
 			}
 			northPanelHbox.appendChild(boardButtonsDiv);
