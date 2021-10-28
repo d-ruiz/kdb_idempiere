@@ -78,6 +78,7 @@ import org.kanbanboard.model.MKanbanParameter;
 import org.kanbanboard.model.MKanbanProcess;
 import org.kanbanboard.model.MKanbanStatus;
 import org.kanbanboard.model.MKanbanSwimlaneConfiguration;
+import org.zkoss.zhtml.Span;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.HtmlBasedComponent;
 import org.zkoss.zk.ui.Page;
@@ -563,9 +564,8 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			}
 			swimlaneListbox.addEventListener(Events.ON_SELECT, this);
 			
-			Div swimlaneDiv = new Div();
-			swimlaneDiv.setStyle("display: table-cell; vertical-align: middle;");
-			swimlaneDiv.setHeight("100%");
+			Span swimlaneDiv = new Span();
+			swimlaneDiv.setStyle("position: absolute; right: 0;top: 50%;transform: translate(0, -50%);");
 			Label label = new Label(Msg.getCleanMsg(Env.getCtx(), "GroupedBy"));
 			label.setStyle("padding:3px;");
 			swimlaneDiv.appendChild(label);
