@@ -759,6 +759,10 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			divStyle.append("overflow:auto");
 		}
 		
+		if (!Util.isEmpty(card.getCardColor())) {
+			divStyle.append("margin-left: 15%;");
+		}
+		
 		div.setStyle(divStyle.toString());
 		
 		if (isHTML()) {

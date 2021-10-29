@@ -420,7 +420,7 @@ public class KanbanBoard {
 	}
 	
 	protected String getCardColorCSS(String color) {
-		return "background: linear-gradient(to right, transparent 5%, transparent 90%, " + color + " 5%);";
+		return "background: linear-gradient(to left, transparent 5%, transparent 93%, " + color + " 1%);";
 	}
 	
 	protected String getCellCSSStyle(MKanbanCard card) {
