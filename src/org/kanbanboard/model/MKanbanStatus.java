@@ -432,7 +432,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 			swimlaneCards.put(swimlane, new ArrayList<MKanbanCard>());
 		}
 		for (MKanbanCard card : records) {
-			if (card.getSwimlaneValue().equals(swimlane.getValue())) {
+			if (swimlane.getValue().equals(card.getSwimlaneValue())) {
 				swimlaneCards.get(swimlane).add(card);
 				swimlane.addOneCard();
 			}
@@ -447,7 +447,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 			queuedSwimlaneCards.put(swimlane, new ArrayList<MKanbanCard>());
 		}
 		for (MKanbanCard card : queuedRecords) {
-			if (card.getSwimlaneValue().equals(swimlane.getValue())) {
+			if (swimlane.getValue().equals(card.getSwimlaneValue())) {
 				queuedSwimlaneCards.get(swimlane).add(card);
 				swimlane.addOneCard();
 			}
