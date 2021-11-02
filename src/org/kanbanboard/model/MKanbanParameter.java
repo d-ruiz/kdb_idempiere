@@ -19,7 +19,6 @@ import org.compiere.model.X_AD_InfoColumn;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 public class MKanbanParameter extends X_KDB_Parameter  {
 
