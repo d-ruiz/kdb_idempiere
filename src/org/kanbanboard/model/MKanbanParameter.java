@@ -19,6 +19,7 @@ import org.compiere.model.X_AD_InfoColumn;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 
 public class MKanbanParameter extends X_KDB_Parameter  {
 
@@ -228,7 +229,7 @@ public class MKanbanParameter extends X_KDB_Parameter  {
 			return null;
 		
 		StringBuilder sqlWhere = new StringBuilder();
-		sqlWhere.append(getColumnName()).append(" ");
+		sqlWhere.append(getColumnNameSQL()).append(" ");
 		
 		Object value = getValue();
 		if (isRange() && getValueTo() != null) {
@@ -273,6 +274,14 @@ public class MKanbanParameter extends X_KDB_Parameter  {
 	
 	public String getColumnName() {
 		return getGridField() != null ? getGridField().getColumnName() : null;
+	}
+	
+	public String getColumnNameSQL() {
+		String columnName = getColumnName();
+		if(getGridField() != null && getGridField().isVirtualColumn())
+			columnName = getGridField().getColumnSQL(false);
+		
+		return columnName;
 	}
 
 }
