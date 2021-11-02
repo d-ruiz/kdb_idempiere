@@ -417,7 +417,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		}
 		
 		if (isSwimlaneSelected()) {
-			sqlSelect.append(", " + activeSwimlaneRecord.getColumnName());
+			sqlSelect.append(", " + getColumnSQLQuery(MColumn.get(activeSwimlaneRecord.getValue())));
 			swimlaneColumnIndex = lastColumnIndex++;
 		}
 		
