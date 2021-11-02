@@ -344,6 +344,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 					MKanbanStatus status = getStatus(correspondingColumn);
 					BigDecimal priorityValue = hasPriorityOrder() ? rs.getBigDecimal(priorityColumnIndex) : BigDecimal.ZERO;
 					String swimlaneValue = isSwimlaneSelected() ? rs.getString(swimlaneColumnIndex) : "";
+					swimlaneValue = swimlaneValue == null ? "" : swimlaneValue;
 
 					if (status.isPutCardOnQueue()) {
 						MKanbanCard card = new MKanbanCard(id,status);
