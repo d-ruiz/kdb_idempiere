@@ -195,10 +195,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 	}
 
 	public boolean hasCards() {
-		if (records.isEmpty())
-			return false;
-		else
-			return true;
+		return !records.isEmpty(); 
 	}
 
 	public String getStatusValue() {
