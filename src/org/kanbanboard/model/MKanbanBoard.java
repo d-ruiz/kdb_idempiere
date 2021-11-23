@@ -46,6 +46,7 @@ import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.compiere.util.Util;
 import org.compiere.util.ValueNamePair;
 
 public class MKanbanBoard extends X_KDB_KanbanBoard {
@@ -56,6 +57,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 
 	/** Special column DocStatus = DocStatus */
 	public static final String STATUSCOLUMN_DocStatus = "DocStatus";
+	public static final String RECORDS_IDS = "@RECORDS_ID@";
 
 	private MTable table = MTable.get(getAD_Table_ID());
 	private String keyColumn;
@@ -235,6 +237,9 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 			.setOnlyActiveRecords(true)
 			.setOrderBy("Name")
  			.list();
+			
+			for (MKanbanSwimlaneConfiguration swimlaneConfigRecord : swimlaneConfigurationRecords)
+				swimlaneConfigRecord.setKanbanBoard(this);
 		}
 
 		return swimlaneConfigurationRecords;
@@ -499,11 +504,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	}//getInValues
 
 	boolean hasPriorityOrder() {
-		//Check if there's a  valid priority rule 
-		if (getKDB_PrioritySQL() != null) 
-			return true;
-		else
-			return false;
+		return !Util.isEmpty(getKDB_PrioritySQL());
 	}
 
 	public void resetStatusProperties() {
@@ -528,7 +529,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		// Check if it is a valid priority rule
 		String priorityRule = getKDB_PrioritySQL();
 
-		if (priorityRule != null) {
+		if (!Util.isEmpty(priorityRule)) {
 			String sql = "Select "+priorityRule+" FROM "+getAD_Table().getTableName();
 
 			if (DB.getSQLValue(get_TrxName(), sql) == -1) {
@@ -592,7 +593,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	 * Records ID that belong to the status 
 	 * @param sqlQuery
 	 */
-	private String addWhereClauseValidation(String sqlQuery) {
+	public String addWhereClauseValidation(String sqlQuery) {
 		
 		StringBuilder whereClause = new StringBuilder("");
 		String groupByClause = "";
@@ -615,7 +616,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		whereClause.append(".");
 		whereClause.append(keyColumn);
 		whereClause.append(" IN (");
-		whereClause.append(MKanbanStatus.STATUS_RECORDS_IDS);
+		whereClause.append(RECORDS_IDS);
 		whereClause.append(") ");
 		
 		sqlQuery = sqlQuery + whereClause.toString() + groupByClause;

@@ -59,6 +59,7 @@ import org.adempiere.webui.panel.IFormController;
 import org.adempiere.webui.session.SessionManager;
 import org.adempiere.webui.theme.ThemeManager;
 import org.adempiere.webui.util.ZKUpdateUtil;
+import org.adempiere.webui.window.WTextEditorDialog;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.MPInstance;
@@ -631,7 +632,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	
 	private Row createSwimlaneRow(KanbanSwimlane swimlane) {
 		Row row = new Row();
-		createSwinlane(row, swimlane.getComponentLabel());
+		createSwinlane(row, swimlane.getComponentLabel(), swimlane.getSummary());
 		row.setStyle(getSwimlaneCSS());
 		swimlane.setPrinted(true);
 		setCollapsibleProperties(row, swimlane.getValue());
@@ -701,11 +702,16 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		createEmptyCell(row, status);
 	}
 	
-	private void createSwinlane(Row row, String label) {
+	private void createSwinlane(Row row, String label, String summary) {
 		Cell cell = new Cell();
-		Label swimlaneLabel = new Label(label);
+		Label swimlaneLabel = new Label(label+" ");
 		cell.setParent(row);
 		cell.appendChild(swimlaneLabel);
+		if (!Util.isEmpty(summary)) {
+			Html htmlCard = new Html();
+	        htmlCard.setContent(WTextEditorDialog.sanitize(summary));
+	        cell.appendChild(htmlCard);
+		}
 		cell.setColspan(totalNumberOfColumns);
 		row.appendChild(cell);
 	}

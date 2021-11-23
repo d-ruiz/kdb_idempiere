@@ -26,15 +26,19 @@ package org.kanbanboard.model;
 
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.compiere.util.Util;
+import org.kanbanboard.utils.KanbanSQLUtils;
 
 public class KanbanSwimlane {
 	
+	private MKanbanSwimlaneConfiguration configurationRecord;
 	private int totalNumberOfCards = 0;
 	private String label;
 	private String value;
 	private boolean printed;
 	
-	public KanbanSwimlane(String label, String value) {
+	public KanbanSwimlane(MKanbanSwimlaneConfiguration configurationRecord, String label, String value) {
+		this.configurationRecord = configurationRecord;
 		this.label = label;
 		this.value = value;
 	}
@@ -45,6 +49,22 @@ public class KanbanSwimlane {
 	
 	public String getComponentLabel() {
 		return getLabel() + Msg.getMsg(Env.getCtx(), "KDB_SwimlaneSummary", new Object[]{getTotalNumberOfCards()});
+	}
+	
+	public String getSummary() {
+		return hasSummary() ? getSummaryMsg() : "";
+	}
+	
+	private String getSummaryMsg() {
+		String summarySql = configurationRecord.getSummarySQL();
+		String msgValue = configurationRecord.getKDB_SummaryMsg();
+
+		if (summarySql != null) {
+			summarySql = KanbanSQLUtils.replaceTokenWithValue(summarySql, MKanbanSwimlaneConfiguration.SWIMLANE_SUMMARY_TOKEN, "'" + value + "'");
+			summarySql = KanbanSQLUtils.replaceTokenWithValue(summarySql, MKanbanBoard.RECORDS_IDS, configurationRecord.getSwimlaneRecordsID(this));
+			return KanbanSQLUtils.getSummary(summarySql, msgValue);
+		}
+		return "";
 	}
 	
 	public void setLabel(String label) {
@@ -77,5 +97,9 @@ public class KanbanSwimlane {
 
 	public void setPrinted(boolean printed) {
 		this.printed = printed;
+	}
+	
+	public boolean hasSummary() {
+		return !Util.isEmpty(configurationRecord.getKDB_SummarySQL()) && totalNumberOfCards > 0;
 	}
 }

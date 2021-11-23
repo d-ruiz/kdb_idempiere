@@ -172,6 +172,32 @@ public interface I_KDB_KanbanSwimlanes
 	/** Get KDB_KanbanSwimlanes_UU	  */
 	public String getKDB_KanbanSwimlanes_UU();
 
+    /** Column name KDB_SummaryMsg */
+    public static final String COLUMNNAME_KDB_SummaryMsg = "KDB_SummaryMsg";
+
+	/** Set Summary Message.
+	  * Message that will be present on every state of the Kanban Board
+	  */
+	public void setKDB_SummaryMsg (String KDB_SummaryMsg);
+
+	/** Get Summary Message.
+	  * Message that will be present on every state of the Kanban Board
+	  */
+	public String getKDB_SummaryMsg();
+
+    /** Column name KDB_SummarySQL */
+    public static final String COLUMNNAME_KDB_SummarySQL = "KDB_SummarySQL";
+
+	/** Set Summary SQL.
+	  * Defines the SQL code that sets the summary that is set on every state of the Kanban Board
+	  */
+	public void setKDB_SummarySQL (String KDB_SummarySQL);
+
+	/** Get Summary SQL.
+	  * Defines the SQL code that sets the summary that is set on every state of the Kanban Board
+	  */
+	public String getKDB_SummarySQL();
+
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
 

@@ -1,18 +1,29 @@
 package org.kanbanboard.utils;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ChoiceFormat;
+import java.text.DecimalFormat;
+import java.text.Format;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.util.logging.Level;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
+import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 public class KanbanSQLUtils {
-
+	
+	/**	Logger							*/
+	protected static transient CLogger	log = CLogger.getCLogger (KanbanSQLUtils.class);
+	
 	public static PreparedStatement getKanbanPreparedStatement(String sqlStatement, String trxName, int parameter) {
 		PreparedStatement pstmt = null;
 		pstmt = DB.prepareStatement(sqlStatement, trxName);
@@ -65,6 +76,78 @@ public class KanbanSQLUtils {
 			sqlSelect.append(" ORDER BY ").append(orderByClause);
 
 		return sqlSelect.toString();
+	}
+	
+	public static String getSummary(String summarySQL, String msgValue) {
+		if (summarySQL != null) {
+			parseContextVariables(summarySQL);
+			if (summarySQL.length() == 0) {
+				return null;
+			}
+			
+			MessageFormat mf = getMessageFormat(msgValue);
+			if (mf == null)
+				return null;
+
+			Format[] fmts = mf.getFormatsByArgumentIndex();
+			Object[] arguments = new Object[fmts.length];
+			boolean filled = false;
+
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;
+			try {
+				pstmt = DB.prepareStatement(summarySQL, null);
+				rs = pstmt.executeQuery();
+				if (rs.next()) {
+					for (int idx = 0; idx < fmts.length; idx++) {
+						Format fmt = fmts[idx];
+						Object obj;
+						if (fmt instanceof DecimalFormat || fmt instanceof ChoiceFormat) {
+							obj = rs.getDouble(idx+1);
+						} else if (fmt instanceof SimpleDateFormat) {
+							obj = rs.getTimestamp(idx+1);
+						} else {
+							obj = rs.getString(idx+1);
+						}
+						arguments[idx] = obj;
+					}
+					filled = true;
+				}
+			} catch (SQLException e) {
+				log.log(Level.SEVERE, summarySQL, e);
+			} finally{
+				DB.close(rs, pstmt);
+				rs = null;
+				pstmt = null;
+			}
+			if (filled)
+				return mf.format(arguments);
+		}
+		return null;
+	} //getSummary
+	
+	private static MessageFormat getMessageFormat(String msgValue) {
+		MessageFormat mf = null;
+		try {
+			mf = new MessageFormat(msgValue, Env.getLanguage(Env.getCtx()).getLocale());
+		} catch (Exception e) {
+			log.log(Level.SEVERE, msgValue, e);
+		}
+		return mf;
+	}
+	
+	private static void parseContextVariables(String sql) {
+		if (sql.indexOf("@") >= 0) {
+			sql = Env.parseContext(Env.getCtx(), 0, sql, false, false);
+		}
+	}
+	
+	public static String replaceTokenWithValue(String originalString, String tokenName, String tokenValue) {
+		int j = originalString.indexOf(tokenName);
+		if (j > -1) {
+			return originalString.replaceAll(tokenName, tokenValue);
+		}
+		return originalString;
 	}
 
 }

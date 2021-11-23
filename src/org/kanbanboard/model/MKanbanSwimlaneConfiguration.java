@@ -43,7 +43,10 @@ public class MKanbanSwimlaneConfiguration extends X_KDB_KanbanSwimlanes {
 	 * 
 	 */
 	private static final long serialVersionUID = -634627635323262721L;
+	public static final String SWIMLANE_SUMMARY_TOKEN = "@KanbanSwimlane@";
+
 	private List<KanbanSwimlane> swimlanes = new ArrayList<KanbanSwimlane>();
+	private MKanbanBoard kanbanBoard;
 
 	public MKanbanSwimlaneConfiguration(Properties ctx, ResultSet rs, String trxName) {
 		super(ctx, rs, trxName);
@@ -51,6 +54,10 @@ public class MKanbanSwimlaneConfiguration extends X_KDB_KanbanSwimlanes {
 
 	public MKanbanSwimlaneConfiguration(Properties ctx, int KDB_KanbanSwimlanes_ID, String trxName) {
 		super(ctx, KDB_KanbanSwimlanes_ID, trxName);
+	}
+	
+	public void setKanbanBoard(MKanbanBoard kanbanBoard) {
+		this.kanbanBoard = kanbanBoard;
 	}
 
 	public int getValue() {
@@ -77,7 +84,7 @@ public class MKanbanSwimlaneConfiguration extends X_KDB_KanbanSwimlanes {
 					String statusName = rs.getString(1);
 					String reference = rs.getString(2);
 
-					KanbanSwimlane swimlane = new KanbanSwimlane(statusName, reference);
+					KanbanSwimlane swimlane = new KanbanSwimlane(this, statusName, reference);
 					swimlanes.add(swimlane);
 				}
 			} catch (SQLException e) {
@@ -93,5 +100,28 @@ public class MKanbanSwimlaneConfiguration extends X_KDB_KanbanSwimlanes {
 	
 	public void refreshSwimlanes() {
 		swimlanes.forEach(swimlane -> swimlane.setPrinted(false));
+	}
+	
+	public String getSummarySQL() {
+		String summarySql = getKDB_SummarySQL();
+		return kanbanBoard.addWhereClauseValidation(summarySql);
+	}
+	
+	public String getSwimlaneRecordsID(KanbanSwimlane swimlane) {
+		String ids = "";
+		StringBuilder recordIds = new StringBuilder();
+		
+		for (MKanbanStatus status : kanbanBoard.getStatuses()) {
+			for (MKanbanCard card : status.getAllSwimlaneCards(swimlane))
+				recordIds.append("'" + card.getRecordID() + "',");
+		}
+		
+		ids = recordIds.toString();
+
+		//Remove last comma
+		if (ids.length() > 0 && ids.charAt(ids.length()-1) == ',')
+			ids = ids.substring(0, ids.length()-1);
+		
+		return ids;
 	}
 }

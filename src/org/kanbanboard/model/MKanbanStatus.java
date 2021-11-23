@@ -25,14 +25,7 @@
 
 package org.kanbanboard.model;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.ChoiceFormat;
-import java.text.DecimalFormat;
-import java.text.Format;
-import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -48,6 +41,7 @@ import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.kanbanboard.utils.KanbanSQLUtils;
 
 
 public class MKanbanStatus extends X_KDB_KanbanStatus {
@@ -56,7 +50,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 	 */
 	private static final long serialVersionUID = 3464371316345451989L;
 	public static final String QUEUE_CARDS_BY_NUMBER = "C";
-	public static final String STATUS_RECORDS_IDS = "@STATUSRECORDS_ID@";
+	private static final String STATUS_SUMMARY_TOKEN = "@KanbanStatus@";
 
 	private MKanbanBoard      kanbanBoard;
 	private String            printableName;
@@ -266,72 +260,11 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 	public String getSummary() {
 
 		String summarySql = kanbanBoard.getSummarySql();
-
+		String msgValue = kanbanBoard.get_Translation(MKanbanBoard.COLUMNNAME_KDB_SummaryMsg);
 		if (summarySql != null) {
-			//Replace @KanbanStatus@ with the proper value
-			int j = summarySql.indexOf("@KanbanStatus@");
-			if (j > -1) {
-				summarySql = summarySql.replaceAll("@KanbanStatus@", "'" + getStatusValue() + "'");		
-			}
-			
-			//Replace @KanbanStatus@ with the proper value
-			j = summarySql.indexOf(STATUS_RECORDS_IDS);
-			if (j > -1) {
-				summarySql = summarySql.replaceAll(STATUS_RECORDS_IDS, getStatusRecordsID());		
-			}
-			
-			//Parse context variables if existing
-			if (summarySql.indexOf("@") >= 0) {
-				summarySql = Env.parseContext(Env.getCtx(), 0, summarySql, false, false);
-				if (summarySql.length() == 0) {
-					return null;
-				}
-			}
-			
-			MessageFormat mf = null;
-			String msgValue = kanbanBoard.get_Translation(MKanbanBoard.COLUMNNAME_KDB_SummaryMsg);
-			try {
-				mf = new MessageFormat(msgValue, Env.getLanguage(getCtx()).getLocale());
-			} catch (Exception e) {
-				log.log(Level.SEVERE, msgValue, e);
-			}
-			
-			if (mf == null)
-				return null;
-
-			Format[] fmts = mf.getFormatsByArgumentIndex();
-			Object[] arguments = new Object[fmts.length];
-			boolean filled = false;
-
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
-			try {
-				pstmt = DB.prepareStatement(summarySql, get_TrxName());
-				rs = pstmt.executeQuery();
-				if (rs.next()) {
-					for (int idx = 0; idx < fmts.length; idx++) {
-						Format fmt = fmts[idx];
-						Object obj;
-						if (fmt instanceof DecimalFormat || fmt instanceof ChoiceFormat) {
-							obj = rs.getDouble(idx+1);
-						} else if (fmt instanceof SimpleDateFormat) {
-							obj = rs.getTimestamp(idx+1);
-						} else {
-							obj = rs.getString(idx+1);
-						}
-						arguments[idx] = obj;
-					}
-					filled = true;
-				}
-			} catch (SQLException e) {
-				log.log(Level.SEVERE, summarySql, e);
-			} finally{
-				DB.close(rs, pstmt);
-				rs = null;
-				pstmt = null;
-			}
-			if (filled)
-				return mf.format(arguments);
+			summarySql = KanbanSQLUtils.replaceTokenWithValue(summarySql, STATUS_SUMMARY_TOKEN, "'" + getStatusValue() + "'");
+			summarySql = KanbanSQLUtils.replaceTokenWithValue(summarySql, MKanbanBoard.RECORDS_IDS, getStatusRecordsID());
+			return KanbanSQLUtils.getSummary(summarySql, msgValue);
 		}
 		return null;
 	} //getSummary
@@ -484,6 +417,20 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
             return c; 
 	    }
 	    return null;
+	}
+	
+	public List<MKanbanCard> getAllSwimlaneCards(KanbanSwimlane swimlane) {
+		List<MKanbanCard> allCards = getCards(swimlane);
+		allCards.addAll(getQueuedCards(swimlane));
+		return allCards;
+	}
+	
+	private List<MKanbanCard> getQueuedCards(KanbanSwimlane swimlane) {
+	    return queuedSwimlaneCards.get(swimlane) != null ? queuedSwimlaneCards.get(swimlane) : Collections.emptyList();
+	}
+	
+	private List<MKanbanCard> getCards(KanbanSwimlane swimlane) {
+	    return swimlaneCards.get(swimlane) != null ? swimlaneCards.get(swimlane) : new ArrayList<MKanbanCard>();
 	}
 
 }
