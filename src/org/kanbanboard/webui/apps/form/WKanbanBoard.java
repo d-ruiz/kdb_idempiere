@@ -49,6 +49,7 @@ import org.adempiere.webui.component.ProcessInfoDialog;
 import org.adempiere.webui.component.Row;
 import org.adempiere.webui.component.Rows;
 import org.adempiere.webui.editor.WEditor;
+import org.adempiere.webui.editor.WSearchEditor;
 import org.adempiere.webui.editor.WebEditorFactory;
 import org.adempiere.webui.event.DialogEvents;
 import org.adempiere.webui.event.ValueChangeEvent;
@@ -1090,11 +1091,9 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 			if (mapEditorParameter.containsKey(changedEditor)) {
 				MKanbanParameter changedParam = mapEditorParameter.get(changedEditor);
-				changedEditor.setValue(value);
 				changedParam.setValue(value);
 			} else if (mapEditorToParameter.containsKey(changedEditor)) {
 				MKanbanParameter changedParamTo = mapEditorToParameter.get(changedEditor);
-				changedParamTo.setValueTo(value);
 				changedParamTo.setValueTo(value);
 			}
 			repaintCards();
