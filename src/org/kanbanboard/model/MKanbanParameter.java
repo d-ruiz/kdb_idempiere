@@ -224,18 +224,24 @@ public class MKanbanParameter extends X_KDB_Parameter  {
 	}	//	createDefault
 	
 	public String getSQLClause() {
-		if (getValue() == null)
+		if (getValue() == null && getValueTo() == null)
 			return null;
 		
 		StringBuilder sqlWhere = new StringBuilder();
 		sqlWhere.append(getColumnName()).append(" ");
 		
 		Object value = getValue();
-		if (isRange() && getValueTo() != null) {
-			sqlWhere.append(" BETWEEN ");
-			sqlWhere.append(getParamValue(value));
-			sqlWhere.append(" AND ");
-			sqlWhere.append(getParamValue(getValueTo()));
+		if (isRange()) {
+			if (getValue() != null) {
+				sqlWhere.append(QUERYOPERATOR_GtEq);
+				sqlWhere.append(getParamValue(value));
+				if (getValueTo() != null)
+					sqlWhere.append(" AND ").append(getColumnName());
+			}
+			if (getValueTo() != null) {
+				sqlWhere.append(QUERYOPERATOR_LeEq);
+				sqlWhere.append(getParamValue(getValueTo()));
+			}
 		} else {
 			if (value instanceof Boolean || getQueryOperator() == null)
 				setQueryOperator(QUERYOPERATOR_Eq);
@@ -266,7 +272,7 @@ public class MKanbanParameter extends X_KDB_Parameter  {
 		else if (value instanceof Boolean)
 			return ((Boolean)value).booleanValue() ? "'Y'" : "'N'";
 		else if (value instanceof Timestamp)
-			return DB.TO_DATE((Timestamp)value);
+			return DB.TO_DATE((Timestamp)value, false);
 		else
 			return value.toString();
 	}
