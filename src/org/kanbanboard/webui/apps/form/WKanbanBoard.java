@@ -49,7 +49,6 @@ import org.adempiere.webui.component.ProcessInfoDialog;
 import org.adempiere.webui.component.Row;
 import org.adempiere.webui.component.Rows;
 import org.adempiere.webui.editor.WEditor;
-import org.adempiere.webui.editor.WSearchEditor;
 import org.adempiere.webui.editor.WebEditorFactory;
 import org.adempiere.webui.event.DialogEvents;
 import org.adempiere.webui.event.ValueChangeEvent;
