@@ -35,6 +35,8 @@ import java.util.logging.Level;
 import org.compiere.model.MColumn;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
+import org.compiere.util.Msg;
+import org.compiere.util.Util;
 import org.kanbanboard.utils.KanbanSQLUtils;
 
 public class MKanbanSwimlaneConfiguration extends X_KDB_KanbanSwimlanes {
@@ -123,5 +125,28 @@ public class MKanbanSwimlaneConfiguration extends X_KDB_KanbanSwimlanes {
 			ids = ids.substring(0, ids.length()-1);
 		
 		return ids;
+	}
+	
+	@Override
+	protected boolean beforeSave(boolean newRecord) {
+		if (!isValidSummaryConfiguration()) {
+			log.saveError("Error", Msg.getMsg(getCtx(), "KDB_SwimlaneSummaryError"));
+			return false;
+		}
+		
+		return super.beforeSave(newRecord);
+	}
+	
+	/**
+	 * A Summary configuration is valid if both message and sql are empty or filled
+	 * If only one of the two is filled, this is an error
+	 * @return true or false
+	 */
+	private boolean isValidSummaryConfiguration() {
+		String summaryMessage = getKDB_SummaryMsg();
+		String summarySQL = getKDB_SummarySQL();
+		
+		return (!Util.isEmpty(summaryMessage) && !Util.isEmpty(summarySQL)) ||
+				 (Util.isEmpty(summaryMessage) && Util.isEmpty(summarySQL));
 	}
 }

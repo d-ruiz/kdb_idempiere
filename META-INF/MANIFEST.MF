@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: KanbanBoard
 Bundle-SymbolicName: kanbanBoard;singleton:=true
-Bundle-Version: 8.2.2.qualifier
+Bundle-Version: 9.0.0
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Activator: org.adempiere.plugin.utils.Incremental2PackActivator
 Service-Component: OSGI-INF/KBModelFactory.xml, OSGI-INF/KBFormFactory.xml, OSGI-INF/KBProcessFactory.xml
@@ -12,16 +12,16 @@ Export-Package: org.kanbanboard.apps.form,
  org.kanbanboard.process,
  org.kanbanboard.webui.apps.form,
  org.kanbanboard.webui.factory
-Require-Bundle: org.adempiere.base;bundle-version="6.1.0",
- org.adempiere.plugin.utils;bundle-version="6.1.0",
- org.adempiere.ui.zk;bundle-version="6.1.0",
- zcommon;bundle-version="0.0.0",
+Require-Bundle: zcommon;bundle-version="0.0.0",
  zel;bundle-version="0.0.0",
  zhtml;bundle-version="0.0.0",
  zk;bundle-version="0.0.0",
  zkbind;bundle-version="0.0.0",
  zkplus;bundle-version="0.0.0",
  zul;bundle-version="0.0.0",
- zweb;bundle-version="0.0.0" 
+ zweb;bundle-version="0.0.0",
+ org.adempiere.base;bundle-version="9.0.0",
+ org.adempiere.plugin.utils;bundle-version="9.0.0",
+ org.adempiere.ui.zk;bundle-version="9.0.0"
 Import-Package: org.compiere.apps
 Automatic-Module-Name: kanbanBoard
