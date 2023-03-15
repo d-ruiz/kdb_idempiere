@@ -1016,6 +1016,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				
 				if (CARD_PROCESS.equals(selectedItem.getAttribute(PROCESS_TYPE))) {
 					referenceID = rightClickedCard;
+					Env.setContext(Env.getCtx(), windowNo, "KDB_Record_ID", referenceID);
 				} else if (STATUS_PROCESS.equals(selectedItem.getAttribute(PROCESS_TYPE))) {
 					Menupopup popup = (Menupopup) e.getTarget().getParent();
 					Column clickedColumn = (Column) popup.getAttribute("columnRef");
@@ -1177,6 +1178,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
     private void cleanEnvVariables() {
     	Env.setContext(Env.getCtx(), "#KDB_KanbanBoard_ID", "");
     	Env.setContext(Env.getCtx(), "#KDB_Params", "");
+    	Env.setContext(Env.getCtx(), windowNo, "KDB_Record_ID", "");
     }
     
     /**
