@@ -278,7 +278,7 @@ public class MKanbanParameter extends X_KDB_Parameter  {
 	}
 	
 	public String getColumnName() {
-		return getGridField() != null ? getGridField().getColumnName() : null;
+		return getGridField() != null ? getGridField().getColumnSQL(false) : null;
 	}
 
 }
