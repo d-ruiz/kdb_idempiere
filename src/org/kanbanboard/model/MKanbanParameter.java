@@ -2,13 +2,9 @@ package org.kanbanboard.model;
 
 import static org.compiere.model.SystemIDs.REFERENCE_YESNO;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.Properties;
-import java.util.StringTokenizer;
-import java.util.logging.Level;
 
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldVO;
@@ -120,108 +116,21 @@ public class MKanbanParameter extends X_KDB_Parameter  {
 	        mGridField = findField;
 		}
         
-        //Init default value
+        initDefaultValues();
+	}
+	
+	private void initDefaultValues() {
         if (mGridField != null) {
-    		value = getDefault();
-    		if (isRange())
-    			valueTo = getDefault2();
-        }
+        	mGridField.setDefaultLogic(getDefaultValue());
+    		value = mGridField.getDefault();
+    		
+    		if (isRange()) {
+    			GridField toField = mGridField.clone(getCtx());
+    			toField.setDefaultLogic(getDefaultValue2());
+    			valueTo = toField.getDefault();
+    		}
+        }		
 	}
-	
-	private Object getDefault() {
-		return getDefaultValue(getDefaultValue());
-	}
-	
-	private Object getDefault2() {
-		return getDefaultValue(getDefaultValue2());
-	}
-	
-	private Object getDefaultValue(String defaultStr) {
-		/**
-		 * 	(c) Parameter DefaultValue		=== similar code in GridField.getDefault ===
-		 */
-		if (defaultStr != null && !defaultStr.equals("") && !defaultStr.startsWith("@SQL=")) {
-			String defStr = "";		//	problem is with texts like 'sss;sss'
-			//	It is one or more variables/constants
-			StringTokenizer st = new StringTokenizer(defaultStr, ",;", false);
-			while (st.hasMoreTokens()) {
-				defStr = st.nextToken().trim();
-				if (defStr.equals("@SysDate@"))				//	System Time
-					return new Timestamp (System.currentTimeMillis());
-				else if (defStr.indexOf('@') != -1)			//	it is a variable
-					defStr = Env.parseContext(getCtx(), mGridField.getWindowNo(), defStr.trim(), false, false);
-				else if (defStr.indexOf("'") != -1)			//	it is a 'String'
-					defStr = defStr.replace('\'', ' ').trim();
-
-				if (!defStr.equals("")) {
-					return createDefault(defStr);
-				 }
-			}	//	while more Tokens
-		}	//	Default value
-		
-		return null;
-	}
-	
-	private Object createDefault(String value) {
-		//	true NULL
-		if (value == null || value.toString().length() == 0 || value.toUpperCase().equals("NULL") ||
-				mGridField == null)
-			return null;
-
-		try {
-			//	IDs & Integer & CreatedBy/UpdatedBy
-			if (mGridField.getColumnName().endsWith("atedBy")
-					|| (mGridField.getColumnName().endsWith("_ID") && DisplayType.isID(mGridField.getDisplayType()))) {
-				try	{ //	defaults -1 => null
-					int ii = Integer.parseInt(value);
-					if (ii < 0)
-						return null;
-					return Integer.valueOf(ii);
-				} catch (Exception e) {
-					log.warning("Cannot parse: " + value + " - " + e.getMessage());
-				}
-				return Integer.valueOf(0);
-			}
-			//	Integer
-			if (mGridField.getDisplayType() == DisplayType.Integer)
-				return Integer.valueOf(value);
-			
-			//	Number
-			if (DisplayType.isNumeric(mGridField.getDisplayType()))
-				return new BigDecimal(value);
-			
-			//	Timestamps
-			if (DisplayType.isDate(mGridField.getDisplayType())) {
-				// try timestamp format - then date format -- [ 1950305 ]
-				java.util.Date date = null;
-				SimpleDateFormat dateTimeFormat = DisplayType.getTimestampFormat_Default();
-				SimpleDateFormat dateFormat = DisplayType.getDateFormat_JDBC();
-				SimpleDateFormat timeFormat = DisplayType.getTimeFormat_Default();
-				try {
-					if (mGridField.getDisplayType() == DisplayType.Date) {
-						date = dateFormat.parse (value);
-					} else if (mGridField.getDisplayType() == DisplayType.Time) {
-						date = timeFormat.parse (value);
-					} else {
-						date = dateTimeFormat.parse (value);
-					}
-				} catch (java.text.ParseException e) {
-					date = DisplayType.getDateFormat_JDBC().parse (value);
-				}
-				return new Timestamp (date.getTime());
-			}
-			
-			//	Boolean
-			if (mGridField.getDisplayType() == DisplayType.YesNo)
-				return Boolean.valueOf ("Y".equals(value));
-			
-			//	Default
-			return value;
-		} catch (Exception e) {
-			log.log(Level.SEVERE, mGridField.getColumnName() + " - " + e.getMessage());
-		}
-		return null;
-	}	//	createDefault
 	
 	public String getSQLClause() {
 		if (getValue() == null && getValueTo() == null)
