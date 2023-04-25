@@ -44,6 +44,7 @@ import org.compiere.model.Query;
 import org.compiere.print.MPrintColor;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
@@ -427,8 +428,12 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		if (column.isVirtualColumn()) {
 			columnQuery.append("(").append(column.getColumnSQL()).append(") AS ");
 		}
-		columnQuery.append(column.getColumnName());
-		
+		if (DisplayType.isDate(column.getAD_Reference_ID())) {
+			columnQuery.append(" trunc(").append(column.getColumnName()).append(")");
+		}
+		else {
+			columnQuery.append(column.getColumnName());
+		}
 		return columnQuery.toString();
 	}
 	

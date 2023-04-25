@@ -28,6 +28,7 @@ package org.kanbanboard.model;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Base64;
@@ -130,6 +131,12 @@ public class MKanbanCard {
 			return false;
 		boolean success=true;
 
+		Timestamp tNewStatusValue = null;
+
+		MColumn col = MColumn.get(Env.getCtx(), m_po.get_TableName(), statusColumn);
+		if(DisplayType.isDate(col.getAD_Reference_ID())) {
+			tNewStatusValue = Timestamp.valueOf(newStatusValue);
+		}
 		if (statusColumn.equals(MKanbanBoard.STATUSCOLUMN_DocStatus)) {
 			if (m_po instanceof DocAction && m_po.get_ColumnIndex("DocAction") >= 0) {
 				Trx trx = Trx.get(Trx.createTrxName("DCK"), true);
@@ -171,7 +178,7 @@ public class MKanbanCard {
 					return false;
 				}
 			}
-			success = m_po.set_ValueOfColumnReturningBoolean(statusColumn, newStatusValue);
+			success = m_po.set_ValueOfColumnReturningBoolean(statusColumn, DisplayType.isDate(col.getAD_Reference_ID()) ? tNewStatusValue : newStatusValue);
 			m_po.saveEx();
 		}
 		return success;

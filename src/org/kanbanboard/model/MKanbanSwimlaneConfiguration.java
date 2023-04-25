@@ -74,8 +74,14 @@ public class MKanbanSwimlaneConfiguration extends X_KDB_KanbanSwimlanes {
 		if (swimlanes.isEmpty()) {
 			MColumn column = MColumn.get(getValue());
 			String sqlStatement = KanbanSQLUtils.getColumnSQLStatement(column, getWhereClause(), getOrderByClause());
-			int parameter = column.getAD_Reference_ID() == DisplayType.List ? column.getAD_Reference_Value_ID() 
-					: getAD_Client_ID();
+			Integer parameter = null;
+			if(column.getAD_Reference_ID() == DisplayType.List)
+				parameter = column.getAD_Reference_Value_ID();
+			else if(column.getAD_Reference_ID() == DisplayType.Date
+					|| column.getAD_Reference_ID() == DisplayType.DateTime)
+				;	// no parameters
+			else
+				parameter = getAD_Client_ID();
 			
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;

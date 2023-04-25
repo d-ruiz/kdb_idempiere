@@ -24,10 +24,11 @@ public class KanbanSQLUtils {
 	/**	Logger							*/
 	protected static transient CLogger	log = CLogger.getCLogger (KanbanSQLUtils.class);
 	
-	public static PreparedStatement getKanbanPreparedStatement(String sqlStatement, String trxName, int parameter) {
+	public static PreparedStatement getKanbanPreparedStatement(String sqlStatement, String trxName, Integer parameter) {
 		PreparedStatement pstmt = null;
 		pstmt = DB.prepareStatement(sqlStatement, trxName);
-		setParameters(pstmt, parameter);
+		if(parameter != null)
+			setParameters(pstmt, parameter);
 
 		return pstmt;
 	}
@@ -67,6 +68,10 @@ public class KanbanSQLUtils {
 			.append(" WHERE ")
 			.append(" AD_Client_ID IN (0, ?) AND")
 			.append(" IsActive = 'Y'");
+		} else if (column.getAD_Reference_ID() == DisplayType.Date ||
+				column.getAD_Reference_ID() == DisplayType.DateTime) {
+			sqlSelect.append("SELECT to_char(series,'DD-MM-YYYY') as name, trunc(series,'dd')::timestamp as " + column.getColumnName()
+							+ " FROM generate_series(now()-interval '7 days', now()+interval '14 days', '1 day') series  ");
 		}
 
 		if (!Util.isEmpty(whereClause))
