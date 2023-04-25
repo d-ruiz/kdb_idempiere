@@ -187,10 +187,6 @@ public class KanbanBoard {
 			cardProcesses= null;
 			boardProcesses = null;
 			isReadWrite = null;
-			kanbanBoard.setBoardContent();
-			getBoardParameters();
-			kanbanBoard.getKanbanCards();
-			kanbanBoard.setKanbanQueuedCards();
 			summarySql = null;		
 		}
 	}
