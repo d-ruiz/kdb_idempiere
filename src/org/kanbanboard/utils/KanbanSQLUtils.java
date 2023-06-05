@@ -95,7 +95,7 @@ public class KanbanSQLUtils {
 			}
 			if(paraTo == null) {
 				if(((Timestamp)paraFrom).compareTo(now) <= 0)
-					paraFrom = now;
+					paraTo = now;
 				else
 					paraTo = paraFrom;
 			}
