@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/org.kdb.idempiere.extensions.server.feature_9.0.0.qualifier" id="org.kdb.idempiere.extensions.server.feature" version="9.0.0.qualifier">
+      <category name="kdb.idempiere.extensions"/>
+   </feature>
+   <category-def name="kdb.idempiere.extensions" label="kdb idempiere extensions"/>
+</site>
