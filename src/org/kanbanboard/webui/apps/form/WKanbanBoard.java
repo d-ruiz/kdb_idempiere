@@ -339,7 +339,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 	        Label label = editor.getLabel();
 	        //Fix miss label of check box
-	        label.setValue(getGridField(param).getHeader());
+	        label.setValue(param.getName());
 
 	        m_sEditors.add(editor);
 			mapEditorParameter.put(editor, param);
