@@ -431,20 +431,8 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			boardButtonsDiv = null;
 		}
 
-		if (getNumberOfProcesses() > 0  && getProcesses() != null) {
-			//Clear them to avoid duplicants when refreshing
-			getStatusProcesses().clear();
-			getBoardProcesses().clear();
-			getCardProcesses().clear();
-			//Fill the lists - (Status,board,card) process
-			for (MKanbanProcess process: getProcesses()) {
-				if (MKanbanProcess.KDB_PROCESSSCOPE_Status.equals(process.getKDB_ProcessScope()))
-					getStatusProcesses().add(process);
-				else if (MKanbanProcess.KDB_PROCESSSCOPE_Board.equals(process.getKDB_ProcessScope()))
-					getBoardProcesses().add(process);
-				else if (MKanbanProcess.KDB_PROCESSSCOPE_Card.equals(process.getKDB_ProcessScope()))
-					getCardProcesses().add(process);
-			}
+		if (kanbanHasProcesses()) {
+			resetAndPopulateArrays();
 			setStatusProcessMenupopup();
 			setCardMenupopup();
 			setBoardProcess();

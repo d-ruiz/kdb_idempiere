@@ -234,11 +234,40 @@ public class KanbanBoard {
 		return boardParameters;
 	}
 	
-	public List<MKanbanProcess> getProcesses() {
+	public void resetAndPopulateArrays() {
+		clearProcessArrays();
+		fillProcessArrays();
+	}
+	
+	/**
+	 * Clear process arrays to avoid duplicates when refreshing
+	 */
+	private void clearProcessArrays() {
+		getStatusProcesses().clear();
+		getBoardProcesses().clear();
+		getCardProcesses().clear();
+	}
+	
+	private List<MKanbanProcess> getProcesses() {
 		if (processes == null) {
 			processes = kanbanBoard.getAssociatedProcesses();
 		}
 		return processes;
+	}
+	
+	/**
+	 * Fill the arrays 
+	 * Status, board and card processes
+	 */
+	private void fillProcessArrays() {
+		for (MKanbanProcess process: getProcesses()) {
+			if (MKanbanProcess.KDB_PROCESSSCOPE_Status.equals(process.getKDB_ProcessScope()))
+				getStatusProcesses().add(process);
+			else if (MKanbanProcess.KDB_PROCESSSCOPE_Board.equals(process.getKDB_ProcessScope()))
+				getBoardProcesses().add(process);
+			else if (MKanbanProcess.KDB_PROCESSSCOPE_Card.equals(process.getKDB_ProcessScope()))
+				getCardProcesses().add(process);
+		}
 	}
 
 	public List<MKanbanProcess> getStatusProcesses() {
@@ -303,7 +332,11 @@ public class KanbanBoard {
 			return statuses.size();
 	}
 	
-	public int getNumberOfProcesses() {
+	public boolean kanbanHasProcesses() {
+		return getNumberOfProcesses() > 0  && getProcesses() != null;
+	}
+	
+	private int getNumberOfProcesses() {
 		if (processes==null)
 			return kanbanBoard.getNumberOfProcesses();
 		else
