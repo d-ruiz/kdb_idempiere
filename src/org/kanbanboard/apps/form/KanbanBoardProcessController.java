@@ -25,11 +25,21 @@
 package org.kanbanboard.apps.form;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import org.compiere.util.KeyNamePair;
+import org.kanbanboard.model.MKanbanBoard;
 import org.kanbanboard.model.MKanbanProcess;
 
 public class KanbanBoardProcessController {
+	
+	protected final static String PROCESS_TYPE = "processType"; 
+	protected final static String CARD_PROCESS = "cardProcess";
+	protected final static String STATUS_PROCESS = "statusProcess";
+	protected final static String BOARD_PROCESS = "boardProcess";
+	
+	private MKanbanBoard kanbanBoard;
 	
 	//Associated process arrays
 	private List<MKanbanProcess> processes  = null;
@@ -37,8 +47,9 @@ public class KanbanBoardProcessController {
 	private List<MKanbanProcess> boardProcesses  = new ArrayList<MKanbanProcess>();
 	private List<MKanbanProcess> cardProcesses  = new ArrayList<MKanbanProcess>();
 	
-	public KanbanBoardProcessController(List<MKanbanProcess> processes) {
-		this.processes = processes;
+	public KanbanBoardProcessController(MKanbanBoard kanbanBoard) {
+		this.kanbanBoard = kanbanBoard;
+		this.processes = kanbanBoard.getAssociatedProcesses();
 	}
 	
 	public void resetAndPopulateArrays() {
@@ -118,5 +129,28 @@ public class KanbanBoardProcessController {
 			processElements.add(element);
 		}
 		return processElements;
+	}
+	
+	public Collection<KeyNamePair> getSaveKeys (String processType, int referenceID) {
+		// clear result from prev time
+    	Collection<KeyNamePair> saveKeys = new ArrayList <KeyNamePair>();
+    	
+    	if (processType.equals(CARD_PROCESS)) {
+    		// Record-ID - Kanban Board -ID
+    		saveKeys.add(new KeyNamePair(referenceID, Integer.toString(kanbanBoard.getKDB_KanbanBoard_ID())));
+    	} else if(processType.equals(STATUS_PROCESS)) {
+    		// - Status ID -- (Table Reference ID)
+    		String statusValue = null;
+    		if (kanbanBoard.getStatus(referenceID) != null)
+    			statusValue = kanbanBoard.getStatus(referenceID).getStatusValue();
+    		
+    		saveKeys.add(new KeyNamePair(referenceID, statusValue));
+    	} else if (processType.equals(BOARD_PROCESS)) {
+    		//Kanban Board ID - Table ID
+    		saveKeys.add (new KeyNamePair(kanbanBoard.getKDB_KanbanBoard_ID(), Integer.toString(kanbanBoard.getAD_Table_ID())));
+    	} else
+    		return null;
+    	
+    	return saveKeys;
 	}
 }

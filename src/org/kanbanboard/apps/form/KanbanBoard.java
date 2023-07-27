@@ -28,7 +28,6 @@ package org.kanbanboard.apps.form;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -55,10 +54,10 @@ public class KanbanBoard {
 
 	public static CLogger log = CLogger.getCLogger(KanbanBoard.class);
 	
-	protected final static String PROCESS_TYPE = "processType"; 
-	protected final static String CARD_PROCESS = "cardProcess";
-	protected final static String STATUS_PROCESS = "statusProcess";
-	protected final static String BOARD_PROCESS = "boardProcess";
+	protected final static String PROCESS_TYPE = KanbanBoardProcessController.PROCESS_TYPE; 
+	protected final static String CARD_PROCESS = KanbanBoardProcessController.CARD_PROCESS;
+	protected final static String STATUS_PROCESS = KanbanBoardProcessController.STATUS_PROCESS;
+	protected final static String BOARD_PROCESS = KanbanBoardProcessController.BOARD_PROCESS;
 	
 	private final static String DEFAULT_SWIMLANE_CSS = "border: 1px solid;";
 
@@ -176,7 +175,7 @@ public class KanbanBoard {
 			processController = null;
 		} else if (kanbanBoard == null || kanbanBoardId != kanbanBoard.get_ID()) {
 			kanbanBoard = new MKanbanBoard(Env.getCtx(), kanbanBoardId, null);
-			processController = new KanbanBoardProcessController(kanbanBoard.getAssociatedProcesses());
+			processController = new KanbanBoardProcessController(kanbanBoard);
 
 			statuses = null;
 			boardParameters = null;
@@ -297,29 +296,6 @@ public class KanbanBoard {
 		return summarySql;		
 	}		
 
-	public Collection<KeyNamePair> getSaveKeys (String processType, int referenceID) {
-		// clear result from prev time
-    	Collection<KeyNamePair> saveKeys = new ArrayList <KeyNamePair>();
-    	
-    	if (processType.equals(CARD_PROCESS)) {
-    		// Record-ID - Kanban Board -ID
-    		saveKeys.add(new KeyNamePair(referenceID, Integer.toString(kanbanBoard.getKDB_KanbanBoard_ID())));
-    	} else if(processType.equals(STATUS_PROCESS)) {
-    		// - Status ID -- (Table Reference ID)
-    		String statusValue = null;
-    		if (kanbanBoard.getStatus(referenceID) != null)
-    			statusValue = kanbanBoard.getStatus(referenceID).getStatusValue();
-    		
-    		saveKeys.add(new KeyNamePair(referenceID, statusValue));
-    	} else if (processType.equals(BOARD_PROCESS)) {
-    		//Kanban Board ID - Table ID
-    		saveKeys.add (new KeyNamePair(kanbanBoard.getKDB_KanbanBoard_ID(), Integer.toString(getAd_Table_id())));
-    	} else
-    		return null;
-    	
-    	return saveKeys;
-	}
-	
 	public boolean isHTML() {
 		return kanbanBoard.get_ValueAsBoolean("IsHtml");
 	}
@@ -420,5 +396,9 @@ public class KanbanBoard {
 	
 	protected List<ProcessUIElement> getBoardProcessElements() {
 		return processController.getBoardProcessElements();
+	}
+	
+	protected Collection<KeyNamePair> getSaveKeys (String processType, int referenceID) {
+		return processController.getSaveKeys(processType, referenceID);
 	}
 }
