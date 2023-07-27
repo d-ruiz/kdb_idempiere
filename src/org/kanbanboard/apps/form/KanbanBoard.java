@@ -48,7 +48,6 @@ import org.kanbanboard.model.KanbanSwimlane;
 import org.kanbanboard.model.MKanbanBoard;
 import org.kanbanboard.model.MKanbanCard;
 import org.kanbanboard.model.MKanbanParameter;
-import org.kanbanboard.model.MKanbanProcess;
 import org.kanbanboard.model.MKanbanStatus;
 import org.kanbanboard.model.MKanbanSwimlaneConfiguration;
 
@@ -69,11 +68,7 @@ public class KanbanBoard {
 	private String              isReadWrite = null;
 	private String              summarySql = null;		
 	
-	//Associated processes
-	private List<MKanbanProcess> processes  = null;
-	private List<MKanbanProcess> statusProcesses  = null;
-	private List<MKanbanProcess> boardProcesses  = null;
-	private List<MKanbanProcess> cardProcesses  = null;
+	private KanbanBoardProcessController processController;
 	
 	//Parameters
 	private List<MKanbanParameter> boardParameters  = null;
@@ -176,16 +171,15 @@ public class KanbanBoard {
 
 	public void setKanbanBoard(int kanbanBoardId) {
 		//Check if it's it's a new kanban board or the one already selected
-		if (kanbanBoardId==-1)
-			kanbanBoard=null;
-		else if (kanbanBoard == null || kanbanBoardId != kanbanBoard.get_ID()) {
+		if (kanbanBoardId == -1) {
+			kanbanBoard = null;
+			processController = null;
+		} else if (kanbanBoard == null || kanbanBoardId != kanbanBoard.get_ID()) {
 			kanbanBoard = new MKanbanBoard(Env.getCtx(), kanbanBoardId, null);
+			processController = new KanbanBoardProcessController(kanbanBoard.getAssociatedProcesses());
+
 			statuses = null;
-			processes = null;
-			statusProcesses = null;
 			boardParameters = null;
-			cardProcesses= null;
-			boardProcesses = null;
 			isReadWrite = null;
 			kanbanBoard.setBoardContent();
 			getBoardParameters();
@@ -234,60 +228,6 @@ public class KanbanBoard {
 		return boardParameters;
 	}
 	
-	public void resetAndPopulateArrays() {
-		clearProcessArrays();
-		fillProcessArrays();
-	}
-	
-	/**
-	 * Clear process arrays to avoid duplicates when refreshing
-	 */
-	private void clearProcessArrays() {
-		getStatusProcesses().clear();
-		getBoardProcesses().clear();
-		getCardProcesses().clear();
-	}
-	
-	private List<MKanbanProcess> getProcesses() {
-		if (processes == null) {
-			processes = kanbanBoard.getAssociatedProcesses();
-		}
-		return processes;
-	}
-	
-	/**
-	 * Fill the arrays 
-	 * Status, board and card processes
-	 */
-	private void fillProcessArrays() {
-		for (MKanbanProcess process: getProcesses()) {
-			if (MKanbanProcess.KDB_PROCESSSCOPE_Status.equals(process.getKDB_ProcessScope()))
-				getStatusProcesses().add(process);
-			else if (MKanbanProcess.KDB_PROCESSSCOPE_Board.equals(process.getKDB_ProcessScope()))
-				getBoardProcesses().add(process);
-			else if (MKanbanProcess.KDB_PROCESSSCOPE_Card.equals(process.getKDB_ProcessScope()))
-				getCardProcesses().add(process);
-		}
-	}
-
-	public List<MKanbanProcess> getStatusProcesses() {
-		if (statusProcesses == null)
-			statusProcesses = new ArrayList<MKanbanProcess>();
-		return statusProcesses;
-	}
-
-	public List<MKanbanProcess> getBoardProcesses() {
-		if (boardProcesses == null)
-			boardProcesses = new ArrayList<MKanbanProcess>();
-		return boardProcesses;
-	}
-
-	public List<MKanbanProcess> getCardProcesses() {
-		if (cardProcesses == null)
-			cardProcesses = new ArrayList<MKanbanProcess>();
-		return cardProcesses;
-	}
-
 	public void resetStatusProperties() {
 		kanbanBoard.resetStatusProperties();
 	}
@@ -332,17 +272,6 @@ public class KanbanBoard {
 			return statuses.size();
 	}
 	
-	public boolean kanbanHasProcesses() {
-		return getNumberOfProcesses() > 0  && getProcesses() != null;
-	}
-	
-	private int getNumberOfProcesses() {
-		if (processes==null)
-			return kanbanBoard.getNumberOfProcesses();
-		else
-			return processes.size();
-	}
-
 	public void setPrintableNames() {
 		kanbanBoard.setPrintableNames();
 	}
@@ -461,5 +390,35 @@ public class KanbanBoard {
 		return "text-align: left;" + "border-style: outset; " + colorCSS;
 	}
 	
+	protected boolean kanbanHasProcesses() {
+		return processController.kanbanHasProcesses();
+	}
 	
+	protected void resetAndPopulateArrays() {
+		processController.resetAndPopulateArrays();
+	}
+	
+	protected boolean kanbanHasStatusProcess() {
+		return processController.kanbanHasStatusProcess();
+	}
+	
+	protected boolean kanbanHasCardProcess() {
+		return processController.kanbanHasCardProcess();
+	}
+	
+	protected boolean kanbanHasBoardProcess() {
+		return processController.kanbanHasBoardProcess();
+	}
+	
+	protected List<ProcessUIElement> getStatusProcessElements() {
+		return processController.getStatusProcessElements();
+	}
+	
+	protected List<ProcessUIElement> getCardProcessElements() {
+		return processController.getCardProcessElements();
+	}
+	
+	protected List<ProcessUIElement> getBoardProcessElements() {
+		return processController.getBoardProcessElements();
+	}
 }

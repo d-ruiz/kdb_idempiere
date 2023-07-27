@@ -73,10 +73,10 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
 import org.kanbanboard.apps.form.KanbanBoard;
+import org.kanbanboard.apps.form.ProcessUIElement;
 import org.kanbanboard.model.KanbanSwimlane;
 import org.kanbanboard.model.MKanbanCard;
 import org.kanbanboard.model.MKanbanParameter;
-import org.kanbanboard.model.MKanbanProcess;
 import org.kanbanboard.model.MKanbanStatus;
 import org.kanbanboard.model.MKanbanSwimlaneConfiguration;
 import org.zkoss.zhtml.Span;
@@ -808,22 +808,22 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	 */
 	private void setStatusProcessMenupopup() {
 		
-		if (getStatusProcesses() != null && getStatusProcesses().size() > 0) {
+		if (kanbanHasStatusProcess()) {
 			menupopup = new Menupopup();
 			menupopup.setId(KDB_PROCESS_MENUPOPUP+windowNo);
 			menupopup.addEventListener(Events.ON_OPEN, this);
 			Menuitem menuitem;
 			
 			//Add the processes
-			for (MKanbanProcess process : getStatusProcesses()) {
+			for (ProcessUIElement element : getStatusProcessElements()) {
 				menuitem = new Menuitem();
-				menuitem.setId(Integer.toString(process.getKDB_KanbanProcess_ID()));
-				menuitem.setLabel(process.getName());
+				menuitem.setId(Integer.toString(element.getElementID()));
+				menuitem.setLabel(element.getName());
 				if (ThemeManager.isUseFontIconForImage())
 					menuitem.setIconSclass("z-icon-Process");
 				else
 					menuitem.setImage(ThemeManager.getThemeResource("images/Process16.png"));
-				menuitem.setAttribute(PROCESS_ID_KEY, Integer.valueOf(process.getAD_Process_ID()));
+				menuitem.setAttribute(PROCESS_ID_KEY, Integer.valueOf(element.getAD_Process_ID()));
 				menuitem.setAttribute(PROCESS_TYPE, STATUS_PROCESS);
 				menuitem.addEventListener(Events.ON_CLICK, this);
 				menupopup.appendChild(menuitem);
@@ -856,26 +856,25 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		
 		cardpopup = new Menupopup();
 		
-		if (getCardProcesses() != null && getCardProcesses().size() > 0) {
+		if (kanbanHasCardProcess()) {
 			
 			cardpopup.setId("cardMenu");
 			Menuitem menuitem;
 			
 			//Add the processes
-			for (MKanbanProcess process : getCardProcesses()) {
+			for (ProcessUIElement element : getCardProcessElements()) {
 				menuitem = new Menuitem();
-				menuitem.setId(Integer.toString(process.getKDB_KanbanProcess_ID()));
-				menuitem.setLabel(process.getName());
+				menuitem.setId(Integer.toString(element.getElementID()));
+				menuitem.setLabel(element.getName());
 				if (ThemeManager.isUseFontIconForImage())
 					menuitem.setIconSclass("z-icon-Process");
 				else
 					menuitem.setImage(ThemeManager.getThemeResource("images/Process16.png"));
-				menuitem.setAttribute(PROCESS_ID_KEY, Integer.valueOf(process.getAD_Process_ID()));
+				menuitem.setAttribute(PROCESS_ID_KEY, Integer.valueOf(element.getAD_Process_ID()));
 				menuitem.setAttribute(PROCESS_TYPE, CARD_PROCESS);
 				menuitem.addEventListener(Events.ON_CLICK, this);
 				cardpopup.appendChild(menuitem);
 			}
-			
 		}
 		kForm.appendChild(cardpopup);
 	}//setCardMenupopup
@@ -885,17 +884,17 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	 */
 	private void setBoardProcess() {
 
-		if (getBoardProcesses() != null && getBoardProcesses().size() > 0) {
+		if (kanbanHasBoardProcess()) {
 			boardButtonsDiv = new Div();
 			boardButtonsDiv.setHeight("100%");
 			boardButtonsDiv.setStyle("display: table-cell; vertical-align: middle;");
 			Button b;
-			for (MKanbanProcess process : getBoardProcesses()) {
+			for (ProcessUIElement element : getBoardProcessElements()) {
 				b = new Button();
-				b.setId(Integer.toString(process.getKDB_KanbanProcess_ID()));
+				b.setId(Integer.toString(element.getElementID()));
 				b.setImage(null);
-				b.setLabel(process.getProcess().get_Translation(MProcess.COLUMNNAME_Name));
-				b.setAttribute(PROCESS_ID_KEY, Integer.valueOf(process.getAD_Process_ID()));
+				b.setLabel(element.getName());
+				b.setAttribute(PROCESS_ID_KEY, Integer.valueOf(element.getAD_Process_ID()));
 				b.setAttribute(PROCESS_TYPE, BOARD_PROCESS);
 				b.addEventListener(Events.ON_CLICK, this);
 				b.setHeight("70%");

@@ -20,35 +20,37 @@
  * MA 02110-1301, USA.                                                 *
  *                                                                     *
  * Contributors:                                                       *
- * - Diego Ruiz - Bx Service GmbH                                      *
+ * - Diego Ruiz -                                                      *
  **********************************************************************/
+package org.kanbanboard.apps.form;
 
-package org.kanbanboard.model;
-
-import java.sql.ResultSet;
-import java.util.Properties;
-
-import org.compiere.model.MProcess;
-
-public class MKanbanProcess extends X_KDB_KanbanProcess{
-
-	private static final long serialVersionUID = 1974920563608031327L;
-
-
-	public MKanbanProcess(Properties ctx, ResultSet rs, String trxName) {
-		super(ctx, rs, trxName);
+public class ProcessUIElement {
+	
+	private int elementID;
+	private String name;
+	private int AD_Process_ID;
+	
+	public int getElementID() {
+		return elementID;
 	}
 	
-	public MKanbanProcess(Properties ctx, int KDB_KanbanProcess_ID, String trxName) {
-		super(ctx, KDB_KanbanProcess_ID, trxName);
+	public void setElementID(int elementID) {
+		this.elementID = elementID;
 	}
 	
-	public MProcess getProcess() {
-		return MProcess.get(getAD_Process_ID());
+	public String getName() {
+		return name;
 	}
 	
-	public String getProcessName() {
-		return getProcess().get_Translation(MProcess.COLUMNNAME_Name);
+	public void setName(String name) {
+		this.name = name;
 	}
-
+	
+	public int getAD_Process_ID() {
+		return AD_Process_ID;
+	}
+	
+	public void setAD_Process_ID(int aD_Process_ID) {
+		AD_Process_ID = aD_Process_ID;
+	} 
 }
