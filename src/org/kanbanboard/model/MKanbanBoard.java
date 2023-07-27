@@ -152,6 +152,10 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 			columnId = getKDB_ColumnTable_ID();
 		return MColumn.get(columnId);
 	}
+	
+	public String getStatusColumnName() {
+		return getStatusColumn().getColumnName();
+	}
 
 	public void setPrintableNames() {
 
