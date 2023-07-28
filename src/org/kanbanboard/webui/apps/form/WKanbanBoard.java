@@ -984,14 +984,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			Menuitem selectedItem = (Menuitem) e.getTarget();
 			//Reproduce behavior of "auto" for customized menupopup
 			if (selectedItem.isCheckmark()) {
-				Column column = (Column) kanbanPanel.getColumns().getFirstChild();
-				while (column != null) {
-					if(column.getId().equals(selectedItem.getId())) {
-						column.setVisible(selectedItem.isChecked());
-						break;
-					}
-					column = (Column) column.getNextSibling();
-				}
+				changeColumnVisibility(selectedItem);
 			} else {
 				enableButtons(false);
 				int referenceID = 0;
@@ -1080,6 +1073,17 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	 */
 	private boolean isRightClickOnCard(Event e) {
 		return Events.ON_RIGHT_CLICK.equals(e.getName()) && (e.getTarget() instanceof Cell);	
+	}
+	
+	private void changeColumnVisibility(Menuitem selectedItem) {
+		Column column = (Column) kanbanPanel.getColumns().getFirstChild();
+		while (column != null) {
+			if(column.getId().equals(selectedItem.getId())) {
+				column.setVisible(selectedItem.isChecked());
+				break;
+			}
+			column = (Column) column.getNextSibling();
+		}
 	}
 	
 	private void collapseSwimlane(Row selectedRow) {
