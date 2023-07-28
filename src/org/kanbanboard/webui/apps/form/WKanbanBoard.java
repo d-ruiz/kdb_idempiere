@@ -924,16 +924,13 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	 */
 	public void onEvent(Event e) {
 
-		// select an item within the list -- set it active and show the properties
-		if (Events.ON_SELECT.equals(e.getName()) && e.getTarget() instanceof Listbox) {
+		if (isInteractionWithAList(e)) {
 			if (e.getTarget().equals(kanbanListbox)) {
 				selectKanbanBoard();
 			} else if (e.getTarget().equals(swimlaneListbox)) {
 				selectSwimlane();
 			}
-		}
-		// Check event ONDoubleCLICK on a cell Navigate into documents
-		else if (Events.ON_DOUBLE_CLICK.equals(e.getName()) && (e.getTarget() instanceof Cell)) {
+		} else if (isDoubleClickOnCard(e)) {
 			MKanbanCard card = mapCellColumn.get(e.getTarget());
 			int recordId = card.getRecordID();
 			int AD_Table_ID = getAd_Table_id();
@@ -973,9 +970,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				else 
 					repaintCards();
 			}
-		}
-		//Check Event on click for processes
-		else if (Events.ON_CLICK.equals(e.getName()) && e.getTarget() instanceof Button) {
+		} else if (isClickOnBoardProcess(e)) {
 			Button clickedButton = (Button) e.getTarget();
 
 			if (clickedButton.getId().equals(KDB_REFRESH_BUTTON_ID)) {
@@ -985,7 +980,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			} else {
 				runProcess(clickedButton.getAttribute(PROCESS_ID_KEY), getSaveKeys(BOARD_PROCESS, 0));
 			}
-		} else if (Events.ON_CLICK.equals(e.getName()) && e.getTarget() instanceof Menuitem) {
+		} else if (isClickOnMenuItem(e)) {
 			Menuitem selectedItem = (Menuitem) e.getTarget();
 			//Reproduce behavior of "auto" for customized menupopup
 			if (selectedItem.isCheckmark()) {
@@ -1011,17 +1006,13 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				}
 				runProcess(selectedItem.getAttribute(PROCESS_ID_KEY), getSaveKeys((String) selectedItem.getAttribute(PROCESS_TYPE),referenceID));
 			}
-		} else if (Events.ON_CLICK.equals(e.getName()) && e.getTarget() instanceof Row) {
+		} else if (isClickOnSwimlane(e)) {
 			collapseSwimlane((Row) e.getTarget());
-		}
-		//Right click on cards for associated process
-		else if (Events.ON_RIGHT_CLICK.equals(e.getName()) && (e.getTarget() instanceof Cell)) {
+		} else if (isRightClickOnCard(e)) {
 			//Sets the record ID of the selected card to use in the associated process
 			MKanbanCard card = mapCellColumn.get(e.getTarget());
 			rightClickedCard = card.getRecordID();
-		}
-
-		else if (Events.ON_OPEN.equals(e.getName()) && (e.getTarget() instanceof Menupopup)) {
+		} else if (Events.ON_OPEN.equals(e.getName()) && (e.getTarget() instanceof Menupopup)) {
 
 			OpenEvent openEvt = (OpenEvent) e;
 			if (openEvt.isOpen()) {
@@ -1038,6 +1029,58 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			}
 		}
 	}//onEvent
+	
+	/**
+	 * Lists are Kanban Board list or Swimlane list
+	 * @param Event e
+	 * @return true if the user interacted with a list component
+	 */
+	private boolean isInteractionWithAList(Event e) {
+		return Events.ON_SELECT.equals(e.getName()) && e.getTarget() instanceof Listbox;
+	}
+	
+	/**
+	 * Check event ONDoubleCLICK on a cell Navigate into documents
+	 * @param Event e
+	 * @return
+	 */
+	private boolean isDoubleClickOnCard(Event e) {
+		return Events.ON_DOUBLE_CLICK.equals(e.getName()) && (e.getTarget() instanceof Cell);
+	}
+	
+	/**
+	 * Board Process includes the refresh button
+	 * @param e
+	 * @return true if the user clicked on a button with board access 
+	 */
+	private boolean isClickOnBoardProcess(Event e) {
+		return Events.ON_CLICK.equals(e.getName()) && e.getTarget() instanceof Button;	
+	}
+	
+	/**
+	 * Menu items are either status processes or card processes
+	 * @param e
+	 * @return true if the user clicked a menu item
+	 */
+	private boolean isClickOnMenuItem(Event e) {
+		return Events.ON_CLICK.equals(e.getName()) && e.getTarget() instanceof Menuitem;	
+	}
+	
+	/**
+	 * @param e
+	 * @return true if the user clicked on a swimlane header 
+	 */
+	private boolean isClickOnSwimlane(Event e) {
+		return Events.ON_CLICK.equals(e.getName()) && e.getTarget() instanceof Row;	
+	}
+	
+	/**
+	 * @param e
+	 * @return true if the user right clicked on a card 
+	 */
+	private boolean isRightClickOnCard(Event e) {
+		return Events.ON_RIGHT_CLICK.equals(e.getName()) && (e.getTarget() instanceof Cell);	
+	}
 	
 	private void collapseSwimlane(Row selectedRow) {
 		String value = (String) selectedRow.getAttribute(KDB_SWIMLANE_ATTRIBUTE);
