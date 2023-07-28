@@ -23,15 +23,16 @@ import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
 /** Generated Model for KDB_Parameter
- *  @author iDempiere (generated) 
- *  @version Release 5.1 - $Id$ */
-public class X_KDB_Parameter extends PO implements I_KDB_Parameter, I_Persistent 
+ *  @author iDempiere (generated)
+ *  @version Release 11 - $Id$ */
+@org.adempiere.base.Model(table="KDB_Parameter")
+public class X_KDB_Parameter extends PO implements I_KDB_Parameter, I_Persistent
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190127L;
+	private static final long serialVersionUID = 20230727L;
 
     /** Standard Constructor */
     public X_KDB_Parameter (Properties ctx, int KDB_Parameter_ID, String trxName)
@@ -41,6 +42,56 @@ public class X_KDB_Parameter extends PO implements I_KDB_Parameter, I_Persistent
         {
 			setIsRange (false);
 			setKDB_ColumnTable_ID (0);
+			setKDB_IsShowParameterName (false);
+// N
+			setKDB_KanbanBoard_ID (0);
+			setKDB_Parameter_ID (0);
+			setName (null);
+        } */
+    }
+
+    /** Standard Constructor */
+    public X_KDB_Parameter (Properties ctx, int KDB_Parameter_ID, String trxName, String ... virtualColumns)
+    {
+      super (ctx, KDB_Parameter_ID, trxName, virtualColumns);
+      /** if (KDB_Parameter_ID == 0)
+        {
+			setIsRange (false);
+			setKDB_ColumnTable_ID (0);
+			setKDB_IsShowParameterName (false);
+// N
+			setKDB_KanbanBoard_ID (0);
+			setKDB_Parameter_ID (0);
+			setName (null);
+        } */
+    }
+
+    /** Standard Constructor */
+    public X_KDB_Parameter (Properties ctx, String KDB_Parameter_UU, String trxName)
+    {
+      super (ctx, KDB_Parameter_UU, trxName);
+      /** if (KDB_Parameter_UU == null)
+        {
+			setIsRange (false);
+			setKDB_ColumnTable_ID (0);
+			setKDB_IsShowParameterName (false);
+// N
+			setKDB_KanbanBoard_ID (0);
+			setKDB_Parameter_ID (0);
+			setName (null);
+        } */
+    }
+
+    /** Standard Constructor */
+    public X_KDB_Parameter (Properties ctx, String KDB_Parameter_UU, String trxName, String ... virtualColumns)
+    {
+      super (ctx, KDB_Parameter_UU, trxName, virtualColumns);
+      /** if (KDB_Parameter_UU == null)
+        {
+			setIsRange (false);
+			setKDB_ColumnTable_ID (0);
+			setKDB_IsShowParameterName (false);
+// N
 			setKDB_KanbanBoard_ID (0);
 			setKDB_Parameter_ID (0);
 			setName (null);
@@ -70,15 +121,14 @@ public class X_KDB_Parameter extends PO implements I_KDB_Parameter, I_Persistent
 
     public String toString()
     {
-      StringBuffer sb = new StringBuffer ("X_KDB_Parameter[")
-        .append(get_ID()).append("]");
+      StringBuilder sb = new StringBuilder ("X_KDB_Parameter[")
+        .append(get_ID()).append(",Name=").append(getName()).append("]");
       return sb.toString();
     }
 
 	/** Set Default Logic.
-		@param DefaultValue 
-		Default value hierarchy, separated by ;
-	  */
+		@param DefaultValue Default value hierarchy, separated by ;
+	*/
 	public void setDefaultValue (String DefaultValue)
 	{
 		set_Value (COLUMNNAME_DefaultValue, DefaultValue);
@@ -93,9 +143,8 @@ public class X_KDB_Parameter extends PO implements I_KDB_Parameter, I_Persistent
 	}
 
 	/** Set Default Logic 2.
-		@param DefaultValue2 
-		Default value hierarchy, separated by ;
-	  */
+		@param DefaultValue2 Default value hierarchy, separated by ;
+	*/
 	public void setDefaultValue2 (String DefaultValue2)
 	{
 		set_Value (COLUMNNAME_DefaultValue2, DefaultValue2);
@@ -110,9 +159,8 @@ public class X_KDB_Parameter extends PO implements I_KDB_Parameter, I_Persistent
 	}
 
 	/** Set Description.
-		@param Description 
-		Optional short description of the record
-	  */
+		@param Description Optional short description of the record
+	*/
 	public void setDescription (String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
@@ -127,9 +175,8 @@ public class X_KDB_Parameter extends PO implements I_KDB_Parameter, I_Persistent
 	}
 
 	/** Set Range.
-		@param IsRange 
-		The parameter is a range of values
-	  */
+		@param IsRange The parameter is a range of values
+	*/
 	public void setIsRange (boolean IsRange)
 	{
 		set_Value (COLUMNNAME_IsRange, Boolean.valueOf(IsRange));
@@ -152,11 +199,13 @@ public class X_KDB_Parameter extends PO implements I_KDB_Parameter, I_Persistent
 
 	public org.compiere.model.I_AD_Column getKDB_ColumnTable() throws RuntimeException
     {
-		return (org.compiere.model.I_AD_Column)MTable.get(getCtx(), org.compiere.model.I_AD_Column.Table_Name)
-			.getPO(getKDB_ColumnTable_ID(), get_TrxName());	}
+		return (org.compiere.model.I_AD_Column)MTable.get(getCtx(), org.compiere.model.I_AD_Column.Table_ID)
+			.getPO(getKDB_ColumnTable_ID(), get_TrxName());
+	}
 
 	/** Set Column Table.
-		@param KDB_ColumnTable_ID Column Table	  */
+		@param KDB_ColumnTable_ID Column Table
+	*/
 	public void setKDB_ColumnTable_ID (int KDB_ColumnTable_ID)
 	{
 		if (KDB_ColumnTable_ID < 1) 
@@ -175,13 +224,37 @@ public class X_KDB_Parameter extends PO implements I_KDB_Parameter, I_Persistent
 		return ii.intValue();
 	}
 
+	/** Set Show Parameter Name.
+		@param KDB_IsShowParameterName Show Parameter Name
+	*/
+	public void setKDB_IsShowParameterName (boolean KDB_IsShowParameterName)
+	{
+		set_Value (COLUMNNAME_KDB_IsShowParameterName, Boolean.valueOf(KDB_IsShowParameterName));
+	}
+
+	/** Get Show Parameter Name.
+		@return Show Parameter Name	  */
+	public boolean isShowParameterName()
+	{
+		Object oo = get_Value(COLUMNNAME_KDB_IsShowParameterName);
+		if (oo != null)
+		{
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	public org.kanbanboard.model.I_KDB_KanbanBoard getKDB_KanbanBoard() throws RuntimeException
     {
-		return (org.kanbanboard.model.I_KDB_KanbanBoard)MTable.get(getCtx(), org.kanbanboard.model.I_KDB_KanbanBoard.Table_Name)
-			.getPO(getKDB_KanbanBoard_ID(), get_TrxName());	}
+		return (org.kanbanboard.model.I_KDB_KanbanBoard)MTable.get(getCtx(), org.kanbanboard.model.I_KDB_KanbanBoard.Table_ID)
+			.getPO(getKDB_KanbanBoard_ID(), get_TrxName());
+	}
 
 	/** Set Kanban Board.
-		@param KDB_KanbanBoard_ID Kanban Board	  */
+		@param KDB_KanbanBoard_ID Kanban Board
+	*/
 	public void setKDB_KanbanBoard_ID (int KDB_KanbanBoard_ID)
 	{
 		if (KDB_KanbanBoard_ID < 1) 
@@ -201,7 +274,8 @@ public class X_KDB_Parameter extends PO implements I_KDB_Parameter, I_Persistent
 	}
 
 	/** Set Kanban Parameter.
-		@param KDB_Parameter_ID Kanban Parameter	  */
+		@param KDB_Parameter_ID Kanban Parameter
+	*/
 	public void setKDB_Parameter_ID (int KDB_Parameter_ID)
 	{
 		if (KDB_Parameter_ID < 1) 
@@ -221,7 +295,8 @@ public class X_KDB_Parameter extends PO implements I_KDB_Parameter, I_Persistent
 	}
 
 	/** Set KDB_Parameter_UU.
-		@param KDB_Parameter_UU KDB_Parameter_UU	  */
+		@param KDB_Parameter_UU KDB_Parameter_UU
+	*/
 	public void setKDB_Parameter_UU (String KDB_Parameter_UU)
 	{
 		set_Value (COLUMNNAME_KDB_Parameter_UU, KDB_Parameter_UU);
@@ -235,9 +310,8 @@ public class X_KDB_Parameter extends PO implements I_KDB_Parameter, I_Persistent
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Alphanumeric identifier of the entity
+	*/
 	public void setName (String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
@@ -261,26 +335,25 @@ public class X_KDB_Parameter extends PO implements I_KDB_Parameter, I_Persistent
 
 	/** QueryOperator AD_Reference_ID=200061 */
 	public static final int QUERYOPERATOR_AD_Reference_ID=200061;
-	/** Like = Like */
-	public static final String QUERYOPERATOR_Like = "Like";
-	/** = = = */
-	public static final String QUERYOPERATOR_Eq = "=";
-	/** > = > */
-	public static final String QUERYOPERATOR_Gt = ">";
-	/** >= = >= */
-	public static final String QUERYOPERATOR_GtEq = ">=";
-	/** < = < */
-	public static final String QUERYOPERATOR_Le = "<";
-	/** <= = <= */
-	public static final String QUERYOPERATOR_LeEq = "<=";
 	/** != = != */
 	public static final String QUERYOPERATOR_NotEq = "!=";
+	/** &lt; = &lt; */
+	public static final String QUERYOPERATOR_Le = "<";
+	/** &lt;= = &lt;= */
+	public static final String QUERYOPERATOR_LeEq = "<=";
+	/** = = = */
+	public static final String QUERYOPERATOR_Eq = "=";
+	/** &gt; = &gt; */
+	public static final String QUERYOPERATOR_Gt = ">";
+	/** &gt;= = &gt;= */
+	public static final String QUERYOPERATOR_GtEq = ">=";
 	/** Full Like = LIKE */
 	public static final String QUERYOPERATOR_FullLike = "LIKE";
+	/** Like = Like */
+	public static final String QUERYOPERATOR_Like = "Like";
 	/** Set Query Operator.
-		@param QueryOperator 
-		Operator for database query
-	  */
+		@param QueryOperator Operator for database query
+	*/
 	public void setQueryOperator (String QueryOperator)
 	{
 
@@ -296,9 +369,8 @@ public class X_KDB_Parameter extends PO implements I_KDB_Parameter, I_Persistent
 	}
 
 	/** Set Sequence.
-		@param SeqNo 
-		Method of ordering records; lowest number comes first
-	  */
+		@param SeqNo Method of ordering records; lowest number comes first
+	*/
 	public void setSeqNo (int SeqNo)
 	{
 		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
