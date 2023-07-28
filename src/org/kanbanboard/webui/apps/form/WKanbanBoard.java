@@ -982,22 +982,10 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			}
 		} else if (isClickOnMenuItem(e)) {
 			Menuitem selectedItem = (Menuitem) e.getTarget();
-			//Reproduce behavior of "auto" for customized menupopup
-			if (selectedItem.isCheckmark()) {
+			if (selectedItem.isCheckmark()) { 			//Reproduce behavior of "auto" for customized menupopup
 				changeColumnVisibility(selectedItem);
 			} else {
-				enableButtons(false);
-				int referenceID = 0;
-				
-				if (CARD_PROCESS.equals(selectedItem.getAttribute(PROCESS_TYPE))) {
-					referenceID = rightClickedCard;
-					Env.setContext(Env.getCtx(), windowNo, "KDB_Record_ID", referenceID);
-				} else if (STATUS_PROCESS.equals(selectedItem.getAttribute(PROCESS_TYPE))) {
-					Menupopup popup = (Menupopup) e.getTarget().getParent();
-					Column clickedColumn = (Column) popup.getAttribute("columnRef");
-					referenceID = Integer.parseInt(clickedColumn.getId());
-				}
-				runProcess(selectedItem.getAttribute(PROCESS_ID_KEY), getSaveKeys((String) selectedItem.getAttribute(PROCESS_TYPE),referenceID));
+				runMenuItemProcess(selectedItem, e);
 			}
 		} else if (isClickOnSwimlane(e)) {
 			collapseSwimlane((Row) e.getTarget());
@@ -1084,6 +1072,21 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			}
 			column = (Column) column.getNextSibling();
 		}
+	}
+	
+	private void runMenuItemProcess(Menuitem selectedItem, Event e) {
+		enableButtons(false);
+		int referenceID = 0;
+		
+		if (CARD_PROCESS.equals(selectedItem.getAttribute(PROCESS_TYPE))) {
+			referenceID = rightClickedCard;
+			Env.setContext(Env.getCtx(), windowNo, "KDB_Record_ID", referenceID);
+		} else if (STATUS_PROCESS.equals(selectedItem.getAttribute(PROCESS_TYPE))) {
+			Menupopup popup = (Menupopup) e.getTarget().getParent();
+			Column clickedColumn = (Column) popup.getAttribute("columnRef");
+			referenceID = Integer.parseInt(clickedColumn.getId());
+		}
+		runProcess(selectedItem.getAttribute(PROCESS_ID_KEY), getSaveKeys((String) selectedItem.getAttribute(PROCESS_TYPE),referenceID));
 	}
 	
 	private void collapseSwimlane(Row selectedRow) {
