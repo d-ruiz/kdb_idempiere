@@ -27,6 +27,7 @@ package org.kanbanboard.model;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -70,12 +71,23 @@ public class MKanbanSwimlaneConfiguration extends X_KDB_KanbanSwimlanes {
 		return MColumn.get(getValue()).getColumnName();
 	}
 
-	public List<KanbanSwimlane> getSwimlanes() {
+	public List<KanbanSwimlane> getSwimlanes(List<MKanbanParameter> parameters) {
 		if (swimlanes.isEmpty()) {
 			MColumn column = MColumn.get(getValue());
-			String sqlStatement = KanbanSQLUtils.getColumnSQLStatement(column, getWhereClause(), getOrderByClause());
-			int parameter = column.getAD_Reference_ID() == DisplayType.List ? column.getAD_Reference_Value_ID() 
-					: getAD_Client_ID();
+			Timestamp[] datePara = new Timestamp[2];
+			if(column.getAD_Reference_ID() == DisplayType.Date
+					|| column.getAD_Reference_ID() == DisplayType.DateTime) {
+				datePara = getDatePara(column, parameters);
+			}
+			String sqlStatement = KanbanSQLUtils.getColumnSQLStatement(column, getWhereClause(), getOrderByClause(), datePara[0], datePara[1]);
+			Integer parameter = null;
+			if(column.getAD_Reference_ID() == DisplayType.List)
+				parameter = column.getAD_Reference_Value_ID();
+			else if(column.getAD_Reference_ID() == DisplayType.Date
+					|| column.getAD_Reference_ID() == DisplayType.DateTime)
+				;	// no parameters
+			else
+				parameter = getAD_Client_ID();
 			
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
@@ -100,6 +112,22 @@ public class MKanbanSwimlaneConfiguration extends X_KDB_KanbanSwimlanes {
 		return swimlanes;
 	}
 	
+	private Timestamp[] getDatePara(MColumn column, List<MKanbanParameter> parameters) {
+		Timestamp[] datePara = new Timestamp[2];
+		for(MKanbanParameter kanbanPara : parameters) {
+			if(kanbanPara.getKDB_ColumnTable_ID() == column.getAD_Column_ID()) {
+				datePara[0] = (Timestamp) kanbanPara.getValue();
+				datePara[1] = (Timestamp) kanbanPara.getValueTo();
+				break;
+			}
+		}
+		return datePara;
+	}
+
+	public void clearSwimLanes() {
+		swimlanes.clear();
+	}
+
 	public void refreshSwimlanes() {
 		swimlanes.forEach(swimlane -> swimlane.setPrinted(false));
 	}

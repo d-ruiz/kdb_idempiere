@@ -180,10 +180,6 @@ public class KanbanBoard {
 			statuses = null;
 			boardParameters = null;
 			isReadWrite = null;
-			kanbanBoard.setBoardContent();
-			getBoardParameters();
-			kanbanBoard.getKanbanCards();
-			kanbanBoard.setKanbanQueuedCards();
 			summarySql = null;		
 		}
 	}

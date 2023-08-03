@@ -3,11 +3,13 @@ package org.kanbanboard.utils;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.ChoiceFormat;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.logging.Level;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -24,10 +26,11 @@ public class KanbanSQLUtils {
 	/**	Logger							*/
 	protected static transient CLogger	log = CLogger.getCLogger (KanbanSQLUtils.class);
 	
-	public static PreparedStatement getKanbanPreparedStatement(String sqlStatement, String trxName, int parameter) {
+	public static PreparedStatement getKanbanPreparedStatement(String sqlStatement, String trxName, Integer parameter) {
 		PreparedStatement pstmt = null;
 		pstmt = DB.prepareStatement(sqlStatement, trxName);
-		setParameters(pstmt, parameter);
+		if(parameter != null)
+			setParameters(pstmt, parameter);
 
 		return pstmt;
 	}
@@ -46,6 +49,10 @@ public class KanbanSQLUtils {
 	}
 
 	public static String getColumnSQLStatement(MColumn column, String whereClause, String orderByClause) {
+		return getColumnSQLStatement(column, whereClause, orderByClause, null, null);
+	}
+
+	public static String getColumnSQLStatement(MColumn column, String whereClause, String orderByClause, Object paraFrom, Object paraTo) {
 		StringBuilder sqlSelect = new StringBuilder();
 
 		//Reference List
@@ -67,6 +74,36 @@ public class KanbanSQLUtils {
 			.append(" WHERE ")
 			.append(" AD_Client_ID IN (0, ?) AND")
 			.append(" IsActive = 'Y'");
+		} else if ((column.getAD_Reference_ID() == DisplayType.Date || 
+				column.getAD_Reference_ID() == DisplayType.DateTime)
+				&&
+				(paraFrom == null || paraFrom instanceof Timestamp) && (paraTo == null || paraTo instanceof Timestamp)) {
+			
+			Calendar cal = Calendar.getInstance(); // locale-specific
+			cal.setTime(new Timestamp(System.currentTimeMillis()));
+			cal.set(Calendar.HOUR_OF_DAY, 0);
+			cal.set(Calendar.MINUTE, 0);
+			cal.set(Calendar.SECOND, 0);
+			cal.set(Calendar.MILLISECOND, 0);
+			Timestamp now = new Timestamp(cal.getTimeInMillis());
+			
+			if(paraFrom == null) {
+				if(paraTo == null || ((Timestamp)paraTo).compareTo(now) >= 0)
+					paraFrom = now;
+				else
+					paraFrom = paraTo;
+			}
+			if(paraTo == null) {
+				if(((Timestamp)paraFrom).compareTo(now) <= 0)
+					paraTo = now;
+				else
+					paraTo = paraFrom;
+			}
+			
+			sqlSelect.append(
+				"SELECT to_char(series,'DD-MM-YYYY') as name, trunc(series,'dd')::timestamp as " + column.getColumnName()
+				+ " FROM generate_series('"+paraFrom+"'::timestamp, '"+paraTo+"'::timestamp, '1 day') series  "
+			);
 		}
 
 		if (!Util.isEmpty(whereClause))

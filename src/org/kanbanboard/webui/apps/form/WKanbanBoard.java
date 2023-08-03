@@ -76,6 +76,7 @@ import org.compiere.util.Util;
 import org.kanbanboard.apps.form.KanbanBoard;
 import org.kanbanboard.apps.form.ProcessUIElement;
 import org.kanbanboard.model.KanbanSwimlane;
+import org.kanbanboard.model.MKanbanBoard;
 import org.kanbanboard.model.MKanbanCard;
 import org.kanbanboard.model.MKanbanParameter;
 import org.kanbanboard.model.MKanbanStatus;
@@ -457,11 +458,18 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		if (kanbanBoardId != -1) {
 
 			setKanbanBoard(kanbanBoardId);
+			MKanbanBoard kanbanBoard = getKanbanBoard();
+			initParameters();
+			if(kanbanBoard != null) {
+				kanbanBoard.clearCards();
+				kanbanBoard.setBoardContent();
+				kanbanBoard.getKanbanCards();
+				kanbanBoard.setKanbanQueuedCards();
+			}
 			kanbanPanel.makeNoStrip();
 			kanbanPanel.setVflex(true);
 			kanbanPanel.setSizedByContent(true);
 			kanbanPanel.setSpan("true");
-			initParameters();
 			initKanbanProcess();
 			initSwimlanes();
 

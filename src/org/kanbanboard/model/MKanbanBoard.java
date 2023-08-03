@@ -42,6 +42,7 @@ import org.compiere.model.MTable;
 import org.compiere.model.Query;
 import org.compiere.print.MPrintColor;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
@@ -400,8 +401,12 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		if (column.isVirtualColumn()) {
 			columnQuery.append("(").append(column.getColumnSQL()).append(") AS ");
 		}
-		columnQuery.append(column.getColumnName());
-		
+		if (DisplayType.isDate(column.getAD_Reference_ID())) {
+			columnQuery.append(" trunc(").append(column.getColumnName()).append(")");
+		}
+		else {
+			columnQuery.append(column.getColumnName());
+		}
 		return columnQuery.toString();
 	}
 	
@@ -627,11 +632,15 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		return paramWhereSql.toString();
 	} //addParamSQL
 	
-	public void refreshCards() {
+	public void clearCards() {
 		for (MKanbanStatus status : statuses) {
 			status.clearCards();
 		}
 		numberOfCards = 0;
+	}
+
+	public void refreshCards() {
+		clearCards();
 		getKanbanCards();
 		refreshSwimlanes();
 	}
@@ -650,7 +659,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 				  .orElse(null);
 		
 		if (activeSwimlaneRecord != null) {
-			swimlanesArray = activeSwimlaneRecord.getSwimlanes();
+			swimlanesArray = activeSwimlaneRecord.getSwimlanes(getParameters());
 		}
 
 	}
@@ -661,6 +670,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	
 	private void setDefaultSwimlane() {
 		if (usesSwimlane()) {
+			clearSwimLanes();
 			for (MKanbanSwimlaneConfiguration swimConfig : getSwimlaneConfigurationRecords()) {
 				if (swimConfig.isDefault()) {
 					setActiveSwimlaneRecord(swimConfig.getValue());
@@ -669,6 +679,11 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		}
 	}
 	
+	private void clearSwimLanes() {
+		if(activeSwimlaneRecord != null)
+			activeSwimlaneRecord.clearSwimLanes();
+	}
+
 	private boolean isSwimlaneSelected() {
 		return usesSwimlane() && activeSwimlaneRecord != null;
 	}
