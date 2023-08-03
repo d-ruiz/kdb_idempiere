@@ -959,14 +959,14 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				}
 
 				if (!swapCard(startStatus, endStatus, startField))
-					Messagebox.show(Msg.getMsg(Env.getCtx(), MKanbanCard.KDB_ErrorMessage));
+					Messagebox.show(Msg.getMsg(Env.getCtx(), startField.getStatusChangeMessage()));
 				else 
 					repaintCards();
 			} else if (me.getTarget() instanceof Row) { //Swim lane Header
 				Row endSwimlane = (Row) me.getTarget();
 				MKanbanCard draggedCard = mapCellColumn.get(startItem);
 				if (!swapSwimlanes(draggedCard, endSwimlane))
-					Messagebox.show(Msg.getMsg(Env.getCtx(), MKanbanCard.KDB_ErrorMessage));
+					Messagebox.show(Msg.getMsg(Env.getCtx(), draggedCard.getStatusChangeMessage()));
 				else 
 					repaintCards();
 			}
