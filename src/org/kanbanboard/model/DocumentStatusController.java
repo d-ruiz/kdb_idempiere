@@ -32,8 +32,6 @@ import org.compiere.util.Trx;
 
 public class DocumentStatusController {
 	
-	public static String KDB_InvalidTransitionErrorMessage = "KDB_InvalidTransition";
-	
 	private String errorMessage = "";
 	private PO po = null;
 	private HashMap<String, String> targetAction;
@@ -77,16 +75,20 @@ public class DocumentStatusController {
 				String p_docAction = getDocAction(targetDocAction);
 				//No valid action
 				if (p_docAction == null)
-					throw new IllegalStateException();
+					throw new DocStatusChangeException();
 
 				po.set_ValueOfColumn("DocAction", p_docAction);
 				po.set_TrxName(trx.getTrxName());
 				if (!((DocAction) po).processIt(p_docAction)) {
-					throw new IllegalStateException();
+					throw new DocStatusChangeException(((DocAction) po).getProcessMsg());
 				} else
 					po.saveEx();
 
 				trx.commit();
+			} catch (DocStatusChangeException e) {
+				errorMessage = e.getMessage() != null ? e.getMessage() : "KDB_InvalidTransition";
+				trx.rollback();
+				return false;
 			} catch (IllegalStateException e) {
 				errorMessage = "KDB_InvalidTransition";
 				trx.rollback();
@@ -111,5 +113,17 @@ public class DocumentStatusController {
 	public String getErrorMessage() {
 		return errorMessage;
 	}
+	
+	public static class DocStatusChangeException extends RuntimeException {
 
+		private static final long serialVersionUID = 7661989611920362894L;
+        
+		public DocStatusChangeException() {
+	        super();
+	    }
+
+	    public DocStatusChangeException(String message) {
+	        super(message);
+	    }
+    }
 }

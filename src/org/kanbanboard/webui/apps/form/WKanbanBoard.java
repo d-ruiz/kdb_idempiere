@@ -59,6 +59,7 @@ import org.adempiere.webui.panel.IFormController;
 import org.adempiere.webui.session.SessionManager;
 import org.adempiere.webui.theme.ThemeManager;
 import org.adempiere.webui.util.ZKUpdateUtil;
+import org.adempiere.webui.window.Dialog;
 import org.adempiere.webui.window.WTextEditorDialog;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldVO;
@@ -959,14 +960,14 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				}
 
 				if (!swapCard(startStatus, endStatus, startField))
-					Messagebox.show(Msg.getMsg(Env.getCtx(), startField.getStatusChangeMessage()));
+					Dialog.warn(windowNo, Msg.parseTranslation(Env.getCtx(), startField.getStatusChangeMessage()));
 				else 
 					repaintCards();
 			} else if (me.getTarget() instanceof Row) { //Swim lane Header
 				Row endSwimlane = (Row) me.getTarget();
 				MKanbanCard draggedCard = mapCellColumn.get(startItem);
 				if (!swapSwimlanes(draggedCard, endSwimlane))
-					Messagebox.show(Msg.getMsg(Env.getCtx(), draggedCard.getStatusChangeMessage()));
+					Dialog.warn(windowNo, Msg.parseTranslation(Env.getCtx(), draggedCard.getStatusChangeMessage()));
 				else 
 					repaintCards();
 			}
