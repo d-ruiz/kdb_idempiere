@@ -89,7 +89,7 @@ public class DocumentStatusController {
 				errorMessage = e.getMessage() != null ? e.getMessage() : "KDB_InvalidTransition";
 				trx.rollback();
 				return false;
-			} catch (IllegalStateException e) {
+			} catch (IllegalStateException e) { //Thrown by the processIt method internally
 				errorMessage = "KDB_InvalidTransition";
 				trx.rollback();
 				return false;
