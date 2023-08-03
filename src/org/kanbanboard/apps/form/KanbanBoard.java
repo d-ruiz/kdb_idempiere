@@ -31,6 +31,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -43,6 +44,7 @@ import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.compiere.util.Msg;
 import org.compiere.util.Util;
 import org.kanbanboard.model.KanbanSwimlane;
 import org.kanbanboard.model.MKanbanBoard;
@@ -403,15 +405,21 @@ public class KanbanBoard {
 		return processController.getSaveKeys(processType, referenceID);
 	}
 	
-	protected void completeAllCardsInStatus(int referenceID) {
+	protected String completeAllCardsInStatus(int referenceID) {
 		MKanbanStatus startStatus = kanbanBoard.getStatus(referenceID);
 		if (startStatus != null) {
 			MKanbanStatus endStatus = kanbanBoard.getStatus("CO");
 			if (endStatus == null)
-				throw new AdempiereException("Board does not have a complete status");
-			for (MKanbanCard card : startStatus.getNonQueuedCards()) {
-				swapCard(startStatus, endStatus, card);
+				throw new AdempiereException("Board does not have a complete status"); //TODO:Test
+			
+			Iterator<MKanbanCard> it = startStatus.getNonQueuedCards().iterator();
+			while (it.hasNext()) {
+				MKanbanCard card = it.next();
+				if (!swapCard(startStatus, endStatus, card)) {
+					return Msg.getMsg(Env.getCtx(), MKanbanCard.KDB_ErrorMessage) + System.lineSeparator() +  card.getKanbanCardText();
+				}
 			}
 		}
+		return "OK";
 	}
 }

@@ -86,7 +86,7 @@ public class KanbanBoardProcessController {
 	}
 	
 	public boolean kanbanHasProcesses() {
-		return getNumberOfProcesses() > 0  && getProcesses() != null;
+		return (getNumberOfProcesses() > 0  && getProcesses() != null) || kanbanBoard.isDocActionKanbanBoard();
 	}
 	
 	public boolean kanbanHasStatusProcess() {

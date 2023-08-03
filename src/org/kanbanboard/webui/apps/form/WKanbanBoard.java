@@ -1086,10 +1086,25 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			Column clickedColumn = (Column) popup.getAttribute("columnRef");
 			referenceID = Integer.parseInt(clickedColumn.getId());
 		}
-		if ((Integer) selectedItem.getAttribute(PROCESS_ID_KEY) == -123456789)
-			completeAllCardsInStatus(referenceID);
+		runMenuItemProcess(selectedItem, referenceID);
+	}
+	
+	private void runMenuItemProcess(Menuitem selectedItem, int referenceID) {
+		Integer AD_Process_ID = (Integer) selectedItem.getAttribute(PROCESS_ID_KEY);
+		if (AD_Process_ID == -123456789)
+			runCompleteAllCards(referenceID);
 		else
-			runProcess(selectedItem.getAttribute(PROCESS_ID_KEY), getSaveKeys((String) selectedItem.getAttribute(PROCESS_TYPE),referenceID));
+			runProcess(AD_Process_ID, getSaveKeys((String) selectedItem.getAttribute(PROCESS_TYPE),referenceID));
+	}
+	
+	private void runCompleteAllCards(int referenceID) {
+		showBusyDialog();
+		//TODO: Display confirmation dialog
+		String message = completeAllCardsInStatus(referenceID);
+		if (!"OK".equals(message))
+			Messagebox.show(message);
+		repaintCards();
+		hideBusyDialog();
 	}
 	
 	private void collapseSwimlane(Row selectedRow) {
