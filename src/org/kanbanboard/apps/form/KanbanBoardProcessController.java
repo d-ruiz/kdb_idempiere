@@ -90,7 +90,7 @@ public class KanbanBoardProcessController {
 	}
 	
 	public boolean kanbanHasStatusProcess() {
-		return !statusProcesses.isEmpty();
+		return !statusProcesses.isEmpty() || kanbanBoard.isDocActionKanbanBoard();
 	}
 	
 	public boolean kanbanHasCardProcess() {
@@ -106,7 +106,17 @@ public class KanbanBoardProcessController {
 	}
 	
 	public List<ProcessUIElement> getStatusProcessElements() {
-		return getProcessElements(statusProcesses);
+		List<ProcessUIElement> processElements = getProcessElements(statusProcesses);
+		if (kanbanBoard.isDocActionKanbanBoard()) {
+			ProcessUIElement element;
+			element = new ProcessUIElement();
+			element.setElementID(123456789);
+			element.setName("Complete All Documents");
+			element.setAD_Process_ID(-123456789);
+			processElements.add(element);
+		}
+			
+		return processElements;
 	}
 	
 	public List<ProcessUIElement> getCardProcessElements() {

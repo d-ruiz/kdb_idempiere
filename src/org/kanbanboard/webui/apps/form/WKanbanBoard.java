@@ -1086,7 +1086,10 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			Column clickedColumn = (Column) popup.getAttribute("columnRef");
 			referenceID = Integer.parseInt(clickedColumn.getId());
 		}
-		runProcess(selectedItem.getAttribute(PROCESS_ID_KEY), getSaveKeys((String) selectedItem.getAttribute(PROCESS_TYPE),referenceID));
+		if ((Integer) selectedItem.getAttribute(PROCESS_ID_KEY) == -123456789)
+			completeAllCardsInStatus(referenceID);
+		else
+			runProcess(selectedItem.getAttribute(PROCESS_ID_KEY), getSaveKeys((String) selectedItem.getAttribute(PROCESS_TYPE),referenceID));
 	}
 	
 	private void collapseSwimlane(Row selectedRow) {

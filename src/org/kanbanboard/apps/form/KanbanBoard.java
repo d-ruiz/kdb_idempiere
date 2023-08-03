@@ -34,6 +34,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.MTable;
@@ -400,5 +401,17 @@ public class KanbanBoard {
 	
 	protected Collection<KeyNamePair> getSaveKeys (String processType, int referenceID) {
 		return processController.getSaveKeys(processType, referenceID);
+	}
+	
+	protected void completeAllCardsInStatus(int referenceID) {
+		MKanbanStatus startStatus = kanbanBoard.getStatus(referenceID);
+		if (startStatus != null) {
+			MKanbanStatus endStatus = kanbanBoard.getStatus("CO");
+			if (endStatus == null)
+				throw new AdempiereException("Board does not have a complete status");
+			for (MKanbanCard card : startStatus.getNonQueuedCards()) {
+				swapCard(startStatus, endStatus, card);
+			}
+		}
 	}
 }
