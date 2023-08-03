@@ -30,7 +30,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -42,7 +41,6 @@ import org.compiere.model.MRole;
 import org.compiere.model.MTable;
 import org.compiere.model.Query;
 import org.compiere.print.MPrintColor;
-import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
@@ -69,7 +67,6 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	private boolean isRefList = true;
 	private boolean statusProcessed = false;
 	private String summarySql;
-	private HashMap<String, String> targetAction;
 	private MKanbanSwimlaneConfiguration activeSwimlaneRecord;
 	
 	private int lastColumnIndex;
@@ -94,36 +91,8 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	}
 	
 	public void setBoardContent() {
- 		initTargetAction();
  		getStatuses();
  		setDefaultSwimlane();
-	}
-	
-	/**
-	 * Maps the DocStatus to the corresponding DocAction
-	 */
-	private void initTargetAction() {
-		targetAction = new HashMap<>();
-		
-		//No movement to this states manually
-		targetAction.put(DocAction.STATUS_Drafted, null);
-		targetAction.put(DocAction.STATUS_Invalid, null);
-		targetAction.put(DocAction.STATUS_Unknown, null);
-		targetAction.put(DocAction.STATUS_WaitingConfirmation, null);
-		targetAction.put(DocAction.STATUS_WaitingPayment, null);
-
-		//Map the DocStatus to DocAction 
-		targetAction.put(DocAction.STATUS_Completed, DocAction.ACTION_Complete);
-		targetAction.put(DocAction.STATUS_NotApproved, DocAction.ACTION_Reject);
-		targetAction.put(DocAction.STATUS_Voided, DocAction.ACTION_Void);
-		targetAction.put(DocAction.STATUS_Approved, DocAction.ACTION_Approve);		
-		targetAction.put(DocAction.STATUS_Reversed, DocAction.ACTION_Reverse_Correct);
-		targetAction.put(DocAction.STATUS_Closed, DocAction.ACTION_Close);
-		targetAction.put(DocAction.STATUS_InProgress, DocAction.ACTION_Prepare);
-	}
-	
-	public String getDocAction(String newDocStatus) {
-		return targetAction.get(newDocStatus);
 	}
 
 	public MTable getTable() {

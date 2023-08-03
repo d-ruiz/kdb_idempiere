@@ -43,17 +43,12 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
-import org.compiere.util.Trx;
 import org.compiere.util.Util;
-
-
 
 public class MKanbanCard {
 
 	/**	Logger							*/
 	protected transient CLogger	log = CLogger.getCLogger (getClass());
-
-	public static String KDB_ErrorMessage = "KDB_InvalidTransition";
 
 	private int 		  recordId;
 	private MKanbanBoard  kanbanBoard;
@@ -67,6 +62,7 @@ public class MKanbanCard {
 	
 	private String        textColor      = null;
 	private String        cardColor      = null;
+	private String        statusChangeMessage = null;
 
 	public BigDecimal getPriorityValue() {
 		return priorityValue;
@@ -104,6 +100,9 @@ public class MKanbanCard {
 		this.recordId = name;
 	}
 
+	public String getStatusChangeMessage() {
+		return statusChangeMessage;
+	}
 
 	public boolean isQueued() {
 		return isQueued;
@@ -131,35 +130,9 @@ public class MKanbanCard {
 		boolean success=true;
 
 		if (statusColumn.equals(MKanbanBoard.STATUSCOLUMN_DocStatus)) {
-			if (m_po instanceof DocAction && m_po.get_ColumnIndex("DocAction") >= 0) {
-				Trx trx = Trx.get(Trx.createTrxName("DCK"), true);
-				try {
-					String p_docAction = kanbanBoard.getDocAction(newStatusValue);
-					//No valid action
-					if (p_docAction == null)
-						throw new IllegalStateException();
-
-					m_po.set_ValueOfColumn("DocAction", p_docAction);
-					m_po.set_TrxName(trx.getTrxName());
-					if (!((DocAction) m_po).processIt(p_docAction)) {
-						throw new IllegalStateException();
-					} else
-						m_po.saveEx();
-
-					trx.commit();
-				} catch (IllegalStateException e) {
-					KDB_ErrorMessage = "KDB_InvalidTransition";
-					trx.rollback();
-					return false;
-				} catch (Exception e) {
-					e.printStackTrace();
-					KDB_ErrorMessage = e.getLocalizedMessage();
-					trx.rollback();
-					return false;
-				} finally {
-					trx.close();
-				}
-			}			
+			DocumentStatusController statusController = new DocumentStatusController(m_po);
+			success = statusController.changeDocStatus(newStatusValue);
+			statusChangeMessage = statusController.getErrorMessage();
 		} else {
 			if (m_po.get_ColumnIndex("DocAction") >= 0) {
 				if ( (((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Completed)||
@@ -167,7 +140,7 @@ public class MKanbanCard {
 						((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Reversed)||
 						((DocAction) m_po).getDocStatus().equals(DocAction.STATUS_Closed)) &&
 						!MColumn.get(Env.getCtx(), m_po.get_TableName(), statusColumn).isAlwaysUpdateable()) {
-					KDB_ErrorMessage = "KDB_CompletedCard";
+					statusChangeMessage = "KDB_CompletedCard";
 					return false;
 				}
 			}
@@ -176,7 +149,7 @@ public class MKanbanCard {
 		}
 		return success;
 	}
-
+	
 	public void getPriorityColor() {
 
 		if (kanbanBoard.hasPriorityOrder() && kanbanBoard.getPriorityRules().size() > 0) {
