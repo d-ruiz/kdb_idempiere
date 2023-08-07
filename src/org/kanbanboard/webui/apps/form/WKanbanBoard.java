@@ -1101,12 +1101,14 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	private void runCompleteAllCards(int referenceID) {
 		showBusyDialog();
 		//TODO: Display confirmation dialog
-		String message = completeAllCardsInStatus(referenceID);
-		if (!"OK".equals(message))
-			Dialog.warn(windowNo, message);
-
-		repaintCards();
-		hideBusyDialog();
+		try {
+			String message = completeAllCardsInStatus(referenceID);
+			if (!"OK".equals(message))
+				Dialog.warn(windowNo, message);
+		} finally {
+			repaintCards();
+			hideBusyDialog();
+		}
 	}
 	
 	private void collapseSwimlane(Row selectedRow) {
