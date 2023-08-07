@@ -1103,7 +1103,8 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		//TODO: Display confirmation dialog
 		String message = completeAllCardsInStatus(referenceID);
 		if (!"OK".equals(message))
-			Messagebox.show(message);
+			Dialog.warn(windowNo, message);
+
 		repaintCards();
 		hideBusyDialog();
 	}

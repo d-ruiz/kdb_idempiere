@@ -408,18 +408,35 @@ public class KanbanBoard {
 	protected String completeAllCardsInStatus(int referenceID) {
 		MKanbanStatus startStatus = kanbanBoard.getStatus(referenceID);
 		if (startStatus != null) {
-			MKanbanStatus endStatus = kanbanBoard.getStatus("CO");
-			if (endStatus == null)
-				throw new AdempiereException("Board does not have a complete status"); //TODO:Test
-			
+			MKanbanStatus endStatus = getCompleteDocActionStatus();
 			Iterator<MKanbanCard> it = startStatus.getNonQueuedCards().iterator();
+
 			while (it.hasNext()) {
 				MKanbanCard card = it.next();
-				if (!swapCard(startStatus, endStatus, card)) {
-					return Msg.getMsg(Env.getCtx(), MKanbanCard.KDB_ErrorMessage) + System.lineSeparator() +  card.getKanbanCardText();
-				}
+				boolean cardCompleted = completeNextCard(card, endStatus);
+				if (cardCompleted) 
+					it.remove();
+				else 
+					return Msg.parseTranslation(Env.getCtx(), card.getStatusChangeMessage()) + System.lineSeparator() +  card.getKanbanCardText();
 			}
 		}
 		return "OK";
+	}
+	
+	private MKanbanStatus getCompleteDocActionStatus() {
+		MKanbanStatus endStatus = kanbanBoard.getStatus("CO");
+		if (endStatus == null)
+			throw new AdempiereException("Board does not have a complete status");
+
+		return endStatus;
+	}
+	
+	private boolean completeNextCard(MKanbanCard card, MKanbanStatus completeStatus) {
+		boolean cardCompleted = card.changeStatus(kanbanBoard.getStatusColumnName(), completeStatus.getStatusValue());
+		if (cardCompleted) {
+			completeStatus.addRecord(card);
+			card.setBelongingStatus(completeStatus);
+		}
+		return cardCompleted;
 	}
 }

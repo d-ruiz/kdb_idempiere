@@ -129,7 +129,7 @@ public class MKanbanCard {
 			return false;
 		boolean success=true;
 
-		if (statusColumn.equals(MKanbanBoard.STATUSCOLUMN_DocStatus)) {
+		if (kanbanBoard.isDocActionKanbanBoard()) {
 			DocumentStatusController statusController = new DocumentStatusController(m_po);
 			success = statusController.changeDocStatus(newStatusValue);
 			statusChangeMessage = statusController.getErrorMessage();
