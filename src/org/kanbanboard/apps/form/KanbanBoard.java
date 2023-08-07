@@ -426,7 +426,7 @@ public class KanbanBoard {
 	private MKanbanStatus getCompleteDocActionStatus() {
 		MKanbanStatus endStatus = kanbanBoard.getStatus("CO");
 		if (endStatus == null)
-			throw new AdempiereException("Board does not have a complete status");
+			throw new AdempiereException(Msg.getMsg(Env.getLanguage(Env.getCtx()),"KDB_MissingComplete"));
 
 		return endStatus;
 	}

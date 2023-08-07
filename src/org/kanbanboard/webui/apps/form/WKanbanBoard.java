@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.util.Callback;
 import org.adempiere.webui.LayoutUtils;
 import org.adempiere.webui.apps.AEnv;
 import org.adempiere.webui.apps.BusyDialog;
@@ -74,6 +75,7 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
 import org.kanbanboard.apps.form.KanbanBoard;
+import org.kanbanboard.apps.form.KanbanBoardProcessController;
 import org.kanbanboard.apps.form.ProcessUIElement;
 import org.kanbanboard.model.KanbanSwimlane;
 import org.kanbanboard.model.MKanbanCard;
@@ -1092,23 +1094,30 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	
 	private void runMenuItemProcess(Menuitem selectedItem, int referenceID) {
 		Integer AD_Process_ID = (Integer) selectedItem.getAttribute(PROCESS_ID_KEY);
-		if (AD_Process_ID == -123456789)
+		if (AD_Process_ID == KanbanBoardProcessController.COMPLETE_ALL_ID)
 			runCompleteAllCards(referenceID);
 		else
 			runProcess(AD_Process_ID, getSaveKeys((String) selectedItem.getAttribute(PROCESS_TYPE),referenceID));
 	}
 	
 	private void runCompleteAllCards(int referenceID) {
-		showBusyDialog();
-		//TODO: Display confirmation dialog
-		try {
-			String message = completeAllCardsInStatus(referenceID);
-			if (!"OK".equals(message))
-				Dialog.warn(windowNo, message);
-		} finally {
-			repaintCards();
-			hideBusyDialog();
-		}
+		Dialog.ask(windowNo, "KDB_CompleteAll?", new Callback<Boolean>() {
+			@Override
+			public void onCallback(Boolean result) {
+				if (result) {
+					showBusyDialog();
+					try {
+						String message = completeAllCardsInStatus(referenceID);
+						if (!"OK".equals(message))
+							Dialog.warn(windowNo, message);
+					} finally {
+						repaintCards();
+						hideBusyDialog();
+					}
+				}
+			}
+		});
+		
 	}
 	
 	private void collapseSwimlane(Row selectedRow) {

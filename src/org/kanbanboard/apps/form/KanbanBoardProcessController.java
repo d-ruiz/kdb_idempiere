@@ -28,11 +28,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.compiere.util.Msg;
 import org.kanbanboard.model.MKanbanBoard;
 import org.kanbanboard.model.MKanbanProcess;
 
 public class KanbanBoardProcessController {
+	
+	public final static int COMPLETE_ALL_ID = -123456789; 
 	
 	protected final static String PROCESS_TYPE = "processType"; 
 	protected final static String CARD_PROCESS = "cardProcess";
@@ -111,8 +115,8 @@ public class KanbanBoardProcessController {
 			ProcessUIElement element;
 			element = new ProcessUIElement();
 			element.setElementID(123456789);
-			element.setName("Complete All Documents");
-			element.setAD_Process_ID(-123456789);
+			element.setName(Msg.getMsg(Env.getLanguage(Env.getCtx()), "KDB_CompleteAllProcessName"));
+			element.setAD_Process_ID(COMPLETE_ALL_ID);
 			processElements.add(element);
 		}
 			
