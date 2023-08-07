@@ -684,4 +684,8 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		}
 		return null;
 	}
+	
+	public boolean isDocActionKanbanBoard() {
+		return STATUSCOLUMN_DocStatus.equals(getStatusColumnName());
+	}	
 }

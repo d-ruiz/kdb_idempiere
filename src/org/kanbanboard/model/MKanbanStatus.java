@@ -430,4 +430,8 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 	    return swimlaneCards.get(swimlane) != null ? swimlaneCards.get(swimlane) : new ArrayList<MKanbanCard>();
 	}
 
+	public List<MKanbanCard> getNonQueuedCards() {
+		return records;
+	}
+
 }

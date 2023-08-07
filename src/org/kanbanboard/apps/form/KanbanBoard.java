@@ -31,9 +31,11 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.MTable;
@@ -42,6 +44,7 @@ import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.compiere.util.Msg;
 import org.compiere.util.Util;
 import org.kanbanboard.model.KanbanSwimlane;
 import org.kanbanboard.model.MKanbanBoard;
@@ -400,5 +403,40 @@ public class KanbanBoard {
 	
 	protected Collection<KeyNamePair> getSaveKeys (String processType, int referenceID) {
 		return processController.getSaveKeys(processType, referenceID);
+	}
+	
+	protected String completeAllCardsInStatus(int referenceID) {
+		MKanbanStatus startStatus = kanbanBoard.getStatus(referenceID);
+		if (startStatus != null) {
+			MKanbanStatus endStatus = getCompleteDocActionStatus();
+			Iterator<MKanbanCard> it = startStatus.getNonQueuedCards().iterator();
+
+			while (it.hasNext()) {
+				MKanbanCard card = it.next();
+				boolean cardCompleted = completeNextCard(card, endStatus);
+				if (cardCompleted) 
+					it.remove();
+				else 
+					return Msg.parseTranslation(Env.getCtx(), card.getStatusChangeMessage()) + System.lineSeparator() +  card.getKanbanCardText();
+			}
+		}
+		return "OK";
+	}
+	
+	private MKanbanStatus getCompleteDocActionStatus() {
+		MKanbanStatus endStatus = kanbanBoard.getStatus("CO");
+		if (endStatus == null)
+			throw new AdempiereException(Msg.getMsg(Env.getLanguage(Env.getCtx()),"KDB_MissingComplete"));
+
+		return endStatus;
+	}
+	
+	private boolean completeNextCard(MKanbanCard card, MKanbanStatus completeStatus) {
+		boolean cardCompleted = card.changeStatus(kanbanBoard.getStatusColumnName(), completeStatus.getStatusValue());
+		if (cardCompleted) {
+			completeStatus.addRecord(card);
+			card.setBelongingStatus(completeStatus);
+		}
+		return cardCompleted;
 	}
 }
