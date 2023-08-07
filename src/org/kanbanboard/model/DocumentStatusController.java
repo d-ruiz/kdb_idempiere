@@ -90,7 +90,7 @@ public class DocumentStatusController {
 				trx.rollback();
 				return false;
 			} catch (IllegalStateException e) { //Thrown by the processIt method internally
-				errorMessage = "KDB_InvalidTransition";
+				errorMessage = "@KDB_InvalidTransition@";
 				trx.rollback();
 				return false;
 			} catch (Exception e) {

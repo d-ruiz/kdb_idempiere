@@ -417,7 +417,7 @@ public class KanbanBoard {
 				if (cardCompleted) 
 					it.remove();
 				else 
-					return Msg.parseTranslation(Env.getCtx(), "@"+card.getStatusChangeMessage()+"@") + System.lineSeparator() +  card.getKanbanCardText();
+					return Msg.parseTranslation(Env.getCtx(), card.getStatusChangeMessage()) + System.lineSeparator() +  card.getKanbanCardText();
 			}
 		}
 		return "OK";
