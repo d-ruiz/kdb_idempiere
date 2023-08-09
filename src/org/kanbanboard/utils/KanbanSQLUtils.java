@@ -3,7 +3,6 @@ package org.kanbanboard.utils;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.ChoiceFormat;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.MessageFormat;
@@ -13,6 +12,7 @@ import java.util.logging.Level;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
+import org.compiere.model.MValRule;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -67,6 +67,13 @@ public class KanbanSQLUtils {
 			.append(" WHERE ")
 			.append(" AD_Client_ID IN (0, ?) AND")
 			.append(" IsActive = 'Y'");
+			
+			if (column.getAD_Val_Rule_ID() > 0) {
+				MValRule valRule = MValRule.get(Env.getCtx(), column.getAD_Val_Rule_ID());
+				sqlSelect.append(" AND ")
+				.append(valRule.getCode());
+			}
+			
 		}
 
 		if (!Util.isEmpty(whereClause))
@@ -102,7 +109,7 @@ public class KanbanSQLUtils {
 					for (int idx = 0; idx < fmts.length; idx++) {
 						Format fmt = fmts[idx];
 						Object obj;
-						if (fmt instanceof DecimalFormat || fmt instanceof ChoiceFormat) {
+						if (fmt instanceof DecimalFormat) {
 							obj = rs.getDouble(idx+1);
 						} else if (fmt instanceof SimpleDateFormat) {
 							obj = rs.getTimestamp(idx+1);
