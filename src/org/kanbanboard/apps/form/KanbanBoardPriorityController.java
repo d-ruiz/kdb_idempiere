@@ -30,17 +30,15 @@ import org.kanbanboard.model.MKanbanStatus;
 
 public class KanbanBoardPriorityController {
 	
-	public final static int MOVE_UP_ID = -234567890;//Enums
+	public final static int MOVE_UP_ID = -234567890;
 	public final static int MOVE_DOWN_ID = -234567891;
 	public final static int MOVE_TOP_ID = -234567892;
 	public final static int MOVE_BOTTOM_ID = -234567893;
 	
 	private MKanbanBoard kanbanBoard;
-	private String priorityColumnName;
 	
 	public KanbanBoardPriorityController(MKanbanBoard kanbanBoard) {
 		this.kanbanBoard = kanbanBoard;
-		priorityColumnName = kanbanBoard.getKDB_PrioritySQL();
 	}
 	
 	public boolean isMoveCardProcess(int AD_Process_ID) {
@@ -77,14 +75,11 @@ public class KanbanBoardPriorityController {
 		MKanbanStatus status = clickedCard.getBelongingStatus();
 		MKanbanCard previousCard = status.getPreviousCard(clickedCard);
 		if (previousCard != null) {
-
-			int previousPriority = previousCard.getM_po().get_ValueAsInt(priorityColumnName);
-			int clickedPriority = clickedCard.getM_po().get_ValueAsInt(priorityColumnName);
+			int previousPriority = previousCard.getDBPriorityValue();
+			int clickedPriority = clickedCard.getDBPriorityValue();
 			
-			previousCard.getM_po().set_ValueOfColumn(priorityColumnName, clickedPriority);
-			clickedCard.getM_po().set_ValueOfColumn(priorityColumnName, previousPriority);
-			previousCard.getM_po().saveEx();
-			clickedCard.getM_po().saveEx();
+			previousCard.savePriorityValue(clickedPriority);
+			clickedCard.savePriorityValue(previousPriority);
 		}
 	}
 	
@@ -97,14 +92,11 @@ public class KanbanBoardPriorityController {
 		MKanbanStatus status = clickedCard.getBelongingStatus();
 		MKanbanCard nextCard = status.getNextCard(clickedCard);
 		if (nextCard != null) {
-
-			int nextPriority = nextCard.getM_po().get_ValueAsInt(priorityColumnName);
-			int clickedPriority = clickedCard.getM_po().get_ValueAsInt(priorityColumnName);
+			int nextPriority = nextCard.getDBPriorityValue();
+			int clickedPriority = clickedCard.getDBPriorityValue();
 			
-			nextCard.getM_po().set_ValueOfColumn(priorityColumnName, clickedPriority);
-			clickedCard.getM_po().set_ValueOfColumn(priorityColumnName, nextPriority);
-			nextCard.getM_po().saveEx();
-			clickedCard.getM_po().saveEx();
+			nextCard.savePriorityValue(clickedPriority);
+			clickedCard.savePriorityValue(nextPriority);
 		}
 	}
 
@@ -117,14 +109,11 @@ public class KanbanBoardPriorityController {
 		MKanbanStatus status = clickedCard.getBelongingStatus();
 		MKanbanCard previousCard = status.getPreviousCard(clickedCard);
 		while (previousCard != null) {
-
-			int previousPriority = previousCard.getM_po().get_ValueAsInt(priorityColumnName);
-			int clickedPriority = clickedCard.getM_po().get_ValueAsInt(priorityColumnName);
+			int previousPriority = previousCard.getDBPriorityValue();
+			int clickedPriority = clickedCard.getDBPriorityValue();
 			
-			previousCard.getM_po().set_ValueOfColumn(priorityColumnName, clickedPriority);
-			clickedCard.getM_po().set_ValueOfColumn(priorityColumnName, previousPriority);
-			previousCard.getM_po().saveEx();
-			clickedCard.getM_po().saveEx();
+			previousCard.savePriorityValue(clickedPriority);
+			clickedCard.savePriorityValue(previousPriority);
 			
 			previousCard = status.getPreviousCard(previousCard);
 		}
@@ -139,14 +128,11 @@ public class KanbanBoardPriorityController {
 		MKanbanStatus status = clickedCard.getBelongingStatus();
 		MKanbanCard nextCard = status.getNextCard(clickedCard);
 		while (nextCard != null) {
-
-			int nextPriority = nextCard.getM_po().get_ValueAsInt(priorityColumnName);
-			int clickedPriority = clickedCard.getM_po().get_ValueAsInt(priorityColumnName);
+			int previousPriority = nextCard.getDBPriorityValue();
+			int clickedPriority = clickedCard.getDBPriorityValue();
 			
-			nextCard.getM_po().set_ValueOfColumn(priorityColumnName, clickedPriority);
-			clickedCard.getM_po().set_ValueOfColumn(priorityColumnName, nextPriority);
-			nextCard.getM_po().saveEx();
-			clickedCard.getM_po().saveEx();
+			nextCard.savePriorityValue(clickedPriority);
+			clickedCard.savePriorityValue(previousPriority);
 			
 			nextCard = status.getNextCard(nextCard);
 		}
