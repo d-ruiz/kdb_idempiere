@@ -1096,7 +1096,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		Integer AD_Process_ID = (Integer) selectedItem.getAttribute(PROCESS_ID_KEY);
 		if (AD_Process_ID == KanbanBoardProcessController.COMPLETE_ALL_ID)
 			runCompleteAllCards(referenceID);
-		if (isMoveCardProcess(AD_Process_ID)) {
+		else if (isMoveCardProcess(AD_Process_ID)) {
 			moveCard(AD_Process_ID, referenceID);
 			repaintCards();
 		} else
