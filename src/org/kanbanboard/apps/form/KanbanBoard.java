@@ -412,7 +412,7 @@ public class KanbanBoard {
 		MKanbanStatus startStatus = kanbanBoard.getStatus(referenceID);
 		if (startStatus != null) {
 			MKanbanStatus endStatus = getCompleteDocActionStatus();
-			Iterator<MKanbanCard> it = startStatus.getNonQueuedCards().iterator();
+			Iterator<MKanbanCard> it = startStatus.getRecords().iterator();
 
 			while (it.hasNext()) {
 				MKanbanCard card = it.next();
