@@ -463,7 +463,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		return values.toString();
 	}//getInValues
 
-	boolean hasPriorityOrder() {
+	public boolean hasPriorityOrder() {
 		return !Util.isEmpty(getKDB_PrioritySQL());
 	}
 
@@ -682,4 +682,13 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	public boolean isDocActionKanbanBoard() {
 		return STATUSCOLUMN_DocStatus.equals(getStatusColumnName());
 	}	
+	
+	public boolean isPriorityColumn() {
+		if (hasPriorityOrder()) {
+			String prioritySQL = getKDB_PrioritySQL();
+			MTable table = getTable();
+			return table.columnExistsInDB(prioritySQL); 
+		}
+		return false;
+	}
 }

@@ -71,6 +71,7 @@ public class KanbanBoard {
 	private String              summarySql = null;		
 	
 	private KanbanBoardProcessController processController;
+	private KanbanBoardPriorityController priorityController;
 	
 	//Parameters
 	private List<MKanbanParameter> boardParameters  = null;
@@ -176,9 +177,11 @@ public class KanbanBoard {
 		if (kanbanBoardId == -1) {
 			kanbanBoard = null;
 			processController = null;
+			priorityController = null;
 		} else if (kanbanBoard == null || kanbanBoardId != kanbanBoard.get_ID()) {
 			kanbanBoard = new MKanbanBoard(Env.getCtx(), kanbanBoardId, null);
 			processController = new KanbanBoardProcessController(kanbanBoard);
+			priorityController = new KanbanBoardPriorityController(kanbanBoard);
 
 			statuses = null;
 			boardParameters = null;
@@ -438,5 +441,17 @@ public class KanbanBoard {
 			card.setBelongingStatus(completeStatus);
 		}
 		return cardCompleted;
+	}
+	
+	protected boolean isPriorityColumn() {
+		return kanbanBoard.isPriorityColumn();
+	}
+	
+	protected boolean isMoveCardProcess(int AD_Process_ID) {
+		return priorityController.isMoveCardProcess(AD_Process_ID);
+	}
+	
+	protected void moveCard(int AD_Process_ID, int referenceID) {
+		priorityController.moveCard(AD_Process_ID, referenceID);
 	}
 }
