@@ -75,12 +75,16 @@ public class KanbanBoardPriorityController {
 		MKanbanStatus status = clickedCard.getBelongingStatus();
 		MKanbanCard previousCard = status.getPreviousCard(clickedCard);
 		if (previousCard != null) {
-			int previousPriority = previousCard.getDBPriorityValue();
-			int clickedPriority = clickedCard.getDBPriorityValue();
-			
-			previousCard.savePriorityValue(clickedPriority);
-			clickedCard.savePriorityValue(previousPriority);
+			switchPrioritiyValues(clickedCard, previousCard);
 		}
+	}
+	
+	private void switchPrioritiyValues(MKanbanCard card1, MKanbanCard card2) {
+		int card1Priority = card1.getDBPriorityValue();
+		int card2Priority = card2.getDBPriorityValue();
+		
+		card1.savePriorityValue(card2Priority);
+		card2.savePriorityValue(card1Priority);
 	}
 	
 	/**
@@ -92,11 +96,7 @@ public class KanbanBoardPriorityController {
 		MKanbanStatus status = clickedCard.getBelongingStatus();
 		MKanbanCard nextCard = status.getNextCard(clickedCard);
 		if (nextCard != null) {
-			int nextPriority = nextCard.getDBPriorityValue();
-			int clickedPriority = clickedCard.getDBPriorityValue();
-			
-			nextCard.savePriorityValue(clickedPriority);
-			clickedCard.savePriorityValue(nextPriority);
+			switchPrioritiyValues(clickedCard, nextCard);
 		}
 	}
 
@@ -109,12 +109,7 @@ public class KanbanBoardPriorityController {
 		MKanbanStatus status = clickedCard.getBelongingStatus();
 		MKanbanCard previousCard = status.getPreviousCard(clickedCard);
 		while (previousCard != null) {
-			int previousPriority = previousCard.getDBPriorityValue();
-			int clickedPriority = clickedCard.getDBPriorityValue();
-			
-			previousCard.savePriorityValue(clickedPriority);
-			clickedCard.savePriorityValue(previousPriority);
-			
+			switchPrioritiyValues(clickedCard, previousCard);			
 			previousCard = status.getPreviousCard(previousCard);
 		}
 	}
@@ -128,12 +123,7 @@ public class KanbanBoardPriorityController {
 		MKanbanStatus status = clickedCard.getBelongingStatus();
 		MKanbanCard nextCard = status.getNextCard(clickedCard);
 		while (nextCard != null) {
-			int previousPriority = nextCard.getDBPriorityValue();
-			int clickedPriority = clickedCard.getDBPriorityValue();
-			
-			nextCard.savePriorityValue(clickedPriority);
-			clickedCard.savePriorityValue(previousPriority);
-			
+			switchPrioritiyValues(clickedCard, nextCard);			
 			nextCard = status.getNextCard(nextCard);
 		}
 	}
