@@ -252,15 +252,9 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 
 	public List<MKanbanPriority> getPriorityRules() {
 
-		if (priorityRules.size() == 0) {
+		if (priorityRules.isEmpty())
+			priorityRules = MKanbanPriority.getPriorityRules(getKDB_KanbanBoard_ID());
 
-			priorityRules = new Query(getCtx(), MKanbanPriority.Table_Name, " KDB_KanbanBoard_id = ? AND AD_Client_ID IN (0, ?) AND IsActive='Y' ", get_TrxName())
-			.setParameters(new Object[]{getKDB_KanbanBoard_ID(),Env.getAD_Client_ID(Env.getCtx())})
-			.setOnlyActiveRecords(true)
-			.setOrderBy("MinValue")    
- 			.list();
-			
-		}
 		return priorityRules;
 	}//getPriorityRules
 
