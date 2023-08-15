@@ -42,6 +42,7 @@ import org.compiere.model.MTable;
 import org.compiere.model.Query;
 import org.compiere.print.MPrintColor;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
@@ -683,11 +684,18 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		return STATUSCOLUMN_DocStatus.equals(getStatusColumnName());
 	}	
 	
+	/**
+	 * Returns wether or not the kanban priority has a valid priority column
+	 * @return true if the priority SQL is a non-virtual column of the table and it is an integer
+	 */
 	public boolean isPriorityColumn() {
 		if (hasPriorityOrder()) {
 			String prioritySQL = getKDB_PrioritySQL();
 			MTable table = getTable();
-			return table.columnExistsInDB(prioritySQL); 
+			if (table.columnExistsInDB(prioritySQL)) {
+				MColumn column = table.getColumn(prioritySQL);
+				return column.getAD_Reference_ID() == DisplayType.Integer;
+			}
 		}
 		return false;
 	}
