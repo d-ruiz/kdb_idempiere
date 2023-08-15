@@ -863,7 +863,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 			
 			cardpopup.setId("cardMenu");
 			Menuitem menuitem;
-			
+
 			//Add the processes
 			for (ProcessUIElement element : getCardProcessElements()) {
 				menuitem = new Menuitem();
@@ -1096,7 +1096,10 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		Integer AD_Process_ID = (Integer) selectedItem.getAttribute(PROCESS_ID_KEY);
 		if (AD_Process_ID == KanbanBoardProcessController.COMPLETE_ALL_ID)
 			runCompleteAllCards(referenceID);
-		else
+		else if (isMoveCardProcess(AD_Process_ID)) {
+			moveCard(AD_Process_ID, referenceID);
+			repaintCards();
+		} else
 			runProcess(AD_Process_ID, getSaveKeys((String) selectedItem.getAttribute(PROCESS_TYPE),referenceID));
 	}
 	

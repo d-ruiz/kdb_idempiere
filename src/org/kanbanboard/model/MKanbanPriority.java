@@ -26,13 +26,17 @@
 package org.kanbanboard.model;
 
 import java.sql.ResultSet;
+import java.util.List;
 import java.util.Properties;
+
+import org.compiere.model.Query;
+import org.compiere.util.Env;
 
 public class MKanbanPriority extends X_KDB_KanbanPriority{
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -5833630203997077515L;
+	private static final long serialVersionUID = 4695767361669099152L;
 
 	public MKanbanPriority(Properties ctx, int KDB_KanbanPriority_ID, String trxName) {
 		super(ctx, KDB_KanbanPriority_ID, trxName);
@@ -40,6 +44,14 @@ public class MKanbanPriority extends X_KDB_KanbanPriority{
 
 	public MKanbanPriority(Properties ctx, ResultSet rs, String trxName) {
 		super(ctx, rs, trxName);
+	}
+
+	public static List<MKanbanPriority> getPriorityRules(int KDB_KanbanBoard_ID) {
+		return new Query(Env.getCtx(), MKanbanPriority.Table_Name, " KDB_KanbanBoard_ID = ? AND AD_Client_ID IN (0, ?) ", null)
+				.setParameters(new Object[]{KDB_KanbanBoard_ID, Env.getAD_Client_ID(Env.getCtx())})
+				.setOnlyActiveRecords(true)
+				.setOrderBy("MinValue")
+				.list();
 	}
 
 }

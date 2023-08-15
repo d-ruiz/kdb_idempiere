@@ -54,6 +54,7 @@ public class MKanbanCard {
 	private MKanbanBoard  kanbanBoard;
 	private MKanbanStatus belongingStatus;
 	private String        swimlaneValue;
+	private String 	      priorityColumnName;
 	private BigDecimal 	  priorityValue;
 
 	private PO			  m_po           = null;
@@ -120,6 +121,7 @@ public class MKanbanCard {
 		recordId = cardRecord;
 		belongingStatus=status;
 		kanbanBoard=belongingStatus.getKanbanBoard();
+		priorityColumnName = kanbanBoard.getKDB_PrioritySQL();
 		m_po = kanbanBoard.getTable().getPO(recordId, null);
 	}
 
@@ -415,5 +417,14 @@ public class MKanbanCard {
 
 	public void setSwimlaneValue(String swimlaneValue) {
 		this.swimlaneValue = swimlaneValue;
+	}
+	
+	public int getDBPriorityValue() {
+		return m_po.get_ValueAsInt(priorityColumnName);
+	}
+	
+	public void savePriorityValue(int priorityValue) {
+		m_po.set_ValueOfColumn(priorityColumnName, priorityValue);
+		m_po.saveEx();
 	}
 }

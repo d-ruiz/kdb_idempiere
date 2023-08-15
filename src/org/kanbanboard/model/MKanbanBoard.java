@@ -42,6 +42,7 @@ import org.compiere.model.MTable;
 import org.compiere.model.Query;
 import org.compiere.print.MPrintColor;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.util.Util;
@@ -252,15 +253,9 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 
 	public List<MKanbanPriority> getPriorityRules() {
 
-		if (priorityRules.size() == 0) {
+		if (priorityRules.isEmpty())
+			priorityRules = MKanbanPriority.getPriorityRules(getKDB_KanbanBoard_ID());
 
-			priorityRules = new Query(getCtx(), MKanbanPriority.Table_Name, " KDB_KanbanBoard_id = ? AND AD_Client_ID IN (0, ?) AND IsActive='Y' ", get_TrxName())
-			.setParameters(new Object[]{getKDB_KanbanBoard_ID(),Env.getAD_Client_ID(Env.getCtx())})
-			.setOnlyActiveRecords(true)
-			.setOrderBy("MinValue")    
- 			.list();
-			
-		}
 		return priorityRules;
 	}//getPriorityRules
 
@@ -469,7 +464,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		return values.toString();
 	}//getInValues
 
-	boolean hasPriorityOrder() {
+	public boolean hasPriorityOrder() {
 		return !Util.isEmpty(getKDB_PrioritySQL());
 	}
 
@@ -688,4 +683,20 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	public boolean isDocActionKanbanBoard() {
 		return STATUSCOLUMN_DocStatus.equals(getStatusColumnName());
 	}	
+	
+	/**
+	 * Returns wether or not the kanban priority has a valid priority column
+	 * @return true if the priority SQL is a non-virtual column of the table and it is an integer
+	 */
+	public boolean isPriorityColumn() {
+		if (hasPriorityOrder()) {
+			String prioritySQL = getKDB_PrioritySQL();
+			MTable table = getTable();
+			if (table.columnExistsInDB(prioritySQL)) {
+				MColumn column = table.getColumn(prioritySQL);
+				return column.getAD_Reference_ID() == DisplayType.Integer;
+			}
+		}
+		return false;
+	}
 }

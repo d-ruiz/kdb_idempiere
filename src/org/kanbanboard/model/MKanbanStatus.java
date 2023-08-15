@@ -72,6 +72,10 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 		this.kanbanBoard = kanbanBoard;
 	}
 
+	/**
+	 * Returns all non queued records
+	 * @return
+	 */
 	public List<MKanbanCard> getRecords() {
 		return records;
 	}
@@ -430,8 +434,22 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 	    return swimlaneCards.get(swimlane) != null ? swimlaneCards.get(swimlane) : new ArrayList<MKanbanCard>();
 	}
 
-	public List<MKanbanCard> getNonQueuedCards() {
-		return records;
+	/**
+	 * @param card 
+	 * @return previous card or null if the card is the first one in the array
+	 */
+	public MKanbanCard getPreviousCard(MKanbanCard card) {
+		int clickedIndex = getRecords().indexOf(card);
+		return clickedIndex > 0 ? getRecords().get(clickedIndex-1) : null;
+	}
+	
+	/**
+	 * @param card 
+	 * @return next card or null if the card is the first one in the array
+	 */
+	public MKanbanCard getNextCard(MKanbanCard card) {
+		int clickedIndex = getRecords().indexOf(card);
+		return clickedIndex < getRecords().size() - 1 ? getRecords().get(clickedIndex+1) : null;
 	}
 
 }

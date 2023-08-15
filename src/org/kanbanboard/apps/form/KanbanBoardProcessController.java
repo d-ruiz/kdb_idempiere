@@ -90,7 +90,7 @@ public class KanbanBoardProcessController {
 	}
 	
 	public boolean kanbanHasProcesses() {
-		return (getNumberOfProcesses() > 0  && getProcesses() != null) || kanbanBoard.isDocActionKanbanBoard();
+		return (getNumberOfProcesses() > 0  && getProcesses() != null) || kanbanBoard.isDocActionKanbanBoard() || kanbanBoard.isPriorityColumn();
 	}
 	
 	public boolean kanbanHasStatusProcess() {
@@ -98,7 +98,7 @@ public class KanbanBoardProcessController {
 	}
 	
 	public boolean kanbanHasCardProcess() {
-		return !cardProcesses.isEmpty();
+		return !cardProcesses.isEmpty() || kanbanBoard.isPriorityColumn();
 	}
 	
 	public boolean kanbanHasBoardProcess() {
@@ -112,11 +112,7 @@ public class KanbanBoardProcessController {
 	public List<ProcessUIElement> getStatusProcessElements() {
 		List<ProcessUIElement> processElements = getProcessElements(statusProcesses);
 		if (kanbanBoard.isDocActionKanbanBoard()) {
-			ProcessUIElement element;
-			element = new ProcessUIElement();
-			element.setElementID(123456789);
-			element.setName(Msg.getMsg(Env.getLanguage(Env.getCtx()), "KDB_CompleteAllProcessName"));
-			element.setAD_Process_ID(COMPLETE_ALL_ID);
+			ProcessUIElement element = getProcessUIElement(Msg.getMsg(Env.getLanguage(Env.getCtx()), "KDB_CompleteAllProcessName"), COMPLETE_ALL_ID);
 			processElements.add(element);
 		}
 			
@@ -124,7 +120,21 @@ public class KanbanBoardProcessController {
 	}
 	
 	public List<ProcessUIElement> getCardProcessElements() {
-		return getProcessElements(cardProcesses);
+		List<ProcessUIElement> processElements = getProcessElements(cardProcesses);
+
+		ProcessUIElement element = getProcessUIElement(Msg.getMsg(Env.getLanguage(Env.getCtx()), "KDB_MoveTop"), KanbanBoardPriorityController.MOVE_TOP_ID);
+		processElements.add(element);
+
+		element = getProcessUIElement(Msg.getMsg(Env.getLanguage(Env.getCtx()), "KDB_MoveUp"), KanbanBoardPriorityController.MOVE_UP_ID);
+		processElements.add(element);
+		
+		element = getProcessUIElement(Msg.getMsg(Env.getLanguage(Env.getCtx()), "KDB_MoveDown"), KanbanBoardPriorityController.MOVE_DOWN_ID);
+		processElements.add(element);
+		
+		element = getProcessUIElement(Msg.getMsg(Env.getLanguage(Env.getCtx()), "KDB_MoveBottom"), KanbanBoardPriorityController.MOVE_BOTTOM_ID);
+		processElements.add(element);
+
+		return processElements;
 	}
 	
 	public List<ProcessUIElement> getBoardProcessElements() {
@@ -135,14 +145,23 @@ public class KanbanBoardProcessController {
 		List<ProcessUIElement> processElements = new ArrayList<ProcessUIElement>();
 		ProcessUIElement element;
 		for (MKanbanProcess process : kanbanProcesses) {
-			element = new ProcessUIElement();
-			element.setElementID(process.getKDB_KanbanProcess_ID());
-			element.setName(process.getProcessName());
-			element.setAD_Process_ID(process.getAD_Process_ID());
-
+			element = getProcessUIElement(process.getProcessName(), process.getKDB_KanbanProcess_ID(), process.getAD_Process_ID());
 			processElements.add(element);
 		}
 		return processElements;
+	}
+	
+	private ProcessUIElement getProcessUIElement(String name, int AD_Process_ID) {
+		return getProcessUIElement(name, AD_Process_ID, AD_Process_ID);
+	}
+	
+	private ProcessUIElement getProcessUIElement(String name, int elementID, int AD_Process_ID) {
+		ProcessUIElement element = new ProcessUIElement();
+		element.setElementID(elementID);
+		element.setName(name);
+		element.setAD_Process_ID(AD_Process_ID);
+		
+		return element;
 	}
 	
 	public Collection<KeyNamePair> getSaveKeys (String processType, int referenceID) {
