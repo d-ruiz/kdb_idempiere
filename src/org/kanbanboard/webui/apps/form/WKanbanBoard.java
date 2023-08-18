@@ -158,6 +158,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 	private Map<Cell, MKanbanCard> mapCellColumn = new HashMap<Cell, MKanbanCard>();
 	private Map<Cell, MKanbanStatus> mapEmptyCellField = new HashMap<Cell, MKanbanStatus>();
+	private Map<Cell, KanbanSwimlane> mapEmptyCellSwimlane = new HashMap<Cell, KanbanSwimlane>();
 	private Map<String, List<Row>> swimlaneRowsMap = new HashMap<String, List<Row>>();
 
 	private Grid kanbanPanel;
@@ -450,6 +451,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	public void createKanbanBoardPanel() {
 		mapCellColumn.clear();
 		mapEmptyCellField.clear();
+		mapEmptyCellSwimlane.clear();
 		mapEditorParameter.clear();
 		mapEditorToParameter.clear();
 		m_sEditors.clear();
@@ -570,6 +572,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	public void createRows() {
 		mapCellColumn.clear();
 		mapEmptyCellField.clear();
+		mapEmptyCellSwimlane.clear();
 		Rows rows = kanbanPanel.newRows();
 		resetStatusProperties();
 		if (paintSwimlanes()) {
@@ -592,11 +595,11 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				for (MKanbanStatus status : getStatuses()) {
 					setRowStyle(row);
 					if (!status.hasMoreCards(swimlane)) {
-						createStatusCellWithNoCards(row, status);
+						createStatusCellWithNoCards(row, status, swimlane);
 					} else {
 						if (status.hasQueue()) {
 							if (!status.hasMoreQueuedCards(swimlane)) {
-								createEmptyCell(row, status);
+								createEmptyCell(row, status, swimlane);
 								createCardCell(row, status.getCard(swimlane));
 								swimlane.removeOneCard();
 							} else {
@@ -606,7 +609,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 									createCardCell(row, status.getCard(swimlane));
 									swimlane.removeOneCard();
 								} else {
-									createEmptyCell(row,status);
+									createEmptyCell(row, status, swimlane);
 								}
 							}
 						} else {
@@ -686,8 +689,15 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		}
 	}
 	
+	private void createStatusCellWithNoCards(Row row, MKanbanStatus status, KanbanSwimlane swimlane) {
+		if (status.hasQueue()) { //Creates the extra cell for the queue space
+			createEmptyCell(row, status, swimlane);
+		}
+		createEmptyCell(row, status, swimlane);
+	}
+	
 	private void createStatusCellWithNoCards(Row row, MKanbanStatus status) {
-		if (status.hasQueue()) {
+		if (status.hasQueue()) { //Creates the extra cell for the queue space
 			createEmptyCell(row, status);
 		}
 		createEmptyCell(row, status);
@@ -705,6 +715,11 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		}
 		cell.setColspan(totalNumberOfColumns);
 		row.appendChild(cell);
+	}
+	
+	private void createEmptyCell(Row row, MKanbanStatus status, KanbanSwimlane swimlane) {
+		createEmptyCell(row, status);
+		mapEmptyCellSwimlane.put(row.getLastCell(), swimlane);
 	}
 
 	private void createEmptyCell(Row row, MKanbanStatus status) {
@@ -960,11 +975,19 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 				} else {
 					endStatus = endField.getBelongingStatus();
 				}
+				
 
 				if (!swapCard(startStatus, endStatus, startField))
 					Dialog.warn(windowNo, Msg.parseTranslation(Env.getCtx(), startField.getStatusChangeMessage()));
-				else 
+				else {
+					//Change swimlane as well if it is active
+					if (getActiveSwimlane() != null) {
+						String endSwimlaneValue = endField != null ? endField.getSwimlaneValue() : mapEmptyCellSwimlane.get(me.getTarget()).getValue();
+						if (!swapSwimlanes(startField, endSwimlaneValue))
+							Dialog.warn(windowNo, Msg.parseTranslation(Env.getCtx(), startField.getStatusChangeMessage()));
+					}
 					repaintCards();
+				}
 			} else if (me.getTarget() instanceof Row) { //Swim lane Header
 				Row endSwimlane = (Row) me.getTarget();
 				MKanbanCard draggedCard = mapCellColumn.get(startItem);
