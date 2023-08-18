@@ -36,8 +36,6 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.GridField;
-import org.compiere.model.GridFieldVO;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.util.CLogger;
@@ -228,7 +226,7 @@ public class KanbanBoard {
 			boardParameters = kanbanBoard.getParameters();
 			
 			for (MKanbanParameter param : boardParameters)
-				getGridField(param);
+				param.setGridField(windowNo);
 		}
 		return boardParameters;
 	}
@@ -304,46 +302,6 @@ public class KanbanBoard {
 
 	public boolean isHTML() {
 		return kanbanBoard.get_ValueAsBoolean("IsHtml");
-	}
-	
-	protected GridField getGridField(MKanbanParameter parameter) {
-
-		if (parameter.getGridField() == null) {
-			
-			String sql;
-			if (!Env.isBaseLanguage(Env.getCtx(), kanbanBoard.getTable().getTableName())){
-				sql = "SELECT * FROM AD_Field_vt WHERE AD_Column_ID=? AND AD_Table_ID=?"
-						+ " AND AD_Language='" + Env.getAD_Language(Env.getCtx()) + "'";
-			}
-			else{
-				sql = "SELECT * FROM AD_Field_v WHERE AD_Column_ID=? AND AD_Table_ID=?";
-			}
-
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
-			try {
-				pstmt = DB.prepareStatement(sql, null);
-				pstmt.setInt(1, parameter.getKDB_ColumnTable_ID());
-				pstmt.setInt(2, kanbanBoard.getAD_Table_ID());
-				rs = pstmt.executeQuery();
-				if (rs.next()) {
-					GridFieldVO voF = GridFieldVO.create(Env.getCtx(), 
-							windowNo, 0, 
-							rs.getInt("ad_window_id"), rs.getInt("ad_tab_id"), 
-							false, rs);
-					GridField gridField = new GridField(voF);
-					parameter.setGridField(gridField);
-				}
-			} catch (Exception e) {
-				CLogger.get().log(Level.SEVERE, "", e);
-			} finally {
-				DB.close(rs, pstmt);
-				rs = null;
-				pstmt = null;
-			}
-		}
-		
-		return parameter.getGridField();
 	}
 	
 	protected void selectSwimlane(Object value) {

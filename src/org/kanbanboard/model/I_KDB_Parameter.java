@@ -23,7 +23,7 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for KDB_Parameter
  *  @author iDempiere (generated) 
- *  @version Release 5.1
+ *  @version Release 10
  */
 @SuppressWarnings("all")
 public interface I_KDB_Parameter 
@@ -32,7 +32,7 @@ public interface I_KDB_Parameter
     /** TableName=KDB_Parameter */
     public static final String Table_Name = "KDB_Parameter";
 
-    /** AD_Table_ID=1000012 */
+    /** AD_Table_ID=1000022 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -159,6 +159,15 @@ public interface I_KDB_Parameter
 	public int getKDB_ColumnTable_ID();
 
 	public org.compiere.model.I_AD_Column getKDB_ColumnTable() throws RuntimeException;
+
+    /** Column name KDB_IsShowParameterName */
+    public static final String COLUMNNAME_KDB_IsShowParameterName = "KDB_IsShowParameterName";
+
+	/** Set Show Parameter Name	  */
+	public void setKDB_IsShowParameterName (boolean KDB_IsShowParameterName);
+
+	/** Get Show Parameter Name	  */
+	public boolean isKDB_IsShowParameterName();
 
     /** Column name KDB_KanbanBoard_ID */
     public static final String COLUMNNAME_KDB_KanbanBoard_ID = "KDB_KanbanBoard_ID";

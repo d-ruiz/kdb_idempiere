@@ -330,7 +330,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	
 	private void fillParameterEditors() {
 		for (MKanbanParameter param : getBoardParameters()) {
-			WEditor editor = WebEditorFactory.getEditor(getGridField(param), true);
+			WEditor editor = WebEditorFactory.getEditor(param.getGridField(), true);
 			if (param.getValue() != null) {
 				editor.setValue(param.getValue());
 			}
@@ -342,12 +342,12 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 
 	        Label label = editor.getLabel();
 	        //Fix miss label of check box
-	        label.setValue(getGridField(param).getHeader());
+	        label.setValue(param.getLabel());
 
 	        m_sEditors.add(editor);
 			mapEditorParameter.put(editor, param);
 			if (param.isRange()) {
-				GridFieldVO voF2 = GridFieldVO.createParameter(getGridField(param).getVO());
+				GridFieldVO voF2 = GridFieldVO.createParameter(param.getGridField().getVO());
 				GridField mField2 = new GridField(voF2);
 				// The Editor
 				WEditor editor2 = WebEditorFactory.getEditor(mField2, false);
