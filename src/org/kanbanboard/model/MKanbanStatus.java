@@ -262,7 +262,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 
 		String summarySql = kanbanBoard.getSummarySql();
 		String msgValue = kanbanBoard.get_Translation(MKanbanBoard.COLUMNNAME_KDB_SummaryMsg);
-		if (summarySql != null) {
+		if (summarySql != null && getMaxNumCards() > 0) {
 			summarySql = KanbanSQLUtils.replaceTokenWithValue(summarySql, STATUS_SUMMARY_TOKEN, "'" + getStatusValue() + "'");
 			summarySql = KanbanSQLUtils.replaceTokenWithValue(summarySql, MKanbanBoard.RECORDS_IDS, getStatusRecordsID());
 			return KanbanSQLUtils.getSummary(summarySql, msgValue);
