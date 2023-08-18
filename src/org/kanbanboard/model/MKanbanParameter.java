@@ -2,9 +2,11 @@ package org.kanbanboard.model;
 
 import static org.compiere.model.SystemIDs.REFERENCE_YESNO;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldVO;
@@ -12,6 +14,7 @@ import org.compiere.model.Lookup;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.X_AD_InfoColumn;
+import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -61,6 +64,45 @@ public class MKanbanParameter extends X_KDB_Parameter  {
 	}
 	
 	public GridField getGridField() {
+		return mGridField;
+	}
+	
+	public GridField setGridField(int windowNo) {
+
+		if (mGridField == null) {
+			
+			String sql;
+			if (!Env.isBaseLanguage(Env.getCtx(), kanbanBoard.getTable().getTableName())){
+				sql = "SELECT * FROM AD_Field_vt WHERE AD_Column_ID=? AND AD_Table_ID=?"
+						+ " AND AD_Language='" + Env.getAD_Language(Env.getCtx()) + "'";
+			} else {
+				sql = "SELECT * FROM AD_Field_v WHERE AD_Column_ID=? AND AD_Table_ID=?";
+			}
+
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;
+			try {
+				pstmt = DB.prepareStatement(sql, null);
+				pstmt.setInt(1, getKDB_ColumnTable_ID());
+				pstmt.setInt(2, kanbanBoard.getAD_Table_ID());
+				rs = pstmt.executeQuery();
+				if (rs.next()) {
+					GridFieldVO voF = GridFieldVO.create(Env.getCtx(), 
+							windowNo, 0, 
+							rs.getInt("ad_window_id"), rs.getInt("ad_tab_id"), 
+							false, rs);
+					GridField gridField = new GridField(voF);
+					setGridField(gridField);
+				}
+			} catch (Exception e) {
+				CLogger.get().log(Level.SEVERE, "", e);
+			} finally {
+				DB.close(rs, pstmt);
+				rs = null;
+				pstmt = null;
+			}
+		}
+		
 		return mGridField;
 	}
 	
@@ -188,6 +230,10 @@ public class MKanbanParameter extends X_KDB_Parameter  {
 	
 	public String getColumnName() {
 		return getGridField() != null ? getGridField().getColumnSQL(false) : null;
+	}
+	
+	public String getLabel() {
+		return isKDB_IsShowParameterName() ? getName() : getGridField().getHeader();
 	}
 
 }
