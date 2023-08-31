@@ -70,8 +70,11 @@ public class KanbanSQLUtils {
 			
 			if (column.getAD_Val_Rule_ID() > 0) {
 				MValRule valRule = MValRule.get(Env.getCtx(), column.getAD_Val_Rule_ID());
-				sqlSelect.append(" AND ")
-				.append(valRule.getCode());
+				
+				//If the validation rule contains window context variables - they cannot be resolved
+				if (valRule.getCode() != null && !valRule.getCode().contains("@"))
+					sqlSelect.append(" AND ")
+					.append(valRule.getCode());
 			}
 			
 		}
