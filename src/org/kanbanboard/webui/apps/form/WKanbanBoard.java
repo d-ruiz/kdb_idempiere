@@ -785,7 +785,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	    	content.setStyle("color:"+card.getTextColor());
 	    	Html htmlCard = new Html();
 	        content.appendChild(htmlCard);
-	        htmlCard.setContent(htmlText);
+	        htmlCard.setContent(WTextEditorDialog.sanitize(htmlText));
 	        
 		} else {
 			String[] tokens = card.getKanbanCardText().split(System.getProperty("line.separator"));

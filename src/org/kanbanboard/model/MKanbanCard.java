@@ -188,7 +188,7 @@ public class MKanbanCard {
 
 		String parsedText = parse(kanbanCardText, !kanbanBoard.isHtml());
 
-		if (kanbanBoard.get_ValueAsBoolean("IsHtml"))
+		if (kanbanBoard.isHtml())
 			parsedText = parseHTML(parsedText);
 
 		return parsedText;	
@@ -384,9 +384,10 @@ public class MKanbanCard {
 	// devCoffee - 5377
 	private String getTextByQuery(String sql) {
 		PreparedStatement ps = null;
+		ResultSet rs = null;
 		try {
 			ps = DB.prepareStatement(sql, null);
-			ResultSet rs = ps.executeQuery();
+			rs = ps.executeQuery();
 			String result = null;
 			if (rs.next()) {
 				switch (rs.getMetaData().getColumnType(1)) {
@@ -404,8 +405,9 @@ public class MKanbanCard {
 			e.printStackTrace();
 			return "";
 		} finally {
-			DB.close(ps);
+			DB.close(rs, ps);
 			ps = null;
+			rs = null;
 		}
 
 		return "";
