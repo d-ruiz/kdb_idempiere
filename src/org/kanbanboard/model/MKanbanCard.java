@@ -30,7 +30,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
 import org.compiere.model.MColumn;
 import org.compiere.model.MRefList;
@@ -269,7 +271,8 @@ public class MKanbanCard {
 					return "";
 				}
 				sql = inStr.substring(4, inStr.indexOf("ENDSQL"));
-				outStr.append(getTextByQuery(parse(sql, false)));
+				String queryValue = getValueFromSanitizedSQL(sql, po);
+				outStr.append(queryValue);
 				inStr = inStr.substring(inStr.indexOf("ENDSQL") + 6, inStr.length());	// after query
 				i = inStr.indexOf('@');
 				continue;
@@ -291,7 +294,7 @@ public class MKanbanCard {
 				token = token.substring(0, f);
 			}
 
-			outStr.append(parseVariable(token, format, po));		// replace context
+			outStr.append(parseVariable(token, format, po).toString());		// replace context
 
 			inStr = inStr.substring(j+1, inStr.length());	// from second @
 			i = inStr.indexOf('@');
@@ -304,6 +307,42 @@ public class MKanbanCard {
 		outStr.append(inStr);				//	add remainder
 		return outStr.toString();
 	}	//	parse
+	
+	/**
+	 * Sanitizes the SQL query configured in the Kanban Content
+	 * it creates a parameterized SQL to avoid SQL injection
+	 * @param sqlQuery
+	 * @param po
+	 * @return a string with the SQL result to be displayed in the Kanban Card
+	 */
+	private String getValueFromSanitizedSQL(String sqlQuery, PO po) {
+		List<Object> params = new ArrayList<>(); 
+		String newQuery = sqlQuery;
+
+		if (sqlQuery.indexOf('@') != -1) {
+			String inStr = sqlQuery;
+			String token;
+
+			int i = inStr.indexOf('@');
+			while (i != -1) {
+				inStr = inStr.substring(i+1, inStr.length());	// from first @
+
+				int j = inStr.indexOf('@');						// next @
+				if (j < 0) {									// no second tag
+					inStr = "@" + inStr;
+					break;
+				}
+				token = inStr.substring(0, j);
+				newQuery = newQuery.replaceFirst("@" + token + "@", "?");
+				params.add(parseVariable(token, null, po));
+				
+				inStr = inStr.substring(j+1, inStr.length());	// from second @
+				i = inStr.indexOf('@');
+			}
+		}
+
+		return getTextByQuery(newQuery, params);
+	}
 
 	/**
 	 * 	Parse Variable
@@ -311,7 +350,7 @@ public class MKanbanCard {
 	 *	@param po po
 	 *	@return translated variable or if not found the original tag
 	 */
-	private String parseVariable (String variable, String format,PO po) {
+	private Object parseVariable (String variable, String format,PO po) {
 		int index = po.get_ColumnIndex(variable);
 		if (index == -1) {
 			int i = variable.indexOf('.');
@@ -378,15 +417,16 @@ public class MKanbanCard {
 
 		if (value == null)
 			return "";
-		return value.toString();
+		return value;
 	}	//	parseVariable
 	
 	// devCoffee - 5377
-	private String getTextByQuery(String sql) {
+	private String getTextByQuery(String sql, List<Object> params) {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
 			ps = DB.prepareStatement(sql, null);
+			DB.setParameters(ps, params);
 			rs = ps.executeQuery();
 			String result = null;
 			if (rs.next()) {
