@@ -294,7 +294,7 @@ public class MKanbanCard {
 				token = token.substring(0, f);
 			}
 
-			outStr.append(parseVariable(token, format, po));		// replace context
+			outStr.append(parseVariable(token, format, po).toString());		// replace context
 
 			inStr = inStr.substring(j+1, inStr.length());	// from second @
 			i = inStr.indexOf('@');
@@ -308,6 +308,13 @@ public class MKanbanCard {
 		return outStr.toString();
 	}	//	parse
 	
+	/**
+	 * Sanitizes the SQL query configured in the Kanban Content
+	 * it creates a parameterized SQL to avoid SQL injection
+	 * @param sqlQuery
+	 * @param po
+	 * @return a string with the SQL result to be displayed in the Kanban Card
+	 */
 	private String getValueFromSanitizedSQL(String sqlQuery, PO po) {
 		List<Object> params = new ArrayList<>(); 
 		String newQuery = sqlQuery;
@@ -328,6 +335,9 @@ public class MKanbanCard {
 				token = inStr.substring(0, j);
 				newQuery = newQuery.replaceFirst("@" + token + "@", "?");
 				params.add(parseVariable(token, null, po));
+				
+				inStr = inStr.substring(j+1, inStr.length());	// from second @
+				i = inStr.indexOf('@');
 			}
 		}
 
@@ -340,7 +350,7 @@ public class MKanbanCard {
 	 *	@param po po
 	 *	@return translated variable or if not found the original tag
 	 */
-	private String parseVariable (String variable, String format,PO po) {
+	private Object parseVariable (String variable, String format,PO po) {
 		int index = po.get_ColumnIndex(variable);
 		if (index == -1) {
 			int i = variable.indexOf('.');
@@ -407,7 +417,7 @@ public class MKanbanCard {
 
 		if (value == null)
 			return "";
-		return value.toString();
+		return value;
 	}	//	parseVariable
 	
 	// devCoffee - 5377
