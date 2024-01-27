@@ -61,7 +61,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	private MTable table = MTable.get(getAD_Table_ID());
 	private String keyColumn;
 	private List<MKanbanStatus> statuses = new ArrayList<MKanbanStatus>();
-	private List<MKanbanPriority> priorityRules = new ArrayList<MKanbanPriority>();
+	private List<MKanbanPriority> priorityRules = null;
 	private List<MKanbanSwimlaneConfiguration> swimlaneConfigurationRecords;
 	private List<KanbanSwimlane> swimlanesArray = new ArrayList<KanbanSwimlane>();
 	private int numberOfCards = 0;
@@ -81,7 +81,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	private List<MKanbanProcess> associatedProcesses = new ArrayList<MKanbanProcess>();
 
 	//Kanban Parameters
-	private List<MKanbanParameter> parameters = new ArrayList<MKanbanParameter>();
+	private List<MKanbanParameter> parameters = null;
 	
 	public MKanbanBoard(Properties ctx, int KDB_KanbanBoard_ID, String trxName) {
 		super(ctx, KDB_KanbanBoard_ID, trxName);
@@ -253,7 +253,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 
 	public List<MKanbanPriority> getPriorityRules() {
 
-		if (priorityRules.isEmpty())
+		if (priorityRules == null)
 			priorityRules = MKanbanPriority.getPriorityRules(getKDB_KanbanBoard_ID());
 
 		return priorityRules;
@@ -587,8 +587,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 
 	public List<MKanbanParameter> getParameters() {
 
-		if (parameters.size() == 0) {
-
+		if (parameters == null) {
 			parameters = new Query(getCtx(), MKanbanParameter.Table_Name, " KDB_KanbanBoard_ID = ? AND AD_Client_ID IN (0, ?) AND IsActive='Y' ", get_TrxName())
 			.setParameters(new Object[]{getKDB_KanbanBoard_ID(),Env.getAD_Client_ID(Env.getCtx())})
 			.setOnlyActiveRecords(true)
