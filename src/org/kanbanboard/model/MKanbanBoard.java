@@ -525,7 +525,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 	}
 
 	public String getBackgroundColor() {
-		MPrintColor priorityColor = new MPrintColor(Env.getCtx(), getKDB_BackgroundColor_ID(), null);
+		MPrintColor priorityColor = MPrintColor.get(Env.getCtx(), getKDB_BackgroundColor_ID());
 		return priorityColor.getName();
 	}
 	

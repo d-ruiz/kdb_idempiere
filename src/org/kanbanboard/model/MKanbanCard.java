@@ -162,8 +162,8 @@ public class MKanbanCard {
 				BigDecimal maxValue = new BigDecimal(priorityRule.getMaxValue());
 
 				if (priorityValue.compareTo(minValue) >= 0 && priorityValue.compareTo(maxValue) <= 0) {
-					MPrintColor priorityColor = new MPrintColor(Env.getCtx(), priorityRule.getKDB_PriorityColor_ID(), null);
-					MPrintColor PriorityTextColor = new MPrintColor(Env.getCtx(), priorityRule.getKDB_PriorityTextColor_ID(), null);
+					MPrintColor priorityColor = MPrintColor.get(Env.getCtx(), priorityRule.getKDB_PriorityColor_ID());
+					MPrintColor PriorityTextColor = MPrintColor.get(Env.getCtx(), priorityRule.getKDB_PriorityTextColor_ID());
 					cardColor = priorityColor.getName();
 					textColor = PriorityTextColor.getName();
 					break;
