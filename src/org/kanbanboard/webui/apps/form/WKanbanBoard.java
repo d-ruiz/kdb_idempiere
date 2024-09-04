@@ -730,7 +730,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	private void createCardCell(Row row, MKanbanCard card) {
 		Vlayout cardCell = createCell(card);
 		row.appendCellChild(cardCell);
-		if (isReadWrite())
+		if (!isReadOnly())
 			setCellProps(row.getLastCell(), card);
 		else
 			setOnlyReadCellProps(row.getLastCell(), card);
@@ -739,7 +739,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	private void createQueuedCardCell(Row row, MKanbanCard card) {
 		Vlayout cardCell = createCell(card);
 		row.appendCellChild(cardCell);
-		if (isReadWrite())
+		if (!isReadOnly())
 			setQueuedCellProps(row.getLastCell(), card);
 		else
 			setOnlyReadCellProps(row.getLastCell(), card);
