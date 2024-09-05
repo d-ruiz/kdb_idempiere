@@ -61,7 +61,6 @@ import org.adempiere.webui.session.SessionManager;
 import org.adempiere.webui.theme.ThemeManager;
 import org.adempiere.webui.util.ZKUpdateUtil;
 import org.adempiere.webui.window.Dialog;
-import org.adempiere.webui.window.WTextEditorDialog;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.MPInstance;
@@ -710,7 +709,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 		cell.appendChild(swimlaneLabel);
 		if (!Util.isEmpty(summary)) {
 			Html htmlCard = new Html();
-	        htmlCard.setContent(WTextEditorDialog.sanitize(summary));
+	        htmlCard.setContent(summary);
 	        cell.appendChild(htmlCard);
 		}
 		cell.setColspan(totalNumberOfColumns);
@@ -785,7 +784,7 @@ public class WKanbanBoard extends KanbanBoard implements IFormController, EventL
 	    	content.setStyle("color:"+card.getTextColor());
 	    	Html htmlCard = new Html();
 	        content.appendChild(htmlCard);
-	        htmlCard.setContent(WTextEditorDialog.sanitize(htmlText));
+	        htmlCard.setContent(htmlText);
 	        
 		} else {
 			String[] tokens = card.getKanbanCardText().split(System.getProperty("line.separator"));
