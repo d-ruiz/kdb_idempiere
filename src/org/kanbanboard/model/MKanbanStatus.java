@@ -133,6 +133,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 		for (MKanbanCard c : records){
 			if (c.equals(card)) {
 				records.remove(card);
+				setTotalCards(getTotalCards() - 1);
 				break;
 			}
 		}
@@ -154,9 +155,11 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 
 	public void removeQueuedRecord(MKanbanCard card) {
 		for (MKanbanCard c : queuedRecords) {
-			if (c.equals(card))
+			if (c.equals(card)) {
 				queuedRecords.remove(card);
-			break;
+				setTotalCards(getTotalCards() - 1);
+				break;
+			}
 		}
 	}
 
@@ -351,7 +354,7 @@ public class MKanbanStatus extends X_KDB_KanbanStatus {
 	}
 	
 	public void increaseTotalCardsByOne() {
-		setTotalCards(getTotalCards()+1);
+		setTotalCards(getTotalCards() + 1);
 	}
 	
 	public void configureSwimlanes(List<KanbanSwimlane> swimlanes) {

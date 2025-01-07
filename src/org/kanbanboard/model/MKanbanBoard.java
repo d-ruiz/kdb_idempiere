@@ -627,6 +627,7 @@ public class MKanbanBoard extends X_KDB_KanbanBoard {
 		}
 		numberOfCards = 0;
 		getKanbanCards();
+		setKanbanQueuedCards();
 		refreshSwimlanes();
 	}
 	
